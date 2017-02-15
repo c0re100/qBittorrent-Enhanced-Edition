@@ -169,9 +169,6 @@ QVariant TransferListModel::data(const QModelIndex &index, int role) const
     if ((role == Qt::DecorationRole) && (index.column() == TR_NAME))
         return getIconByState(torrent->state());
 
-    if (role == Qt::ForegroundRole)
-        return getColorByState(torrent->state());
-
     if ((role != Qt::DisplayRole) && (role != Qt::UserRole))
         return QVariant();
 
