@@ -109,7 +109,7 @@ bool TransferListSortModel::lessThan(const QModelIndex &left, const QModelIndex 
             if (leftValue != rightValue)
                 return leftValue < rightValue;
 
-            return lowerPositionThan(left, right);
+            return !dateLessThan(TransferListModel::TR_ADD_DATE, left, right, true);
         }
 
     case TransferListModel::TR_ADD_DATE:
