@@ -337,7 +337,7 @@ MainWindow::MainWindow(QWidget *parent)
     m_ui->actionAutoHibernate->setDisabled(true);
 #endif
     m_ui->actionAutoExit->setChecked(pref->shutdownqBTWhenDownloadsComplete());
-    m_ui->actionResetIPFilter->setChecked(false);
+    m_ui->actionResetIPFilter->setChecked(true);
 
     if (!autoShutdownGroup->checkedAction())
         m_ui->actionAutoShutdownDisabled->setChecked(true);
