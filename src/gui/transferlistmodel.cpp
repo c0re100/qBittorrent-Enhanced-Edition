@@ -169,9 +169,6 @@ QVariant TransferListModel::data(const QModelIndex &index, int role) const
     if ((role == Qt::DecorationRole) && (index.column() == TR_NAME))
         return getIconByState(torrent->state());
 
-    if (role == Qt::ForegroundRole)
-        return getColorByState(torrent->state());
-
     if ((role != Qt::DisplayRole) && (role != Qt::UserRole))
         return QVariant();
 
@@ -322,27 +319,26 @@ void TransferListModel::handleTorrentsUpdated()
 QIcon getIconByState(BitTorrent::TorrentState state)
 {
     switch (state) {
+    case BitTorrent::TorrentState::Allocating:
     case BitTorrent::TorrentState::Downloading:
     case BitTorrent::TorrentState::ForcedDownloading:
+    case BitTorrent::TorrentState::StalledDownloading:
     case BitTorrent::TorrentState::DownloadingMetadata:
         return getDownloadingIcon();
-    case BitTorrent::TorrentState::Allocating:
-    case BitTorrent::TorrentState::StalledDownloading:
-        return getStalledDownloadingIcon();
-    case BitTorrent::TorrentState::StalledUploading:
-        return getStalledUploadingIcon();
     case BitTorrent::TorrentState::Uploading:
     case BitTorrent::TorrentState::ForcedUploading:
+    case BitTorrent::TorrentState::StalledUploading:
         return getUploadingIcon();
     case BitTorrent::TorrentState::PausedDownloading:
         return getPausedIcon();
     case BitTorrent::TorrentState::PausedUploading:
         return getCompletedIcon();
     case BitTorrent::TorrentState::QueuedDownloading:
-    case BitTorrent::TorrentState::QueuedUploading:
-        return getQueuedIcon();
     case BitTorrent::TorrentState::CheckingDownloading:
+        return getStalledDownloadingIcon();
+    case BitTorrent::TorrentState::QueuedUploading:
     case BitTorrent::TorrentState::CheckingUploading:
+        return getStalledUploadingIcon();
 #if LIBTORRENT_VERSION_NUM < 10100
     case BitTorrent::TorrentState::QueuedForChecking:
 #endif

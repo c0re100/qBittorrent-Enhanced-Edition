@@ -114,14 +114,14 @@ OptionsDialog::OptionsDialog(QWidget *parent)
 #endif
 
     // Icons
-    m_ui->tabSelection->item(TAB_UI)->setIcon(GuiIconProvider::instance()->getIcon("preferences-desktop"));
-    m_ui->tabSelection->item(TAB_BITTORRENT)->setIcon(GuiIconProvider::instance()->getIcon("preferences-system-network"));
+    m_ui->tabSelection->item(TAB_UI)->setIcon(GuiIconProvider::instance()->getIcon("preferences-system"));
+    m_ui->tabSelection->item(TAB_BITTORRENT)->setIcon(GuiIconProvider::instance()->getIcon("preferences-system-network-sharing"));
     m_ui->tabSelection->item(TAB_CONNECTION)->setIcon(GuiIconProvider::instance()->getIcon("network-wired"));
-    m_ui->tabSelection->item(TAB_DOWNLOADS)->setIcon(GuiIconProvider::instance()->getIcon("folder-download"));
+    m_ui->tabSelection->item(TAB_DOWNLOADS)->setIcon(GuiIconProvider::instance()->getIcon("cloud-download"));
     m_ui->tabSelection->item(TAB_SPEED)->setIcon(GuiIconProvider::instance()->getIcon("speedometer", "chronometer"));
     m_ui->tabSelection->item(TAB_RSS)->setIcon(GuiIconProvider::instance()->getIcon("rss-config", "application-rss+xml"));
 #ifndef DISABLE_WEBUI
-    m_ui->tabSelection->item(TAB_WEBUI)->setIcon(GuiIconProvider::instance()->getIcon("network-server"));
+    m_ui->tabSelection->item(TAB_WEBUI)->setIcon(GuiIconProvider::instance()->getIcon("document-open-remote"));
 #else
     m_ui->tabSelection->item(TAB_WEBUI)->setHidden(true);
 #endif

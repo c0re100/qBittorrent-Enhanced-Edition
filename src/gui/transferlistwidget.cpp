@@ -865,17 +865,17 @@ void TransferListWidget::displayListMenu(const QPoint&)
     if (selectedIndexes.size() == 0) return;
 
     // Create actions
-    QAction actionStart(GuiIconProvider::instance()->getIcon("media-playback-start"), tr("Resume", "Resume/start the torrent"), nullptr);
+    QAction actionStart(tr("Resume", "Resume/start the torrent"), nullptr);
     connect(&actionStart, &QAction::triggered, this, &TransferListWidget::startSelectedTorrents);
-    QAction actionPause(GuiIconProvider::instance()->getIcon("media-playback-pause"), tr("Pause", "Pause the torrent"), nullptr);
+    QAction actionPause(tr("Pause", "Pause the torrent"), nullptr);
     connect(&actionPause, &QAction::triggered, this, &TransferListWidget::pauseSelectedTorrents);
-    QAction actionForceStart(GuiIconProvider::instance()->getIcon("media-seek-forward"), tr("Force Resume", "Force Resume/start the torrent"), nullptr);
+    QAction actionForceStart(tr("Force Resume", "Force Resume/start the torrent"), nullptr);
     connect(&actionForceStart, &QAction::triggered, this, &TransferListWidget::forceStartSelectedTorrents);
     QAction actionDelete(GuiIconProvider::instance()->getIcon("edit-delete"), tr("Delete", "Delete the torrent"), nullptr);
     connect(&actionDelete, &QAction::triggered, this, &TransferListWidget::softDeleteSelectedTorrents);
     QAction actionPreviewFile(GuiIconProvider::instance()->getIcon("view-preview"), tr("Preview file..."), nullptr);
     connect(&actionPreviewFile, &QAction::triggered, this, &TransferListWidget::previewSelectedTorrents);
-    QAction actionSetMaxRatio(QIcon(QLatin1String(":/icons/skin/ratio.svg")), tr("Limit share ratio..."), nullptr);
+    QAction actionSetMaxRatio(tr("Limit share ratio..."), nullptr);
     connect(&actionSetMaxRatio, &QAction::triggered, this, &TransferListWidget::setMaxRatioSelectedTorrents);
     QAction actionSetUploadLimit(GuiIconProvider::instance()->getIcon("kt-set-max-upload-speed"), tr("Limit upload rate..."), nullptr);
     connect(&actionSetUploadLimit, &QAction::triggered, this, &TransferListWidget::setUpLimitSelectedTorrents);
