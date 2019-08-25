@@ -27,6 +27,11 @@ qbittorrent
 
 will install and execute qBittorrent hopefully without any problem.
 
+## Homebrew
+```
+brew cask install c0re100-qbittorrent
+```
+
 ### Public key:
 Starting from v3.3.4 all source tarballs and binaries are signed.<br />
 The key currently used is 4096R/[5B7CC9A2](https://pgp.mit.edu/pks/lookup?op=get&search=0x6E4A2D025B7CC9A2) with fingerprint `D8F3DA77AAC6741053599C136E4A2D025B7CC9A2`.<br />
