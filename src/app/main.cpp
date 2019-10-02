@@ -168,23 +168,6 @@ int main(int argc, char *argv[])
             return EXIT_SUCCESS;
 #endif
 
-        // Check if qBittorrent is already running for this user
-        if (app->isRunning()) {
-#ifdef DISABLE_GUI
-            if (params.shouldDaemonize) {
-                throw CommandLineParameterError(QObject::tr("You cannot use %1: qBittorrent is already running for this user.")
-                                     .arg(QLatin1String("-d (or --daemon)")));
-            }
-            else
-#endif
-            qDebug("qBittorrent is already running for this user.");
-
-            QThread::msleep(300);
-            app->sendParams(params.paramList());
-
-            return EXIT_SUCCESS;
-        }
-
 #if defined(Q_OS_WIN)
         // This affects only Windows apparently and Qt5.
         // When QNetworkAccessManager is instantiated it regularly starts polling
