@@ -7,15 +7,26 @@ addons:
     sources:
     - sourceline: 'ppa:mhier/libboost-latest'
     - sourceline: 'ppa:beineri/opt-qt-5.14.1-xenial'
+    - sourceline: 'ppa:savoury1/backports'
     packages:
+    - curl
+    - gcc
+    - g++
+    - make
+    - autoconf
+    - automake
+    - pkg-config
+    - file
+    - libgl1-mesa-dev
+    - zlib1g-dev
+    - libssl-dev
+    - libtool
     - qt514base
     - qt514svg
     - qt514tools
     - libboost1.70-dev
-    - libgl1-mesa-dev
 
 install:
-- sudo apt update && sudo apt full-upgrade -y
 - source /opt/qt514/bin/qt514-env.sh
 
 script:
