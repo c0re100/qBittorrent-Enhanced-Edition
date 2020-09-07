@@ -50,7 +50,7 @@ script:
 - mkdir -p /tmp/libtorrent-rasterbar
 - |
   [ -f /tmp/libtorrent-rasterbar/.unpack_ok ] || \
-      curl -ksSfL https://github.com/arvidn/libtorrent/archive/HEAD.tar.gz | \
+      curl -ksSfL https://github.com/arvidn/libtorrent/archive/RC_1_2.tar.gz | \
       tar -zxf - -C /tmp/libtorrent-rasterbar --strip-components 1
 - touch "/tmp/libtorrent-rasterbar/.unpack_ok"
 - cd "/tmp/libtorrent-rasterbar/"
