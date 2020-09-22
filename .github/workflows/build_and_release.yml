@@ -136,7 +136,7 @@ jobs:
           make install
           mkdir -p /tmp/libtorrent-rasterbar
           [ -f /tmp/libtorrent-rasterbar/.unpack_ok ] || \
-            wget -qO- https://github.com/arvidn/libtorrent/releases/download/libtorrent-1.2.10/libtorrent-rasterbar-1.2.10.tar.gz | \
+            wget -qO- https://github.com/arvidn/libtorrent/archive/RC_1_2.tar.gz | \
             tar -zxf - -C /tmp/libtorrent-rasterbar --strip-components 1
           touch "/tmp/libtorrent-rasterbar/.unpack_ok"
           cd /tmp/libtorrent-rasterbar
