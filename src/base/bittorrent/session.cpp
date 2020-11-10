@@ -56,7 +56,6 @@
 #include <libtorrent/session_status.hpp>
 #include <libtorrent/torrent_info.hpp>
 
-#include <QDateTime>
 #include <QDebug>
 #include <QDir>
 #include <QFile>
@@ -71,8 +70,6 @@
 #include <QUuid>
 
 #include "base/algorithm.h"
-#include "base/bittorrent/peerinfo.h"
-#include "base/bittorrent/peeraddress.h"
 #include "base/exceptions.h"
 #include "base/global.h"
 #include "base/logger.h"

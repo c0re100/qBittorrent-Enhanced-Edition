@@ -9,43 +9,6 @@
 #include "peer_filter_plugin.hpp"
 #include "peer_logger.hpp"
 
-/*
-// bad peer
-bool isBadPeer(const lt::peer_info& info)
-{
-  QString pid = QString::fromStdString(info.pid.to_string().substr(0, 8));
-  QString client = QString::fromStdString(info.client);
-  QRegExp IDFilter("-(XL|SD|XF|QD|BN|DL)(\\d+)-");
-  QRegExp UAFilter(R"((\d+.\d+.\d+.\d+|cacao_torrent))");
-  return IDFilter.exactMatch(pid) || UAFilter.exactMatch(client);
-}
-
-// Unknown Peer
-bool isUnknownPeer(const lt::peer_info& info)
-{
-  QString client = QString::fromStdString(info.client);
-  QString country = Net::GeoIPManager::instance()->lookup({info.ip.data(), info.ip.port()});
-  return client.contains("Unknown") && country == "CN";
-}
-
-// Offline Downloader
-bool isOfflineDownloader(const lt::peer_info& info)
-{
-  unsigned short port = info.ip.port();
-  QString country = Net::GeoIPManager::instance()->lookup({info.ip.data(), info.ip.port()});
-  QString client = QString::fromStdString(info.client);
-  return port >= 65000 && country == "CN" && client.contains("Transmission");
-}
-
-// BitTorrent Media Player Peer
-bool isBitTorrentMediaPlayer(const lt::peer_info& info)
-{
-  QString pid = QString::fromStdString(info.pid.to_string().substr(0, 8));
-  QRegExp PlayerFilter("-(UW\\w{4})-");
-  return PlayerFilter.exactMatch(pid);
-}
-*/
-
 // bad peer filter
 bool is_bad_peer(const lt::peer_info& info)
 {
