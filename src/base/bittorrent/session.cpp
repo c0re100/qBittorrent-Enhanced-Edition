@@ -96,6 +96,7 @@
 #include "ltunderlyingtype.h"
 #include "magneturi.h"
 #include "nativesessionextension.h"
+#include "peer_blacklist.hpp"
 #include "portforwarderimpl.h"
 #include "resumedatasavingmanager.h"
 #include "statistics.h"
@@ -1157,6 +1158,16 @@ void Session::initializeNativeSession()
     m_nativeSession->add_extension(&lt::create_ut_metadata_plugin);
     if (isPeXEnabled())
         m_nativeSession->add_extension(&lt::create_ut_pex_plugin);
+
+    // Enhanced features
+    db_connection::instance().init(QDir(specialFolderLocation(SpecialFolder::Data)).absoluteFilePath("peers.db"));
+    m_nativeSession->add_extension(&create_drop_bad_peers_plugin);
+    if (isAutoBanUnknownPeerEnabled()) {
+        m_nativeSession->add_extension(&create_drop_unknown_peers_plugin);
+        m_nativeSession->add_extension(&create_drop_offline_downloader_plugin);
+    }
+    if (isAutoBanBTPlayerPeerEnabled())
+        m_nativeSession->add_extension(&create_drop_bittorrent_media_player_plugin);
 
     m_nativeSession->add_extension(std::make_shared<NativeSessionExtension>());
 }
@@ -3891,6 +3902,7 @@ void Session::setAutoBanUnknownPeer(bool value)
 {
     if (value != isAutoBanUnknownPeerEnabled()) {
         m_autoBanUnknownPeer = value;
+        LogMsg(tr("Restart is required to toggle Auto Ban Unknown Client support"), Log::WARNING);
     }
 }
 
@@ -3903,6 +3915,7 @@ void Session::setAutoBanBTPlayerPeer(bool value)
 {
     if (value != isAutoBanBTPlayerPeerEnabled()) {
         m_autoBanBTPlayerPeer = value;
+        LogMsg(tr("Restart is required to toggle Auto Ban Bittorrent Media Player support"), Log::WARNING);
     }
 }
 
