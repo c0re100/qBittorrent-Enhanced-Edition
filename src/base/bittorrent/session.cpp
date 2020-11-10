@@ -519,18 +519,7 @@ Session::Session(QObject *parent)
 
     initMetrics();
 
-    // Unban Timer
-    m_unbanTimer = new QTimer(this);
-    m_unbanTimer->setInterval(500);
-    connect(m_unbanTimer, &QTimer::timeout, this, &Session::processUnbanRequest);
-
-    // Ban Timer
-    m_banTimer = new QTimer(this);
-    m_banTimer->setInterval(500);
-    connect(m_banTimer, &QTimer::timeout, this, &Session::autoBanBadClient);
-    m_banTimer->start();
-
-	// Update Tracker
+    // Update Tracker
     m_updateTimer = new QTimer(this);
     m_updateTimer->setInterval(86400*1000);
     connect(m_updateTimer, &QTimer::timeout, this, &Session::updatePublicTracker);
@@ -1823,77 +1812,6 @@ void Session::banIP(const QString &ip)
     }
 }
 
-bool Session::checkAccessFlags(const QString &ip)
-{
-    lt::ip_filter filter = m_nativeSession->get_ip_filter();
-    boost::system::error_code ec;
-    lt::address addr = lt::address::from_string(ip.toLatin1().constData(), ec);
-    Q_ASSERT(!ec);
-    if (ec) return false;
-    return filter.access(addr);
-}
-
-void Session::tempBlockIP(const QString &ip)
-{
-    lt::ip_filter filter = m_nativeSession->get_ip_filter();
-    boost::system::error_code ec;
-    lt::address addr = lt::address::from_string(ip.toLatin1().constData(), ec);
-    Q_ASSERT(!ec);
-    if (ec) return;
-    filter.add_rule(addr, addr, lt::ip_filter::blocked);
-    m_nativeSession->set_ip_filter(filter);
-    insertQueue(ip);
-}
-
-void Session::removeBlockedIP(const QString &ip)
-{
-    lt::ip_filter filter = m_nativeSession->get_ip_filter();
-    boost::system::error_code ec;
-    lt::address addr = lt::address::from_string(ip.toLatin1().constData(), ec);
-    Q_ASSERT(!ec);
-    if (ec) return;
-    filter.add_rule(addr, addr, 0);
-    m_nativeSession->set_ip_filter(filter);
-}
-
-// Insert banned IP to Queue
-void Session::insertQueue(QString ip)
-{
-    q_bannedIPs.enqueue(ip);
-    q_unbanTime.enqueue(QDateTime::currentMSecsSinceEpoch() + 60 * 60 * 1000);
-
-    if (!m_unbanTimer->isActive()) {
-        m_unbanTimer->start();
-    }
-}
-
-// Process Unban Queue
-void Session::processUnbanRequest()
-{
-    if (q_bannedIPs.isEmpty() && q_unbanTime.isEmpty()) {
-        m_unbanTimer->stop();
-    } else if (m_isActive) {
-        return;
-    } else {
-        m_isActive = true;
-        int64_t currentTime = QDateTime::currentMSecsSinceEpoch();
-        int64_t nextTime = q_unbanTime.dequeue();
-        int delayTime = int(nextTime - currentTime);
-        QString nextIP = q_bannedIPs.dequeue();
-        if (delayTime < 0) {
-            QTimer::singleShot(0, [=] {
-                BitTorrent::Session::instance()->removeBlockedIP(nextIP);
-                m_isActive = false;
-            });
-        } else {
-            QTimer::singleShot(delayTime, [=] {
-                BitTorrent::Session::instance()->removeBlockedIP(nextIP);
-                m_isActive = false;
-            });
-        }
-    }
-}
-
 // Handle ipfilter.dat
 int findAndNullDelimiter(char *const data, const char delimiter, const int start, const int end, const bool reverse)
 {
@@ -2109,80 +2027,6 @@ void Session::loadOfflineFilter()
 
     m_nativeSession->set_ip_filter(offlineFilter);
     Logger::instance()->addMessage(tr("Successfully parsed the offline downloader IP filter: %1 rules were applied.", "%1 is a number").arg(Count));
-}
-
-void Session::autoBanBadClient()
-{
-    const auto *session = BitTorrent::Session::instance();
-    const BitTorrent::SessionStatus tStatus = session->status();
-    if (tStatus.peersCount > 0) {
-        bool m_AutoBanUnknown = session->isAutoBanUnknownPeerEnabled();
-        bool m_AutoBanPlayer = session->isAutoBanBTPlayerPeerEnabled();
-        for (const BitTorrent::TorrentHandle *torrent : asConst(session->torrents())) {
-            if (!torrent->isPrivate()) {
-                for (const BitTorrent::PeerInfo &peer : asConst(torrent->peers())) {
-                    const BitTorrent::PeerAddress addr = peer.address();
-                    if (addr.ip.isNull()) continue;
-                    QString ip = addr.ip.toString();
-                    int port = peer.port();
-                    QString client = peer.client();
-                    QString ptoc = peer.peerIdToClient();
-                    QString pid = peer.peerId().left(8);
-                    QString country = peer.country();
-
-                    QRegExp IDFilter("-(XL|SD|XF|QD|BN|DL)(\\d+)-");
-                    QRegExp UAFilter(R"((\d+.\d+.\d+.\d+|cacao_torrent))");
-                    if (IDFilter.exactMatch(pid) || UAFilter.exactMatch(client)) {
-                        bool isBanned = BitTorrent::Session::instance()->checkAccessFlags(ip);
-                        if (isBanned) {
-                            continue;
-                        }
-                        qDebug("Auto Banning bad Peer %s...", ip.toLocal8Bit().data());
-                        Logger::instance()->addMessage(tr("Auto banning bad Peer '%1'...'%2'...'%3'...'%4'").arg(ip).arg(pid).arg(ptoc).arg(country));
-                        tempBlockIP(ip);
-                        continue;
-                    }
-
-                    if (m_AutoBanUnknown) {
-                        if (client.contains("Unknown") && country == "CN") {
-                            bool isBanned = BitTorrent::Session::instance()->checkAccessFlags(ip);
-                            if (isBanned) {
-                                continue;
-                            }
-                            qDebug("Auto Banning Unknown Peer %s...", ip.toLocal8Bit().data());
-                            Logger::instance()->addMessage(tr("Auto banning Unknown Peer '%1'...'%2'...'%3'...'%4'").arg(ip).arg(pid).arg(ptoc).arg(country));
-                            tempBlockIP(ip);
-                            continue;
-                        }
-
-                        if (port >= 65000 && country == "CN" && client.contains("Transmission")) {
-                            bool isBanned = BitTorrent::Session::instance()->checkAccessFlags(ip);
-                            if (isBanned) {
-                                continue;
-                            }
-                            qDebug("Auto Banning Offline Downloader %s...", ip.toLocal8Bit().data());
-                            Logger::instance()->addMessage(tr("Auto banning Offline Downloader '%1:%2'...'%3'...'%4'...'%5'").arg(ip).arg(port).arg(pid).arg(ptoc).arg(country));
-                            tempBlockIP(ip);
-                            continue;
-                        }
-                    }
-
-                    if (m_AutoBanPlayer) {
-                        QRegExp PlayerFilter("-(UW\\w{4})-");
-                        if (PlayerFilter.exactMatch(pid)) {
-                            bool isBanned = BitTorrent::Session::instance()->checkAccessFlags(ip);
-                            if (isBanned) {
-                                continue;
-                            }
-                            qDebug("Auto Banning BitTorrent Media Player Peer %s...", ip.toLocal8Bit().data());
-                            Logger::instance()->addMessage(tr("Auto banning BitTorrent Media Player Peer '%1'...'%2'...'%3'...'%4'").arg(ip).arg(pid).arg(ptoc).arg(country));
-                            tempBlockIP(ip);
-                        }
-                    }
-                }
-            }
-        }
-    }
 }
 
 // Delete a torrent from the session, given its hash
