@@ -45,7 +45,7 @@ bool is_bittorrent_media_player(const lt::peer_info& info)
 // drop connection action
 void drop_connection(lt::peer_connection_handle ph)
 {
-  ph.disconnect(boost::asio::error::connection_refused, lt::operation_t::bittorrent, 0);
+  ph.disconnect(boost::asio::error::connection_refused, lt::operation_t::bittorrent, lt::disconnect_severity_t{0});
 }
 
 
