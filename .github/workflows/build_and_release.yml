@@ -65,10 +65,9 @@ jobs:
           - cross_host: x86_64-linux-musl
             openssl_compiler: linux-x86_64
             qt_device: linux-generic-g++
-          # TODO: Support x86_64-w64-mingw32
-          # - cross_host: x86_64-w64-mingw32
-          #   openssl_compiler: mingw64
-          #   qt_xplatform: win32-g++
+          - cross_host: x86_64-w64-mingw32
+            openssl_compiler: mingw64
+            qt_xplatform: win32-g++
     steps:
       - name: Checkout
         uses: actions/checkout@v2

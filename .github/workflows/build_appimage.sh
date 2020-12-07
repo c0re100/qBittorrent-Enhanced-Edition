@@ -52,7 +52,7 @@ apt install -y --no-install-suggests --no-install-recommends \
 SELF_DIR="$(dirname "$(readlink -f "${0}")")"
 
 # install qt
-curl -sSkL --compressed https://raw.githubusercontent.com/engnr/qt-downloader/master/qt-downloader | python3 - linux desktop latest gcc_64 -o "${HOME}/Qt" -m qtbase qttools qtsvg icu
+curl -sSkL --compressed https://raw.githubusercontent.com/engnr/qt-downloader/master/qt-downloader | python3 - linux desktop 5.15.2 gcc_64 -o "${HOME}/Qt" -m qtbase qttools qtsvg icu
 export QT_BASE_DIR="$(ls -rd "${HOME}/Qt"/*/gcc_64 | head -1)"
 export QTDIR=$QT_BASE_DIR
 export PATH=$QT_BASE_DIR/bin:$PATH
@@ -82,7 +82,7 @@ make install -j$(nproc)
 [ -x "/tmp/linuxdeploy-x86_64.AppImage" ] || curl -LC- -o /tmp/linuxdeploy-x86_64.AppImage "https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage"
 [ -x "/tmp/linuxdeploy-plugin-qt-x86_64.AppImage" ] || curl -LC- -o /tmp/linuxdeploy-plugin-qt-x86_64.AppImage "https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage"
 chmod -v +x '/tmp/linuxdeploy-plugin-qt-x86_64.AppImage' '/tmp/linuxdeploy-x86_64.AppImage'
-# Fix run in docker, see: https://github.com/linuxdeploy/linuxdeploy/issues/104
+# Fix run in docker, see: https://github.com/linuxdeploy/linuxdeploy/issues/86
 sed -i 's|AI\x02|\x00\x00\x00|' '/tmp/linuxdeploy-plugin-qt-x86_64.AppImage' '/tmp/linuxdeploy-x86_64.AppImage'
 cd "/tmp/qbee"
 mkdir -p "/tmp/qbee/AppDir/apprun-hooks/"
