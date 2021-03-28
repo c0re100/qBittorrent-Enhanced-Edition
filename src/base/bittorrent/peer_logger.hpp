@@ -68,7 +68,7 @@ public:
     q.prepare(QString("INSERT INTO '%1' (ip, client, pid, tag) VALUES (?, ?, ?, ?)").arg(m_table));
     q.addBindValue(QString::fromStdString(info.ip.address().to_string()));
     q.addBindValue(QString::fromStdString(info.client));
-    q.addBindValue(QString::fromStdString(info.pid.to_string().substr(0, 8)));
+    q.addBindValue(QString::fromLatin1(info.pid.data(), 8));
     q.addBindValue(QString::fromStdString(tag));
     return q.exec();
   }
