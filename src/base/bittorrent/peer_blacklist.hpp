@@ -49,30 +49,6 @@ void drop_connection(lt::peer_connection_handle ph)
 }
 
 
-class peer_logger_singleton
-{
-public:
-  static peer_logger_singleton& instance()
-  {
-    static peer_logger_singleton logger;
-    return logger;
-  }
-
-  void log_peer(const lt::peer_info& info, const std::string& tag)
-  {
-    m_logger.log_peer(info, tag);
-  }
-
-protected:
-  peer_logger_singleton()
-    : m_logger(db_connection::instance().connection(), QStringLiteral("banned_peers"))
-  {}
-
-private:
-  peer_logger m_logger;
-};
-
-
 template<typename F>
 auto wrap_filter(F filter, const std::string& tag)
 {
