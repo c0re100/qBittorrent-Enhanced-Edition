@@ -11,6 +11,7 @@
 
 #include <libtorrent/peer_info.hpp>
 
+#include "base/logger.h"
 #include "base/profile.h"
 
 #include "peer_filter_plugin.hpp"
@@ -34,9 +35,24 @@ public:
   {
     std::ifstream ifs(filter_file.toStdString());
     std::string peer_id, client;
-    while (ifs >> peer_id >> client)
-      m_filters.append({QRegularExpression(QString::fromStdString(peer_id)),
-                        QRegularExpression(QString::fromStdString(client))});
+    while (ifs >> peer_id >> client) {
+      QRegularExpression peer_id_re(QString::fromStdString(peer_id));
+      QRegularExpression client_re(QString::fromStdString(client));
+
+      QString msg_tmpl("whitelist: invalid %1 matching expression '%2' detected, ignoring rule");
+
+      if (!peer_id_re.isValid())
+        LogMsg(msg_tmpl.arg("peer id").arg(peer_id_re.pattern()), Log::WARNING);
+
+      if (!client_re.isValid())
+        LogMsg(msg_tmpl.arg("client name").arg(client_re.pattern()), Log::WARNING);
+
+      if (peer_id_re.isValid() && client_re.isValid())
+        m_filters.append({peer_id_re, client_re});
+    }
+
+    if (m_filters.isEmpty())
+      LogMsg("whitelist: no rules were loaded, any connections will be dropped", Log::CRITICAL);
   }
 
   bool match_peer(const lt::peer_info& info, bool skip_name) const
@@ -61,8 +77,10 @@ std::shared_ptr<lt::torrent_plugin> create_peer_whitelist_plugin(lt::torrent_han
 
   QString filter_file = qbt_data_dir.absoluteFilePath(QStringLiteral("peer_whitelist.txt"));
   // do not create plugin if filter file doesn't exists
-  if (!QFile::exists(filter_file))
+  if (!QFile::exists(filter_file)) {
+    LogMsg("'peer_whitelist.txt' doesn't exist, do not enabling whitelist plugin", Log::INFO);
     return nullptr;
+  }
 
   // create filter object only once
   static peer_filter filter(filter_file);
