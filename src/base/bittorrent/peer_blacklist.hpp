@@ -114,6 +114,11 @@ std::shared_ptr<lt::torrent_plugin> create_peer_blacklist_plugin(lt::torrent_han
 
   // create filter object only once
   static peer_filter filter(filter_file);
+  // do not create plugin if no rules were loaded
+  if (filter.is_empty()) {
+    LogMsg("'peer_blacklist.txt' has no valid rules, do not enabling blacklist plugin", Log::WARNING);
+    return nullptr;
+  }
 
   auto peer_in_list = [&](const lt::peer_info& info, bool handshake, bool* stop_filtering) {
     bool matched = filter.match_peer(info, handshake);
