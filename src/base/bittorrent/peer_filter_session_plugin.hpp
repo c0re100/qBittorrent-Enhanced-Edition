@@ -17,11 +17,19 @@ std::unique_ptr<peer_filter> create_peer_filter(const QString& filename)
   QString filter_file = qbt_data_dir.absoluteFilePath(filename);
   // do not create plugin if filter file doesn't exists
   if (!QFile::exists(filter_file)) {
-    LogMsg(QString("'%1' doesn't exist, do not enabling plugin").arg(filename), Log::NORMAL);
+    LogMsg(QString("'%1' doesn't exist, do not enabling filter").arg(filename), Log::NORMAL);
     return nullptr;
   }
 
-  return std::make_unique<peer_filter>(filter_file);
+  auto filter = std::make_unique<peer_filter>(filter_file);
+  if (filter->is_empty()) {
+    LogMsg(QString("'%1' has no valid rules, do not enabling filter").arg(filename), Log::WARNING);
+    filter.reset();
+  } else {
+    LogMsg(QString("'%1' contains %2 valid rules").arg(filename).arg(filter->rules_count()), Log::INFO);
+  }
+
+  return filter;
 }
 
 
