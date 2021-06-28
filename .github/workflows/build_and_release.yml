@@ -1,0 +1,93 @@
+on:
+  push:
+    branches:
+      - "*"
+  pull_request:
+    branches:
+      - "*"
+  release:
+    types:
+      - released
+
+jobs:
+  appimage:
+    runs-on: ubuntu-latest
+    container: "ubuntu:16.04"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Build AppImage
+        run:  .github/workflows/build_appimage.sh
+      - uses: actions/upload-artifact@v2
+        with:
+          name: qBittorrent-Enhanced-Edition.AppImage
+          path: |
+            .github/workflows/qBittorrent-Enhanced-Edition.AppImage
+            .github/workflows/qBittorrent-Enhanced-Edition.AppImage.zsync
+      - name: Upload Github Assets
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ".github/workflows/qBittorrent-Enhanced-Edition.AppImage*"
+          tag: ${{ github.ref }}
+          overwrite: true
+          file_glob: true
+
+  # cross compile for some other platforms, like arm, mips, etc.
+  cross-compile:
+    runs-on: ubuntu-latest
+    container: "alpine:latest"
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # cross toolchain downloads from: https://musl.cc/
+          # you need to find the name ${cross_host}-cross.tgz
+          # openssl_compiler choose from openssl source directory `./Configure LIST`
+          # qt_device choose from https://github.com/qt/qtbase/tree/dev/mkspecs/devices/
+          # qt_xplatform choose from https://github.com/qt/qtbase/tree/dev/mkspecs/
+          - cross_host: arm-linux-musleabi
+            openssl_compiler: linux-armv4
+            qt_device: linux-arm-generic-g++
+          - cross_host: aarch64-linux-musl
+            openssl_compiler: linux-aarch64
+            qt_device: linux-arm-generic-g++
+          - cross_host: mips-linux-musl
+            openssl_compiler: linux-mips32
+            qt_device: linux-generic-g++
+          - cross_host: mipsel-linux-musl
+            openssl_compiler: linux-mips32
+            qt_device: linux-generic-g++
+          - cross_host: mips64-linux-musl
+            openssl_compiler: linux64-mips64
+            qt_device: linux-generic-g++
+          - cross_host: x86_64-linux-musl
+            openssl_compiler: linux-x86_64
+            qt_device: linux-generic-g++
+          # - cross_host: x86_64-w64-mingw32
+          #   openssl_compiler: mingw64
+          #   qt_xplatform: win32-g++
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: cross compile nox-static
+        env:
+          CROSS_HOST: "${{ matrix.cross_host }}"
+          OPENSSL_COMPILER: "${{ matrix.openssl_compiler }}"
+          QT_DEVICE: "${{ matrix.qt_device }}"
+          QT_XPLATFORM: "${{matrix.qt_xplatform}}"
+        run: .github/workflows/cross_build.sh
+      - uses: actions/upload-artifact@v2
+        with:
+          name: qbittorrent-nox_${{ matrix.cross_host }}_static
+          path: |
+            /tmp/qbittorrent-nox*
+      - name: Upload Github Assets
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ".github/workflows/qbittorrent-nox_${{ matrix.cross_host }}_static.zip"
+          tag: ${{ github.ref }}
+          overwrite: true
