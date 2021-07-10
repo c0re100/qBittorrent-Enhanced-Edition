@@ -541,6 +541,16 @@ Error: %2</source>
         <translation>完成后重新校验 Torrent</translation>
     </message>
     <message>
+        <location filename="../gui/advancedsettings.cpp" line="633"/>
+        <source>Auto Ban Unknown Peer from China</source>
+        <translation>自动禁封来自中国的不明客户端</translation>
+    </message>
+    <message>
+        <location filename="../gui/advancedsettings.cpp" line="636"/>
+        <source>Auto Ban Bittorrent Media Player Peer</source>
+        <translation>自动禁封Bittorrent媒体播放器客户端</translation>
+    </message>
+    <message>
         <location filename="../gui/advancedsettings.cpp" line="613"/>
         <source>Transfer list refresh interval</source>
         <translation>传输列表刷新间隔</translation>
@@ -1974,6 +1984,16 @@ Supports the formats: S01E01, 1x1, 2017.12.31 and 31.12.2017 (Date formats also 
         <location filename="../base/bittorrent/session.cpp" line="3858"/>
         <source>Tracker &apos;%1&apos; was added to torrent &apos;%2&apos;</source>
         <translation>Tracker &apos;%1&apos; 已被添加到 torrent &apos;%2&apos;</translation>
+    </message>
+    <message>
+        <location filename="../base/bittorrent/session.cpp" line="3863"/>
+        <source>Restart is required to toggle Auto Ban Unknown Client support</source>
+        <translation>需要重新启动才能切换自动禁封不明客户端支持</translation>
+    </message>
+    <message>
+        <location filename="../base/bittorrent/session.cpp" line="3876"/>
+        <source>Restart is required to toggle Auto Ban Bittorrent Media Player support</source>
+        <translation>需要重新启动才能切换自动禁封Bittorrent媒体播放器支持</translation>
     </message>
     <message>
         <location filename="../base/bittorrent/session.cpp" line="3868"/>
@@ -4992,6 +5012,16 @@ Disable encryption: Only connect to peers without protocol encryption</source>
         <location filename="../gui/optionsdialog.ui" line="2666"/>
         <source>A&amp;utomatically add these trackers to new downloads:</source>
         <translation>自动添加以下 tracker 到新的 torrent：</translation>
+    </message>
+    <message>
+        <location filename="../gui/optionsdialog.ui" line="2691"/>
+        <source>Automatically update public trackers list:</source>
+        <translation>自动更新公共tracker列表：</translation>
+    </message>
+    <message>
+        <location filename="../gui/optionsdialog.ui" line="2731"/>
+        <source>Refetch</source>
+        <translation>刷新</translation>
     </message>
     <message>
         <location filename="../gui/optionsdialog.ui" line="2739"/>

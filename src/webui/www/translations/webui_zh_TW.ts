@@ -635,6 +635,10 @@
         <translation>自動新增這些追蹤者到新的下載中：</translation>
     </message>
     <message>
+        <source>Automatically update public trackers list:</source>
+        <translation>自動更新公共trackers列表：</translation>
+    </message>
+    <message>
         <source>Web User Interface (Remote control)</source>
         <translation>Web UI (遠端控制)</translation>
     </message>
@@ -1163,6 +1167,14 @@
     <message>
         <source>Embedded tracker port:</source>
         <translation>嵌入追蹤者埠：</translation>
+    </message>
+    <message>
+        <source>Auto Ban Unknown Peer From China:</source>
+        <translation>自動禁封來自中國的不明客戶端:</translation>
+    </message>
+    <message>
+        <source>Auto Ban Bittorrent Media Player Peer:</source>
+        <translation>自動禁封Bittorrent媒體播放器客戶端:</translation>
     </message>
     <message>
         <source>Fastest upload</source>
