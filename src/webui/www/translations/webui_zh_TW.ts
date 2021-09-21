@@ -1,6 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS>
-<TS language="zh_TW" version="2.1">
+<?xml version="1.0" ?><!DOCTYPE TS><TS language="zh_TW" version="2.1">
 <context>
     <name>AboutDlg</name>
     <message>
@@ -39,7 +37,7 @@
         <translation>建立子資料夾</translation>
     </message>
     <message>
-        <source>Don't create subfolder</source>
+        <source>Don&apos;t create subfolder</source>
         <translation>不要建立子資料夾</translation>
     </message>
 </context>
@@ -158,10 +156,6 @@
     <message>
         <source>Seeding time limit must be between 0 and 525600 minutes.</source>
         <translation>做種時間限制必須在 0 到 525600 分鐘之間。</translation>
-    </message>
-    <message>
-        <source>The port used for incoming connections must be between 1 and 65535.</source>
-        <translation>連入的連線埠號必須在 1 到 65535 之間。</translation>
     </message>
     <message>
         <source>The port used for the Web UI must be between 1 and 65535.</source>
@@ -366,6 +360,10 @@
     <message>
         <source>OK</source>
         <translation>確定</translation>
+    </message>
+    <message>
+        <source>The port used for incoming connections must be between 0 and 65535.</source>
+        <translation>用於連入連線的埠號必須介於 0 至 65535 之間。</translation>
     </message>
 </context>
 <context>
@@ -727,10 +725,6 @@
         <translation>使用從路由器轉送的 UPnP／NAT-PMP 連接埠</translation>
     </message>
     <message>
-        <source>Use different port on each startup</source>
-        <translation>每次啟動時使用不同的埠</translation>
-    </message>
-    <message>
         <source>Connections Limits</source>
         <translation>連線限制</translation>
     </message>
@@ -965,12 +959,8 @@
         <translation>%T：目前的追蹤者</translation>
     </message>
     <message>
-        <source>%I: Info hash</source>
-        <translation type="vanished">%I：資訊雜湊值</translation>
-    </message>
-    <message>
-        <source>Tip: Encapsulate parameter with quotation marks to avoid text being cut off at whitespace (e.g., "%N")</source>
-        <translation>提示：把參數以引號包起來以避免被空格切斷 (例如："%N")</translation>
+        <source>Tip: Encapsulate parameter with quotation marks to avoid text being cut off at whitespace (e.g., &quot;%N&quot;)</source>
+        <translation>提示：把參數以引號包起來以避免被空格切斷 (例如：&quot;%N&quot;)</translation>
     </message>
     <message>
         <source>The Web UI username must be at least 3 characters long.</source>
@@ -1453,7 +1443,7 @@
         <translation>原始</translation>
     </message>
     <message>
-        <source>Don't create subfolder</source>
+        <source>Don&apos;t create subfolder</source>
         <translation>不要建立子資料夾</translation>
     </message>
     <message>
@@ -1462,35 +1452,35 @@
     </message>
     <message>
         <source>Outgoing connections per second:</source>
-        <translation type="unfinished" />
+        <translation>每秒對外連線數：</translation>
     </message>
     <message>
         <source>Random</source>
-        <translation type="unfinished" />
+        <translation>隨機</translation>
     </message>
     <message>
         <source>%K: Torrent ID</source>
-        <translation type="unfinished" />
+        <translation>%K：Torrent ID</translation>
     </message>
     <message>
         <source>Reannounce to all trackers when IP or port changed:</source>
-        <translation type="unfinished" />
+        <translation>當 IP 或連接埠變更時通知所有追蹤者：</translation>
     </message>
     <message>
         <source>Trusted proxies list:</source>
-        <translation type="unfinished" />
+        <translation>受信任的代理伺服器清單：</translation>
     </message>
     <message>
         <source>Enable reverse proxy support</source>
-        <translation type="unfinished" />
+        <translation>啟用反向代理支援</translation>
     </message>
     <message>
         <source>%J: Info hash v2</source>
-        <translation type="unfinished" />
+        <translation>%J：資訊雜湊值 v2</translation>
     </message>
     <message>
         <source>%I: Info hash v1</source>
-        <translation type="unfinished" />
+        <translation>%I：資訊雜湊值 v1</translation>
     </message>
 </context>
 <context>
@@ -1721,10 +1711,6 @@
         <translation>建立於：</translation>
     </message>
     <message>
-        <source>Torrent Hash:</source>
-        <translation type="vanished">Torrent 雜湊值：</translation>
-    </message>
-    <message>
         <source>Save Path:</source>
         <translation>儲存路徑：</translation>
     </message>
@@ -1782,15 +1768,15 @@
     </message>
     <message>
         <source>Info Hash v2:</source>
-        <translation type="unfinished" />
+        <translation>資訊雜湊值 v2：</translation>
     </message>
     <message>
         <source>Info Hash v1:</source>
-        <translation type="unfinished" />
+        <translation>資訊雜湊值 v1：</translation>
     </message>
     <message>
         <source>N/A</source>
-        <translation type="unfinished" />
+        <translation>N/A</translation>
     </message>
 </context>
 <context>
@@ -1999,6 +1985,14 @@
     <message>
         <source>Stalled (%1)</source>
         <translation>停止 (%1)</translation>
+    </message>
+    <message>
+        <source>Checking (%1)</source>
+        <translation>正在檢查 (%1)</translation>
+    </message>
+    <message>
+        <source>Checking (0)</source>
+        <translation>正在檢查 (0)</translation>
     </message>
 </context>
 <context>
@@ -2342,6 +2336,10 @@
         <source>%1 (seeded for %2)</source>
         <translation>%1（已做種 %2）</translation>
     </message>
+    <message>
+        <source>[F] Downloading metadata</source>
+        <translation>[F] 正在下載詮釋資</translation>
+    </message>
 </context>
 <context>
     <name>TransferListFiltersWidget</name>
@@ -2519,10 +2517,6 @@
         <translation>磁力連結</translation>
     </message>
     <message>
-        <source>Hash</source>
-        <translation type="vanished">雜湊值</translation>
-    </message>
-    <message>
         <source>Remove All</source>
         <translation>移除所有</translation>
     </message>
@@ -2544,15 +2538,15 @@
     </message>
     <message>
         <source>Info hash v1</source>
-        <translation type="unfinished" />
+        <translation>資訊雜湊值 v1</translation>
     </message>
     <message>
         <source>Info hash v2</source>
-        <translation type="unfinished" />
+        <translation>資訊雜湊值 v2</translation>
     </message>
     <message>
         <source>Torrent ID</source>
-        <translation type="unfinished" />
+        <translation>Torrent ID</translation>
     </message>
 </context>
 <context>
@@ -2785,7 +2779,7 @@
     </message>
     <message>
         <source>to</source>
-        <translation type="unfinished" />
+        <translation>到</translation>
     </message>
 </context>
 <context>
@@ -2815,7 +2809,7 @@
         <translation>已啟用</translation>
     </message>
     <message>
-        <source>Warning: Be sure to comply with your country's copyright laws when downloading torrents from any of these search engines.</source>
+        <source>Warning: Be sure to comply with your country&apos;s copyright laws when downloading torrents from any of these search engines.</source>
         <translation>警告：請確保您從這些搜尋引擎中下載 torrent 時遵守您所在國家的版權法規。</translation>
     </message>
     <message>
@@ -3418,7 +3412,7 @@ Supports the formats: S01E01, 1x1, 2017.12.31 and 31.12.2017 (Date formats also 
         <translation>原始</translation>
     </message>
     <message>
-        <source>Don't create subfolder</source>
+        <source>Don&apos;t create subfolder</source>
         <translation>不要建立子資料夾</translation>
     </message>
 </context>
@@ -3453,7 +3447,7 @@ Supports the formats: S01E01, 1x1, 2017.12.31 and 31.12.2017 (Date formats also 
     </message>
     <message>
         <source>Unread</source>
-        <translation type="unfinished" />
+        <translation>未讀</translation>
     </message>
 </context>
 </TS>

@@ -1,6 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS>
-<TS language="az@latin" version="2.1">
+<?xml version="1.0" ?><!DOCTYPE TS><TS language="az@latin" version="2.1">
 <context>
     <name>AboutDlg</name>
     <message>
@@ -39,7 +37,7 @@
         <translation>Alt qovluq yarat</translation>
     </message>
     <message>
-        <source>Don't create subfolder</source>
+        <source>Don&apos;t create subfolder</source>
         <translation>Alt qovluq yaratmamaq</translation>
     </message>
 </context>
@@ -93,7 +91,7 @@
     <name>HttpServer</name>
     <message>
         <source>Exit qBittorrent</source>
-        <translation>qBittorrent'dən çıxmaq</translation>
+        <translation>qBittorrent&apos;dən çıxmaq</translation>
     </message>
     <message>
         <source>Only one link per line</source>
@@ -158,10 +156,6 @@
     <message>
         <source>Seeding time limit must be between 0 and 525600 minutes.</source>
         <translation>Göndərmə vaxtı limiti 0 ilə 525600 dəqiqələri arasında olmalıdır.</translation>
-    </message>
-    <message>
-        <source>The port used for incoming connections must be between 1 and 65535.</source>
-        <translation>Daxil olan bağlantıların istifadə etdiyi port 1 ilə 65535 arasında olmalıdır.</translation>
     </message>
     <message>
         <source>The port used for the Web UI must be between 1 and 65535.</source>
@@ -349,7 +343,7 @@
     </message>
     <message>
         <source>JavaScript Required! You must enable JavaScript for the Web UI to work properly</source>
-        <translation>JavaScript tələb olunur! Düzgün şəkildə işləməsi üçün Veb İİ üçün JavaScript'i aktiv etməlisiniz</translation>
+        <translation>JavaScript tələb olunur! Düzgün şəkildə işləməsi üçün Veb İİ üçün JavaScript&apos;i aktiv etməlisiniz</translation>
     </message>
     <message>
         <source>Name cannot be empty</source>
@@ -366,6 +360,10 @@
     <message>
         <source>OK</source>
         <translation>OK</translation>
+    </message>
+    <message>
+        <source>The port used for incoming connections must be between 0 and 65535.</source>
+        <translation>Daxil olan bağlantıla üçün istifadə olunan port 0 ilə 65535 arasında olmalıdır.</translation>
     </message>
 </context>
 <context>
@@ -468,7 +466,7 @@
     </message>
     <message>
         <source>Are you sure you want to quit qBittorrent?</source>
-        <translation>qBittorent'dən çıxmaq istədiyinizə əminsiniz?</translation>
+        <translation>qBittorent&apos;dən çıxmaq istədiyinizə əminsiniz?</translation>
     </message>
     <message>
         <source>[D: %1, U: %2] qBittorrent %3</source>
@@ -723,10 +721,6 @@
         <translation>UPnP / NAT-PMP portunun yönləndirməsi üçün routerimdən istifadə etmək</translation>
     </message>
     <message>
-        <source>Use different port on each startup</source>
-        <translation>Hər dəfə başladıldığında müxtəlif portdan istifadə etmək</translation>
-    </message>
-    <message>
         <source>Connections Limits</source>
         <translation>Bağlantı limitləri</translation>
     </message>
@@ -961,12 +955,8 @@
         <translation>%T: Cari izləyici</translation>
     </message>
     <message>
-        <source>%I: Info hash</source>
-        <translation type="vanished">%I: Məlumat ünvanlaması</translation>
-    </message>
-    <message>
-        <source>Tip: Encapsulate parameter with quotation marks to avoid text being cut off at whitespace (e.g., "%N")</source>
-        <translation>Növ: Mətni, ara boşluğunda kəsilmələrndən qorumaq üçün parametrləri dırnaq işarəsinə alın (məs., "%N")</translation>
+        <source>Tip: Encapsulate parameter with quotation marks to avoid text being cut off at whitespace (e.g., &quot;%N&quot;)</source>
+        <translation>Növ: Mətni, ara boşluğunda kəsilmələrndən qorumaq üçün parametrləri dırnaq işarəsinə alın (məs., &quot;%N&quot;)</translation>
     </message>
     <message>
         <source>The Web UI username must be at least 3 characters long.</source>
@@ -1234,7 +1224,7 @@
     </message>
     <message>
         <source>Peer proportional (throttles TCP)</source>
-        <translation>İştirakçılarla mütənasib (TCP'ni məhdudlaşdırır)</translation>
+        <translation>İştirakçılarla mütənasib (TCP&apos;ni məhdudlaşdırır)</translation>
     </message>
     <message>
         <source>Fixed slots</source>
@@ -1441,7 +1431,7 @@
         <translation>Orijinal</translation>
     </message>
     <message>
-        <source>Don't create subfolder</source>
+        <source>Don&apos;t create subfolder</source>
         <translation>Alt qovluq yaratmamaq</translation>
     </message>
     <message>
@@ -1450,35 +1440,35 @@
     </message>
     <message>
         <source>Outgoing connections per second:</source>
-        <translation type="unfinished" />
+        <translation>Hər saniyədə sərf olunan bağlantı:</translation>
     </message>
     <message>
         <source>Random</source>
-        <translation type="unfinished" />
+        <translation>Təsadüfi</translation>
     </message>
     <message>
         <source>%K: Torrent ID</source>
-        <translation type="unfinished" />
+        <translation>%K: Torrent İD-si</translation>
     </message>
     <message>
         <source>Reannounce to all trackers when IP or port changed:</source>
-        <translation type="unfinished" />
+        <translation>İP və ya port dəyişdirildiyində bütün izləyicilərə bildirmək:</translation>
     </message>
     <message>
         <source>Trusted proxies list:</source>
-        <translation type="unfinished" />
+        <translation>Etibarlı proksilər siyahısı:</translation>
     </message>
     <message>
         <source>Enable reverse proxy support</source>
-        <translation type="unfinished" />
+        <translation>Əks proksi dəstəklənməsini açın</translation>
     </message>
     <message>
         <source>%J: Info hash v2</source>
-        <translation type="unfinished" />
+        <translation>%J: Məlumat heş&apos;i v2</translation>
     </message>
     <message>
         <source>%I: Info hash v1</source>
-        <translation type="unfinished" />
+        <translation>%I: Məlumat heş&apos;i v1</translation>
     </message>
 </context>
 <context>
@@ -1709,10 +1699,6 @@
         <translation>Yaradılıb:</translation>
     </message>
     <message>
-        <source>Torrent Hash:</source>
-        <translation type="vanished">Torrent ünvanlanması:</translation>
-    </message>
-    <message>
         <source>Save Path:</source>
         <translation>Saxlama yolu:</translation>
     </message>
@@ -1770,15 +1756,15 @@
     </message>
     <message>
         <source>Info Hash v2:</source>
-        <translation type="unfinished" />
+        <translation>Məlumat heş&apos;i v2:</translation>
     </message>
     <message>
         <source>Info Hash v1:</source>
-        <translation type="unfinished" />
+        <translation>Məlumat heş&apos;i v1</translation>
     </message>
     <message>
         <source>N/A</source>
-        <translation type="unfinished" />
+        <translation>Əlçatmaz</translation>
     </message>
 </context>
 <context>
@@ -1988,6 +1974,14 @@
         <source>Stalled (%1)</source>
         <translation>Dayandırılan (%1)</translation>
     </message>
+    <message>
+        <source>Checking (%1)</source>
+        <translation>Yoxlanılır (%1)</translation>
+    </message>
+    <message>
+        <source>Checking (0)</source>
+        <translation>Yoxlanılır (0)</translation>
+    </message>
 </context>
 <context>
     <name>TorrentContentModel</name>
@@ -2185,7 +2179,7 @@
     </message>
     <message>
         <source>N/A</source>
-        <translation>M/D</translation>
+        <translation>Əlçatmaz</translation>
     </message>
     <message>
         <source>Seeds</source>
@@ -2329,6 +2323,10 @@
     <message>
         <source>%1 (seeded for %2)</source>
         <translation>%1 (%2 üçün göndərilmə)</translation>
+    </message>
+    <message>
+        <source>[F] Downloading metadata</source>
+        <translation>[F] Meta verilənləri endirilir</translation>
     </message>
 </context>
 <context>
@@ -2507,10 +2505,6 @@
         <translation>Maqnit keçidi</translation>
     </message>
     <message>
-        <source>Hash</source>
-        <translation type="vanished">Heş</translation>
-    </message>
-    <message>
         <source>Remove All</source>
         <translation>Hamısını silmək</translation>
     </message>
@@ -2532,15 +2526,15 @@
     </message>
     <message>
         <source>Info hash v1</source>
-        <translation type="unfinished" />
+        <translation>məlumat heş&apos;i v1</translation>
     </message>
     <message>
         <source>Info hash v2</source>
-        <translation type="unfinished" />
+        <translation>məlumat heş&apos;i v2</translation>
     </message>
     <message>
         <source>Torrent ID</source>
-        <translation type="unfinished" />
+        <translation>Torrent İD-si</translation>
     </message>
 </context>
 <context>
@@ -2773,7 +2767,7 @@
     </message>
     <message>
         <source>to</source>
-        <translation type="unfinished" />
+        <translation>buraya</translation>
     </message>
 </context>
 <context>
@@ -2803,7 +2797,7 @@
         <translation>Aktiv edildi</translation>
     </message>
     <message>
-        <source>Warning: Be sure to comply with your country's copyright laws when downloading torrents from any of these search engines.</source>
+        <source>Warning: Be sure to comply with your country&apos;s copyright laws when downloading torrents from any of these search engines.</source>
         <translation>Xəbərdarlıq: Bu axtarış sistemlərinin hər hansı birindən istifadə edərək torrentləri yükləyərkən, mütləq ölkənizin müəllif hüquqları haqqında qanununa rəayət edin.</translation>
     </message>
     <message>
@@ -3406,7 +3400,7 @@ Bu formatlar dəstəklənir: S01E01, 1x1, 2017.12.31 və 31.12.2017 (Həmçinin 
         <translation>Orijinal</translation>
     </message>
     <message>
-        <source>Don't create subfolder</source>
+        <source>Don&apos;t create subfolder</source>
         <translation>Alt qovluq yaratmamaq</translation>
     </message>
 </context>
@@ -3441,7 +3435,7 @@ Bu formatlar dəstəklənir: S01E01, 1x1, 2017.12.31 və 31.12.2017 (Həmçinin 
     </message>
     <message>
         <source>Unread</source>
-        <translation type="unfinished" />
+        <translation>Oxunmamış</translation>
     </message>
 </context>
 </TS>

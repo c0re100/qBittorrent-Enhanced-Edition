@@ -1,6 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS>
-<TS language="sv" version="2.1">
+<?xml version="1.0" ?><!DOCTYPE TS><TS language="sv" version="2.1">
 <context>
     <name>AboutDlg</name>
     <message>
@@ -28,7 +26,7 @@
     </message>
     <message>
         <source>Content layout:</source>
-        <translation>Layout för innehåll:</translation>
+        <translation>Innehållslayout:</translation>
     </message>
     <message>
         <source>Original</source>
@@ -39,7 +37,7 @@
         <translation>Skapa undermapp</translation>
     </message>
     <message>
-        <source>Don't create subfolder</source>
+        <source>Don&apos;t create subfolder</source>
         <translation>Skapa inte undermapp</translation>
     </message>
 </context>
@@ -141,7 +139,7 @@
     </message>
     <message>
         <source>Unable to save program preferences, qBittorrent is probably unreachable.</source>
-        <translation>Kunde inte spara programinställningarna. qBittorrent är antagligen inte nåbar.</translation>
+        <translation>Det gick inte att spara programinställningarna. qBittorrent är antagligen inte nåbar.</translation>
     </message>
     <message>
         <source>IRC: #qbittorrent on Freenode</source>
@@ -160,16 +158,12 @@
         <translation>Distributionstidsgränsen måste vara mellan 0 och 525600 minuter.</translation>
     </message>
     <message>
-        <source>The port used for incoming connections must be between 1 and 65535.</source>
-        <translation>Porten som användas för inkommande anslutningar måste vara mellan 1 och 65535.</translation>
-    </message>
-    <message>
         <source>The port used for the Web UI must be between 1 and 65535.</source>
         <translation>Porten som används för webbgränssnittet måste vara mellan 1 och 65535</translation>
     </message>
     <message>
         <source>Unable to log in, qBittorrent is probably unreachable.</source>
-        <translation>Kunde inte logga in. qBittorrent är troligtvis inte nåbart.</translation>
+        <translation>Det gick inte att logga in. qBittorrent är troligtvis inte nåbart.</translation>
     </message>
     <message>
         <source>Invalid Username or Password.</source>
@@ -366,6 +360,10 @@
     <message>
         <source>OK</source>
         <translation>OK</translation>
+    </message>
+    <message>
+        <source>The port used for incoming connections must be between 0 and 65535.</source>
+        <translation>Porten som används för inkommande anslutningar måste vara mellan 0 och 65535.</translation>
     </message>
 </context>
 <context>
@@ -723,10 +721,6 @@
         <translation>Använd UPnP / NAT-PMP-portomdirigering från min router</translation>
     </message>
     <message>
-        <source>Use different port on each startup</source>
-        <translation>Använd olika portar vid varje start</translation>
-    </message>
-    <message>
         <source>Connections Limits</source>
         <translation>Anslutningsgränser</translation>
     </message>
@@ -946,7 +940,7 @@
     </message>
     <message>
         <source>%D: Save path</source>
-        <translation>%D: Sparsökväg</translation>
+        <translation>%D: Sparningssökväg</translation>
     </message>
     <message>
         <source>%C: Number of files</source>
@@ -961,12 +955,8 @@
         <translation>%T: Aktuell spårare</translation>
     </message>
     <message>
-        <source>%I: Info hash</source>
-        <translation type="vanished">%I: Info hash</translation>
-    </message>
-    <message>
-        <source>Tip: Encapsulate parameter with quotation marks to avoid text being cut off at whitespace (e.g., "%N")</source>
-        <translation>Tips: Inkapsla parametern med citattecken för att undvika att text skärs av vid blanktecknet (t. ex. "%N")</translation>
+        <source>Tip: Encapsulate parameter with quotation marks to avoid text being cut off at whitespace (e.g., &quot;%N&quot;)</source>
+        <translation>Tips: Inkapsla parametern med citattecken för att undvika att text skärs av vid blanktecknet (t. ex. &quot;%N&quot;)</translation>
     </message>
     <message>
         <source>The Web UI username must be at least 3 characters long.</source>
@@ -1018,7 +1008,7 @@
     </message>
     <message>
         <source>Default Save Path:</source>
-        <translation>Standardsparsökväg:</translation>
+        <translation>Standardsparningssökväg:</translation>
     </message>
     <message>
         <source>The alternative Web UI files location cannot be blank.</source>
@@ -1054,7 +1044,7 @@
     </message>
     <message>
         <source>When Default Save Path changed:</source>
-        <translation>När standardsparsökvägen ändras:</translation>
+        <translation>När standardsparningssökvägen ändras:</translation>
     </message>
     <message>
         <source>Enable Host header validation</source>
@@ -1066,7 +1056,7 @@
     </message>
     <message>
         <source>When Category Save Path changed:</source>
-        <translation>När kategorisparsökvägen ändras:</translation>
+        <translation>När kategorisparningssökvägen ändras:</translation>
     </message>
     <message>
         <source>seconds</source>
@@ -1158,7 +1148,7 @@
     </message>
     <message>
         <source>Always announce to all tiers:</source>
-        <translation>Meddela alltid till alla nivåer:</translation>
+        <translation>Annonsera alltid till alla nivåer:</translation>
     </message>
     <message>
         <source>Embedded tracker port:</source>
@@ -1282,7 +1272,7 @@
     </message>
     <message>
         <source>Always announce to all trackers in a tier:</source>
-        <translation>Meddela alltid till alla bevakare i en nivå:</translation>
+        <translation>Annonsera alltid till alla bevakare i en nivå:</translation>
     </message>
     <message>
         <source>Session timeout:</source>
@@ -1302,7 +1292,7 @@
     </message>
     <message>
         <source>Stop tracker timeout:</source>
-        <translation>Stoppa timeout för tracker</translation>
+        <translation>Stopptidsgräns för bevakare</translation>
     </message>
     <message>
         <source>Ban client after consecutive failures:</source>
@@ -1342,7 +1332,7 @@
     </message>
     <message>
         <source>Peer turnover threshold percentage:</source>
-        <translation type="unfinished" />
+        <translation type="unfinished"/>
     </message>
     <message>
         <source>RSS Torrent Auto Downloader</source>
@@ -1374,7 +1364,7 @@
     </message>
     <message>
         <source>Peer turnover disconnect percentage:</source>
-        <translation type="unfinished" />
+        <translation type="unfinished"/>
     </message>
     <message>
         <source>Maximum number of articles per feed:</source>
@@ -1382,7 +1372,7 @@
     </message>
     <message>
         <source>Max concurrent HTTP announces (requires libtorrent &gt;= 1.2.7):</source>
-        <translation>Maximalt antal samtidiga HTTP-meddelande (kräver libtorrent &gt;= 1.2.7):</translation>
+        <translation>Maximalt antal samtidiga HTTP-annonseringar (kräver libtorrent &gt;= 1.2.7):</translation>
     </message>
     <message>
         <source> min</source>
@@ -1390,7 +1380,7 @@
     </message>
     <message>
         <source>Peer turnover disconnect interval:</source>
-        <translation type="unfinished" />
+        <translation type="unfinished"/>
     </message>
     <message>
         <source>Optional IP address to bind to:</source>
@@ -1441,7 +1431,7 @@
         <translation>Ursprunglig</translation>
     </message>
     <message>
-        <source>Don't create subfolder</source>
+        <source>Don&apos;t create subfolder</source>
         <translation>Skapa inte undermapp</translation>
     </message>
     <message>
@@ -1450,35 +1440,35 @@
     </message>
     <message>
         <source>Outgoing connections per second:</source>
-        <translation type="unfinished" />
+        <translation>Utgående anslutningar per sekund:</translation>
     </message>
     <message>
         <source>Random</source>
-        <translation type="unfinished" />
+        <translation>Slumpmässig</translation>
     </message>
     <message>
         <source>%K: Torrent ID</source>
-        <translation type="unfinished" />
+        <translation>%K: Torrent-ID</translation>
     </message>
     <message>
         <source>Reannounce to all trackers when IP or port changed:</source>
-        <translation type="unfinished" />
+        <translation>Återannonsera alla bevakare när IP eller port ändrats:</translation>
     </message>
     <message>
         <source>Trusted proxies list:</source>
-        <translation type="unfinished" />
+        <translation>Lista över betrodda proxyer:</translation>
     </message>
     <message>
         <source>Enable reverse proxy support</source>
-        <translation type="unfinished" />
+        <translation>Aktivera support för omvänd proxy</translation>
     </message>
     <message>
         <source>%J: Info hash v2</source>
-        <translation type="unfinished" />
+        <translation>%J: Info hash v2</translation>
     </message>
     <message>
         <source>%I: Info hash v1</source>
-        <translation type="unfinished" />
+        <translation>%I: Info hash v1</translation>
     </message>
 </context>
 <context>
@@ -1709,12 +1699,8 @@
         <translation>Skapades:</translation>
     </message>
     <message>
-        <source>Torrent Hash:</source>
-        <translation type="vanished">Torrenthash:</translation>
-    </message>
-    <message>
         <source>Save Path:</source>
-        <translation>Sparsökväg:</translation>
+        <translation>Sparningssökväg:</translation>
     </message>
     <message>
         <source>Never</source>
@@ -1770,15 +1756,15 @@
     </message>
     <message>
         <source>Info Hash v2:</source>
-        <translation type="unfinished" />
+        <translation>Info Hash v2:</translation>
     </message>
     <message>
         <source>Info Hash v1:</source>
-        <translation type="unfinished" />
+        <translation>Info Hash v1:</translation>
     </message>
     <message>
         <source>N/A</source>
-        <translation type="unfinished" />
+        <translation>Ingen</translation>
     </message>
 </context>
 <context>
@@ -1789,7 +1775,7 @@
     </message>
     <message>
         <source>Override Save Location</source>
-        <translation>Åsidosatt spara plats</translation>
+        <translation>Åsidosatt sparningsplats</translation>
     </message>
     <message>
         <source>Monitored folder</source>
@@ -1797,7 +1783,7 @@
     </message>
     <message>
         <source>Default save location</source>
-        <translation>Standard spara plats</translation>
+        <translation>Standard sparningsplats</translation>
     </message>
     <message>
         <source>Other...</source>
@@ -1988,6 +1974,14 @@
         <source>Stalled (%1)</source>
         <translation>Avstannade (%1)</translation>
     </message>
+    <message>
+        <source>Checking (%1)</source>
+        <translation>Kontrollerar (%1)</translation>
+    </message>
+    <message>
+        <source>Checking (0)</source>
+        <translation>Kontrollerar (0)</translation>
+    </message>
 </context>
 <context>
     <name>TorrentContentModel</name>
@@ -2109,7 +2103,7 @@
     <message>
         <source>Save path</source>
         <comment>Torrent save path</comment>
-        <translation>Sparsökväg</translation>
+        <translation>Sparningssökväg</translation>
     </message>
     <message>
         <source>Completed</source>
@@ -2330,6 +2324,10 @@
         <source>%1 (seeded for %2)</source>
         <translation>%1 (distribuerad i %2)</translation>
     </message>
+    <message>
+        <source>[F] Downloading metadata</source>
+        <translation>[T] Hämtar metadata</translation>
+    </message>
 </context>
 <context>
     <name>TransferListFiltersWidget</name>
@@ -2488,7 +2486,7 @@
     </message>
     <message>
         <source>Save path</source>
-        <translation>Sparsökväg</translation>
+        <translation>Sparningssökväg</translation>
     </message>
     <message>
         <source>Comma-separated tags:</source>
@@ -2505,10 +2503,6 @@
     <message>
         <source>Magnet link</source>
         <translation>Magnetlänk</translation>
-    </message>
-    <message>
-        <source>Hash</source>
-        <translation type="vanished">Hash</translation>
     </message>
     <message>
         <source>Remove All</source>
@@ -2532,15 +2526,15 @@
     </message>
     <message>
         <source>Info hash v1</source>
-        <translation type="unfinished" />
+        <translation>Info hash v1</translation>
     </message>
     <message>
         <source>Info hash v2</source>
-        <translation type="unfinished" />
+        <translation>Info hash v2</translation>
     </message>
     <message>
         <source>Torrent ID</source>
-        <translation type="unfinished" />
+        <translation>Torrent-ID</translation>
     </message>
 </context>
 <context>
@@ -2679,7 +2673,7 @@
     <name>TorrentsController</name>
     <message>
         <source>Save path is empty</source>
-        <translation>Sparsökvägen är tom</translation>
+        <translation>Sparningssökväg är tom</translation>
     </message>
 </context>
 <context>
@@ -2773,7 +2767,7 @@
     </message>
     <message>
         <source>to</source>
-        <translation type="unfinished" />
+        <translation>till</translation>
     </message>
 </context>
 <context>
@@ -2803,7 +2797,7 @@
         <translation>Aktiverad</translation>
     </message>
     <message>
-        <source>Warning: Be sure to comply with your country's copyright laws when downloading torrents from any of these search engines.</source>
+        <source>Warning: Be sure to comply with your country&apos;s copyright laws when downloading torrents from any of these search engines.</source>
         <translation>Varning: Var noga med att följa ditt lands upphovsrättslagar när du hämtar torrenter från någon av dessa sökmotorer.</translation>
     </message>
     <message>
@@ -3406,7 +3400,7 @@ Stöder formaten: S01E01, 1x1, 2017.12.31 och 31.12.2017 (datumformatet stöder 
         <translation>Original</translation>
     </message>
     <message>
-        <source>Don't create subfolder</source>
+        <source>Don&apos;t create subfolder</source>
         <translation>Skapa inte undermapp</translation>
     </message>
 </context>
@@ -3441,7 +3435,7 @@ Stöder formaten: S01E01, 1x1, 2017.12.31 och 31.12.2017 (datumformatet stöder 
     </message>
     <message>
         <source>Unread</source>
-        <translation type="unfinished" />
+        <translation>Oläst</translation>
     </message>
 </context>
 </TS>

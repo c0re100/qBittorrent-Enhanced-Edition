@@ -1,6 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS>
-<TS language="ar" version="2.1">
+<?xml version="1.0" ?><!DOCTYPE TS><TS language="ar" version="2.1">
 <context>
     <name>AboutDlg</name>
     <message>
@@ -20,7 +18,7 @@
     </message>
     <message>
         <source>Skip hash check</source>
-        <translation>تخطي التحقق من البيانات</translation>
+        <translation>تخطي التحقق من البيانات (الهاش)</translation>
     </message>
     <message>
         <source>Torrent Management Mode:</source>
@@ -39,7 +37,7 @@
         <translation>إنشاء مجلد فرعي</translation>
     </message>
     <message>
-        <source>Don't create subfolder</source>
+        <source>Don&apos;t create subfolder</source>
         <translation>لا تقم بإنشاء مجلد فرعي</translation>
     </message>
 </context>
@@ -158,10 +156,6 @@
     <message>
         <source>Seeding time limit must be between 0 and 525600 minutes.</source>
         <translation>يجب أن يكون الحد الزمني للبذر بين 0 و 525600 دقيقة.</translation>
-    </message>
-    <message>
-        <source>The port used for incoming connections must be between 1 and 65535.</source>
-        <translation>يجب أن يكون المنفذ المستخدم للاتصالات الواردة بين 1 و 65535.</translation>
     </message>
     <message>
         <source>The port used for the Web UI must be between 1 and 65535.</source>
@@ -366,6 +360,10 @@
     <message>
         <source>OK</source>
         <translation>حسنًا</translation>
+    </message>
+    <message>
+        <source>The port used for incoming connections must be between 0 and 65535.</source>
+        <translation>يجب أن يكون المنفذ المستخدم للاتصالات الواردة بين 0 و 65535.</translation>
     </message>
 </context>
 <context>
@@ -723,10 +721,6 @@
         <translation>استخدام UPnP / NAT-PMP  لفتح المنافذ تلقائيا</translation>
     </message>
     <message>
-        <source>Use different port on each startup</source>
-        <translation>استخدم منفذًا مختلفًا عند كل بدء تشغيل</translation>
-    </message>
-    <message>
         <source>Connections Limits</source>
         <translation>حدود الاتصالات</translation>
     </message>
@@ -961,12 +955,8 @@
         <translation>%T: المتتبع الحالي</translation>
     </message>
     <message>
-        <source>%I: Info hash</source>
-        <translation type="vanished">%I: معلومات التحقق من البيانات</translation>
-    </message>
-    <message>
-        <source>Tip: Encapsulate parameter with quotation marks to avoid text being cut off at whitespace (e.g., "%N")</source>
-        <translation>نصيحة: غلف المعلمات بعلامات اقتباس لتجنب قطع النص عند مسافة بيضاء (على سبيل المثال، "%N")</translation>
+        <source>Tip: Encapsulate parameter with quotation marks to avoid text being cut off at whitespace (e.g., &quot;%N&quot;)</source>
+        <translation>نصيحة: غلف المعلمات بعلامات اقتباس لتجنب قطع النص عند مسافة بيضاء (على سبيل المثال، &quot;%N&quot;)</translation>
     </message>
     <message>
         <source>The Web UI username must be at least 3 characters long.</source>
@@ -1441,7 +1431,7 @@
         <translation>الأصلي</translation>
     </message>
     <message>
-        <source>Don't create subfolder</source>
+        <source>Don&apos;t create subfolder</source>
         <translation>لا تقم بإنشاء مجلد فرعي</translation>
     </message>
     <message>
@@ -1450,35 +1440,35 @@
     </message>
     <message>
         <source>Outgoing connections per second:</source>
-        <translation type="unfinished" />
+        <translation>الاتصالات الصادرة في الثانية:</translation>
     </message>
     <message>
         <source>Random</source>
-        <translation type="unfinished" />
+        <translation>عشوائي</translation>
     </message>
     <message>
         <source>%K: Torrent ID</source>
-        <translation type="unfinished" />
+        <translation>%K: تورنت ID</translation>
     </message>
     <message>
         <source>Reannounce to all trackers when IP or port changed:</source>
-        <translation type="unfinished" />
+        <translation>إعادة الاتصال بجميع التراكرات عند تغيير IP أو المنفذ:</translation>
     </message>
     <message>
         <source>Trusted proxies list:</source>
-        <translation type="unfinished" />
+        <translation>قائمة البروكسي الموثوق بهم:</translation>
     </message>
     <message>
         <source>Enable reverse proxy support</source>
-        <translation type="unfinished" />
+        <translation>تفعيل دعم البروكسي العكسي</translation>
     </message>
     <message>
         <source>%J: Info hash v2</source>
-        <translation type="unfinished" />
+        <translation>%J: معلومات التحقق من البيانات (الهاش) الإصدار 2</translation>
     </message>
     <message>
         <source>%I: Info hash v1</source>
-        <translation type="unfinished" />
+        <translation>%I: معلومات التحقق من البيانات (الهاش) الإصدار 1</translation>
     </message>
 </context>
 <context>
@@ -1709,10 +1699,6 @@
         <translation>تاريخ الإنشاء:</translation>
     </message>
     <message>
-        <source>Torrent Hash:</source>
-        <translation type="vanished">بصمة (هاش) التورنت:</translation>
-    </message>
-    <message>
         <source>Save Path:</source>
         <translation>مسار الحفظ:</translation>
     </message>
@@ -1770,15 +1756,15 @@
     </message>
     <message>
         <source>Info Hash v2:</source>
-        <translation type="unfinished" />
+        <translation>معلومات التحقق من البيانات (الهاش) الإصدار 2:</translation>
     </message>
     <message>
         <source>Info Hash v1:</source>
-        <translation type="unfinished" />
+        <translation>معلومات التحقق من البيانات (الهاش) الإصدار 1:</translation>
     </message>
     <message>
         <source>N/A</source>
-        <translation type="unfinished" />
+        <translation>لا يوجد</translation>
     </message>
 </context>
 <context>
@@ -1987,6 +1973,14 @@
     <message>
         <source>Stalled (%1)</source>
         <translation>عالق (%1)</translation>
+    </message>
+    <message>
+        <source>Checking (%1)</source>
+        <translation>يفحص (%1)</translation>
+    </message>
+    <message>
+        <source>Checking (0)</source>
+        <translation>يفحص (0)</translation>
     </message>
 </context>
 <context>
@@ -2330,6 +2324,10 @@
         <source>%1 (seeded for %2)</source>
         <translation>%1 (بذرت لـ %2)</translation>
     </message>
+    <message>
+        <source>[F] Downloading metadata</source>
+        <translation>[إجباري] يُنزّل البيانات الوصفية</translation>
+    </message>
 </context>
 <context>
     <name>TransferListFiltersWidget</name>
@@ -2507,10 +2505,6 @@
         <translation>رابط مغناطيسي</translation>
     </message>
     <message>
-        <source>Hash</source>
-        <translation type="vanished">بصمة (هاش)</translation>
-    </message>
-    <message>
         <source>Remove All</source>
         <translation>إزالة الكل</translation>
     </message>
@@ -2532,15 +2526,15 @@
     </message>
     <message>
         <source>Info hash v1</source>
-        <translation type="unfinished" />
+        <translation>معلومات التحقق من البيانات (الهاش) الإصدار 1</translation>
     </message>
     <message>
         <source>Info hash v2</source>
-        <translation type="unfinished" />
+        <translation>معلومات التحقق من البيانات (الهاش) الإصدار 2</translation>
     </message>
     <message>
         <source>Torrent ID</source>
-        <translation type="unfinished" />
+        <translation>تورنت ID</translation>
     </message>
 </context>
 <context>
@@ -2773,7 +2767,7 @@
     </message>
     <message>
         <source>to</source>
-        <translation type="unfinished" />
+        <translation>إلى</translation>
     </message>
 </context>
 <context>
@@ -2803,7 +2797,7 @@
         <translation>مُفعّل</translation>
     </message>
     <message>
-        <source>Warning: Be sure to comply with your country's copyright laws when downloading torrents from any of these search engines.</source>
+        <source>Warning: Be sure to comply with your country&apos;s copyright laws when downloading torrents from any of these search engines.</source>
         <translation>تحذير: تأكد من الامتثال لقوانين حقوق الطبع والنشر في بلدك عند تنزيل التورنت من أي من محركات البحث هذه.</translation>
     </message>
     <message>
@@ -3406,7 +3400,7 @@ Supports the formats: S01E01, 1x1, 2017.12.31 and 31.12.2017 (Date formats also 
         <translation>الأصلي</translation>
     </message>
     <message>
-        <source>Don't create subfolder</source>
+        <source>Don&apos;t create subfolder</source>
         <translation>لا تقم بإنشاء مجلد فرعي</translation>
     </message>
 </context>
@@ -3441,7 +3435,7 @@ Supports the formats: S01E01, 1x1, 2017.12.31 and 31.12.2017 (Date formats also 
     </message>
     <message>
         <source>Unread</source>
-        <translation type="unfinished" />
+        <translation>غير مقروء</translation>
     </message>
 </context>
 </TS>

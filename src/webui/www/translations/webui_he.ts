@@ -1,6 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS>
-<TS language="he" version="2.1">
+<?xml version="1.0" ?><!DOCTYPE TS><TS language="he" version="2.1">
 <context>
     <name>AboutDlg</name>
     <message>
@@ -39,7 +37,7 @@
         <translation>צור תת־תיקייה</translation>
     </message>
     <message>
-        <source>Don't create subfolder</source>
+        <source>Don&apos;t create subfolder</source>
         <translation>אל תיצור תת־תיקייה</translation>
     </message>
 </context>
@@ -158,10 +156,6 @@
     <message>
         <source>Seeding time limit must be between 0 and 525600 minutes.</source>
         <translation>מגבלת זמן זריעה חייבת להיות בין 0 לבין 525600 דקות.</translation>
-    </message>
-    <message>
-        <source>The port used for incoming connections must be between 1 and 65535.</source>
-        <translation>הפתחה המשמשת לחיבורים נכנסים חייבת להיות בין 1 ל-65535.</translation>
     </message>
     <message>
         <source>The port used for the Web UI must be between 1 and 65535.</source>
@@ -366,6 +360,10 @@
     <message>
         <source>OK</source>
         <translation>אשר</translation>
+    </message>
+    <message>
+        <source>The port used for incoming connections must be between 0 and 65535.</source>
+        <translation>הפתחה המשמשת לחיבורים נכנסים חייבת להיות בין 0 לבין 65535.</translation>
     </message>
 </context>
 <context>
@@ -723,10 +721,6 @@
         <translation>השתמש בקידום פתחות UPnP / NAT-PMP מהנתב שלי</translation>
     </message>
     <message>
-        <source>Use different port on each startup</source>
-        <translation>השתמש בפתחה שונה בכל הזנק</translation>
-    </message>
-    <message>
         <source>Connections Limits</source>
         <translation>מגבלות חיבורים</translation>
     </message>
@@ -961,12 +955,8 @@
         <translation>%T: גשש נוכחי</translation>
     </message>
     <message>
-        <source>%I: Info hash</source>
-        <translation type="vanished">%I: גיבוב מידע</translation>
-    </message>
-    <message>
-        <source>Tip: Encapsulate parameter with quotation marks to avoid text being cut off at whitespace (e.g., "%N")</source>
-        <translation>עצה: תמצת פרמטר בעזרת סימני ציטוט כדי למנוע ממלל להיחתך בשטח לבן (לדוגמה, "%N")</translation>
+        <source>Tip: Encapsulate parameter with quotation marks to avoid text being cut off at whitespace (e.g., &quot;%N&quot;)</source>
+        <translation>עצה: תמצת פרמטר בעזרת סימני ציטוט כדי למנוע ממלל להיחתך בשטח לבן (לדוגמה, &quot;%N&quot;)</translation>
     </message>
     <message>
         <source>The Web UI username must be at least 3 characters long.</source>
@@ -1226,7 +1216,7 @@
     </message>
     <message>
         <source>s</source>
-        <translation>ש'</translation>
+        <translation>ש&apos;</translation>
     </message>
     <message>
         <source>Send buffer watermark:</source>
@@ -1246,7 +1236,7 @@
     </message>
     <message>
         <source>min</source>
-        <translation>דק'</translation>
+        <translation>דק&apos;</translation>
     </message>
     <message>
         <source>Upload choking algorithm:</source>
@@ -1386,7 +1376,7 @@
     </message>
     <message>
         <source> min</source>
-        <translation>דק'</translation>
+        <translation>דק&apos;</translation>
     </message>
     <message>
         <source>Peer turnover disconnect interval:</source>
@@ -1441,7 +1431,7 @@
         <translation>מקורי</translation>
     </message>
     <message>
-        <source>Don't create subfolder</source>
+        <source>Don&apos;t create subfolder</source>
         <translation>אל תיצור תת־תיקייה</translation>
     </message>
     <message>
@@ -1450,35 +1440,35 @@
     </message>
     <message>
         <source>Outgoing connections per second:</source>
-        <translation type="unfinished" />
+        <translation>חיבורים יוצאים לשנייה:</translation>
     </message>
     <message>
         <source>Random</source>
-        <translation type="unfinished" />
+        <translation>אקראי</translation>
     </message>
     <message>
         <source>%K: Torrent ID</source>
-        <translation type="unfinished" />
+        <translation>%K: זהות טורנט</translation>
     </message>
     <message>
         <source>Reannounce to all trackers when IP or port changed:</source>
-        <translation type="unfinished" />
+        <translation>הכרז מחדש אל כל הגששים כאשר IP או פתחה השתנו:</translation>
     </message>
     <message>
         <source>Trusted proxies list:</source>
-        <translation type="unfinished" />
+        <translation>רשימת ייפויי כוח מהימנים:</translation>
     </message>
     <message>
         <source>Enable reverse proxy support</source>
-        <translation type="unfinished" />
+        <translation>אפשר תמיכה בייפוי כוח מהופך</translation>
     </message>
     <message>
         <source>%J: Info hash v2</source>
-        <translation type="unfinished" />
+        <translation>%J: גיבוב מידע גרסה 2</translation>
     </message>
     <message>
         <source>%I: Info hash v1</source>
-        <translation type="unfinished" />
+        <translation>%I: גיבוב מידע גרסה 1</translation>
     </message>
 </context>
 <context>
@@ -1709,10 +1699,6 @@
         <translation>נוצר ב:</translation>
     </message>
     <message>
-        <source>Torrent Hash:</source>
-        <translation type="vanished">גיבוב טורנט:</translation>
-    </message>
-    <message>
         <source>Save Path:</source>
         <translation>נתיב שמירה:</translation>
     </message>
@@ -1770,15 +1756,15 @@
     </message>
     <message>
         <source>Info Hash v2:</source>
-        <translation type="unfinished" />
+        <translation>גיבוב מידע גרסה 2:</translation>
     </message>
     <message>
         <source>Info Hash v1:</source>
-        <translation type="unfinished" />
+        <translation>גיבוב מידע גרסה 1:</translation>
     </message>
     <message>
         <source>N/A</source>
-        <translation type="unfinished" />
+        <translation>לא זמין</translation>
     </message>
 </context>
 <context>
@@ -1987,6 +1973,14 @@
     <message>
         <source>Stalled (%1)</source>
         <translation>ממתין (%1)</translation>
+    </message>
+    <message>
+        <source>Checking (%1)</source>
+        <translation>בודק (%1)</translation>
+    </message>
+    <message>
+        <source>Checking (0)</source>
+        <translation>בודק (0)</translation>
     </message>
 </context>
 <context>
@@ -2330,6 +2324,10 @@
         <source>%1 (seeded for %2)</source>
         <translation>%1 (נזרע למשך %2)</translation>
     </message>
+    <message>
+        <source>[F] Downloading metadata</source>
+        <translation>[א] מוריד מטא־נתונים</translation>
+    </message>
 </context>
 <context>
     <name>TransferListFiltersWidget</name>
@@ -2507,10 +2505,6 @@
         <translation>קישור מגנט</translation>
     </message>
     <message>
-        <source>Hash</source>
-        <translation type="vanished">גיבוב</translation>
-    </message>
-    <message>
         <source>Remove All</source>
         <translation>הסר הכל</translation>
     </message>
@@ -2532,15 +2526,15 @@
     </message>
     <message>
         <source>Info hash v1</source>
-        <translation type="unfinished" />
+        <translation>גיבוב מידע גרסה 1</translation>
     </message>
     <message>
         <source>Info hash v2</source>
-        <translation type="unfinished" />
+        <translation>גיבוב מידע גרסה 2</translation>
     </message>
     <message>
         <source>Torrent ID</source>
-        <translation type="unfinished" />
+        <translation>זהות טורנט</translation>
     </message>
 </context>
 <context>
@@ -2648,12 +2642,12 @@
     <message>
         <source>%1h %2m</source>
         <comment>e.g: 3hours 5minutes</comment>
-        <translation>%1 ש' %2 ד'</translation>
+        <translation>%1 ש&apos; %2 ד&apos;</translation>
     </message>
     <message>
         <source>%1d %2h</source>
         <comment>e.g: 2days 10hours</comment>
-        <translation>%1 י' %2 ש'</translation>
+        <translation>%1 י&apos; %2 ש&apos;</translation>
     </message>
     <message>
         <source>Unknown</source>
@@ -2773,7 +2767,7 @@
     </message>
     <message>
         <source>to</source>
-        <translation type="unfinished" />
+        <translation>אל</translation>
     </message>
 </context>
 <context>
@@ -2803,7 +2797,7 @@
         <translation>מאופשר</translation>
     </message>
     <message>
-        <source>Warning: Be sure to comply with your country's copyright laws when downloading torrents from any of these search engines.</source>
+        <source>Warning: Be sure to comply with your country&apos;s copyright laws when downloading torrents from any of these search engines.</source>
         <translation>אזהרה: הייה בטוח להיענות לחוקי זכויות היוצרים של מדינתך בזמן הורדת טורנטים מכל אחד ממנועי החיפוש האלו.</translation>
     </message>
     <message>
@@ -3406,7 +3400,7 @@ Supports the formats: S01E01, 1x1, 2017.12.31 and 31.12.2017 (Date formats also 
         <translation>מקורי</translation>
     </message>
     <message>
-        <source>Don't create subfolder</source>
+        <source>Don&apos;t create subfolder</source>
         <translation>אל תיצור תת־תיקייה</translation>
     </message>
 </context>
@@ -3441,7 +3435,7 @@ Supports the formats: S01E01, 1x1, 2017.12.31 and 31.12.2017 (Date formats also 
     </message>
     <message>
         <source>Unread</source>
-        <translation type="unfinished" />
+        <translation>לא נקרא</translation>
     </message>
 </context>
 </TS>
