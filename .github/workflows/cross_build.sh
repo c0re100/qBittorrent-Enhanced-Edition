@@ -66,15 +66,32 @@ mkdir -p "${CROSS_ROOT}" \
   /usr/src/qtbase \
   /usr/src/qttools
 
+retry() {
+  # max retry 5 times
+  try=5
+  # sleep 3s every retry
+  sleep_time=3
+  for i in $(seq ${try}); do
+    if $@; then
+      return 0
+    else
+      echo "execute '$@' failed, tries: ${i}" >&2
+      sleep ${sleep_time}
+    fi
+  done
+  echo "execute '$@' failed" >&2
+  return 1
+}
+
 # toolchain
 if [ ! -f "${SELF_DIR}/${CROSS_HOST}-cross.tgz" ]; then
-  wget -c -O "${SELF_DIR}/${CROSS_HOST}-cross.tgz" "https://musl.cc/${CROSS_HOST}-cross.tgz"
+  retry wget -c -O "${SELF_DIR}/${CROSS_HOST}-cross.tgz" "https://musl.cc/${CROSS_HOST}-cross.tgz"
 fi
 tar -zxf "${SELF_DIR}/${CROSS_HOST}-cross.tgz" --transform='s|^\./||S' --strip-components=1 -C "${CROSS_ROOT}"
 # mingw does not contains posix thread support: https://github.com/meganz/mingw-std-threads
 if [ "${TARGET_HOST}" = 'win' ]; then
   if [ ! -f "${SELF_DIR}/mingw-std-threads.tar.gz" ]; then
-    wget -c -O "${SELF_DIR}/mingw-std-threads.tar.gz" "https://github.com/meganz/mingw-std-threads/archive/master.tar.gz"
+    retry wget -c -O "${SELF_DIR}/mingw-std-threads.tar.gz" "https://github.com/meganz/mingw-std-threads/archive/master.tar.gz"
   fi
   mkdir -p /usr/src/mingw-std-threads/
   tar -zxf "${SELF_DIR}/mingw-std-threads.tar.gz" --strip-components=1 -C "/usr/src/mingw-std-threads/"
@@ -83,8 +100,8 @@ fi
 
 # zlib
 if [ ! -f "${SELF_DIR}/zlib.tar.gz" ]; then
-  zlib_latest_url="$(wget -qO- https://api.github.com/repos/madler/zlib/tags | jq -r '.[0].tarball_url')"
-  wget -c -O "${SELF_DIR}/zlib.tar.gz" "${zlib_latest_url}"
+  zlib_latest_url="$(retry wget -qO- https://api.github.com/repos/madler/zlib/tags | jq -r '.[0].tarball_url')"
+  retry wget -c -O "${SELF_DIR}/zlib.tar.gz" "${zlib_latest_url}"
 fi
 tar -zxf "${SELF_DIR}/zlib.tar.gz" --strip-components=1 -C /usr/src/zlib
 cd /usr/src/zlib
@@ -98,9 +115,9 @@ fi
 
 # openssl
 if [ ! -f "${SELF_DIR}/openssl.tar.gz" ]; then
-  openssl_filename="$(wget -qO- https://www.openssl.org/source/ | grep -o 'href="openssl-1.*tar.gz"' | grep -o '[^"]*.tar.gz')"
+  openssl_filename="$(retry wget -qO- https://www.openssl.org/source/ | grep -o 'href="openssl-1.*tar.gz"' | grep -o '[^"]*.tar.gz')"
   openssl_latest_url="https://www.openssl.org/source/${openssl_filename}"
-  wget -c -O "${SELF_DIR}/openssl.tar.gz" "${openssl_latest_url}"
+  retry wget -c -O "${SELF_DIR}/openssl.tar.gz" "${openssl_latest_url}"
 fi
 tar -zxf "${SELF_DIR}/openssl.tar.gz" --strip-components=1 -C /usr/src/openssl
 cd /usr/src/openssl
@@ -111,8 +128,8 @@ make install_sw
 
 # boost
 if [ ! -f "${SELF_DIR}/boost.tar.bz2" ]; then
-  boost_latest_url="$(wget -qO- https://www.boost.org/users/download/ | grep -o 'http[^"]*.tar.bz2' | head -1)"
-  wget -c -O "${SELF_DIR}/boost.tar.bz2" "${boost_latest_url}"
+  boost_latest_url="$(retry wget -qO- https://www.boost.org/users/download/ | grep -o 'http[^"]*.tar.bz2' | head -1)"
+  retry wget -c -O "${SELF_DIR}/boost.tar.bz2" "${boost_latest_url}"
 fi
 tar -jxf "${SELF_DIR}/boost.tar.bz2" --strip-components=1 -C /usr/src/boost
 cd /usr/src/boost
@@ -124,18 +141,18 @@ cd /usr/src/boost/tools/build
 ./b2 install --prefix="${CROSS_ROOT}"
 
 # qt
-qt_major_ver="$(wget -qO- https://download.qt.io/official_releases/qt/ | sed -nr 's@.*href="([0-9]+(\.[0-9]+)*)/".*@\1@p' | grep "^${QT_VER_PREFIX}" | head -1)"
-qt_ver="$(wget -qO- https://download.qt.io/official_releases/qt/${qt_major_ver}/ | sed -nr 's@.*href="([0-9]+(\.[0-9]+)*)/".*@\1@p' | grep "^${QT_VER_PREFIX}" | head -1)"
+qt_major_ver="$(retry wget -qO- https://download.qt.io/official_releases/qt/ | sed -nr 's@.*href="([0-9]+(\.[0-9]+)*)/".*@\1@p' | grep "^${QT_VER_PREFIX}" | head -1)"
+qt_ver="$(retry wget -qO- https://download.qt.io/official_releases/qt/${qt_major_ver}/ | sed -nr 's@.*href="([0-9]+(\.[0-9]+)*)/".*@\1@p' | grep "^${QT_VER_PREFIX}" | head -1)"
 echo "Using qt version: ${qt_ver}"
 qtbase_url="https://download.qt.io/official_releases/qt/${qt_major_ver}/${qt_ver}/submodules/qtbase-everywhere-src-${qt_ver}.tar.xz"
 qtbase_filename="qtbase-everywhere-src-${qt_ver}.tar.xz"
 qttools_url="https://download.qt.io/official_releases/qt/${qt_major_ver}/${qt_ver}/submodules/qttools-everywhere-src-${qt_ver}.tar.xz"
 qttools_filename="qttools-everywhere-src-${qt_ver}.tar.xz"
 if [ ! -f "${SELF_DIR}/${qtbase_filename}" ]; then
-  wget -c -O "${SELF_DIR}/${qtbase_filename}" "${qtbase_url}"
+  retry wget -c -O "${SELF_DIR}/${qtbase_filename}" "${qtbase_url}"
 fi
 if [ ! -f "${SELF_DIR}/${qttools_filename}" ]; then
-  wget -c -O "${SELF_DIR}/${qttools_filename}" "${qttools_url}"
+  retry wget -c -O "${SELF_DIR}/${qttools_filename}" "${qttools_url}"
 fi
 tar -Jxf "${SELF_DIR}/${qtbase_filename}" --strip-components=1 -C /usr/src/qtbase
 tar -Jxf "${SELF_DIR}/${qttools_filename}" --strip-components=1 -C /usr/src/qttools

@@ -60,11 +60,28 @@ ldconfig
 SELF_DIR="$(dirname "$(readlink -f "${0}")")"
 export PYTHONWARNINGS=ignore:DEPRECATION
 
+retry() {
+  # max retry 5 times
+  try=5
+  # sleep 3s every retry
+  sleep_time=3
+  for i in $(seq ${try}); do
+    if $@; then
+      return 0
+    else
+      echo "execute '$@' failed, tries: ${i}" >&2
+      sleep ${sleep_time}
+    fi
+  done
+  echo "execute '$@' failed" >&2
+  return 1
+}
+
 # install qt
 if [ ! -d "${HOME}/Qt" ]; then
   pip3 install --upgrade 'pip<21' 'setuptools<51' 'setuptools_scm<6'
   pip3 install py7zr
-  curl -sSkL --compressed https://cdn.jsdelivr.net/gh/engnr/qt-downloader@master/qt-downloader |
+  retry curl -sSkL --compressed https://cdn.jsdelivr.net/gh/engnr/qt-downloader@master/qt-downloader |
     python3 - linux desktop 5.15.2 gcc_64 -o "${HOME}/Qt" -m qtbase qttools qtsvg icu
 fi
 export QT_BASE_DIR="$(ls -rd "${HOME}/Qt"/*/gcc_64 | head -1)"
@@ -78,8 +95,8 @@ sed -i.bak 's/Enterprise/OpenSource/g;s/licheck.*//g' "${QT_BASE_DIR}/mkspecs/qc
 # build latest boost
 mkdir -p /usr/src/boost
 if [ ! -f /usr/src/boost/.unpack_ok ]; then
-  boost_latest_url="$(curl -ksSfL https://www.boost.org/users/download/ | grep -o 'http[^"]*.tar.bz2' | head -1)"
-  curl -ksSfL "${boost_latest_url}" | tar -jxf - -C /usr/src/boost --strip-components 1
+  boost_latest_url="$(retry curl -ksSfL https://www.boost.org/users/download/ | grep -o 'http[^"]*.tar.bz2' | head -1)"
+  retry curl -ksSfL "${boost_latest_url}" | tar -jxf - -C /usr/src/boost --strip-components 1
 fi
 touch "/usr/src/boost/.unpack_ok"
 cd /usr/src/boost
@@ -106,8 +123,8 @@ cd "${SELF_DIR}/../../"
 make install -j$(nproc)
 
 # build AppImage
-[ -x "/tmp/linuxdeploy-x86_64.AppImage" ] || curl -LC- -o /tmp/linuxdeploy-x86_64.AppImage "https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage"
-[ -x "/tmp/linuxdeploy-plugin-qt-x86_64.AppImage" ] || curl -LC- -o /tmp/linuxdeploy-plugin-qt-x86_64.AppImage "https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage"
+[ -x "/tmp/linuxdeploy-x86_64.AppImage" ] || retry curl -LC- -o /tmp/linuxdeploy-x86_64.AppImage "https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage"
+[ -x "/tmp/linuxdeploy-plugin-qt-x86_64.AppImage" ] || retry curl -LC- -o /tmp/linuxdeploy-plugin-qt-x86_64.AppImage "https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage"
 chmod -v +x '/tmp/linuxdeploy-plugin-qt-x86_64.AppImage' '/tmp/linuxdeploy-x86_64.AppImage'
 # Fix run in docker, see: https://github.com/linuxdeploy/linuxdeploy/issues/86
 # and https://github.com/linuxdeploy/linuxdeploy/issues/154#issuecomment-741936850
