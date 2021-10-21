@@ -1,11 +1,13 @@
 #!/bin/sh -e
-# This scrip is for cross compilations
-# Please run this scrip in docker image: alpine:latest
+# This script is for cross compilations
+# Please run this script in docker image: alpine:latest
 # E.g: docker run -e CROSS_HOST=arm-linux-musleabi -e OPENSSL_COMPILER=linux-armv4 -e QT_DEVICE=linux-arm-generic-g++ --rm -v `git rev-parse --show-toplevel`:/build alpine /build/.github/workflows/cross_build.sh
 # Artifacts will copy to the same directory.
 
 # alpine repository mirror for local building
-# sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/' /etc/apk/repositories
+if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
+  sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/' /etc/apk/repositories
+fi
 
 # value from: https://musl.cc/ (without -cross or -native)
 export CROSS_HOST="${CROSS_HOST:-arm-linux-musleabi}"

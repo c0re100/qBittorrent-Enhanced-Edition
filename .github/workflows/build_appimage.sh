@@ -5,14 +5,16 @@
 # Artifacts will copy to the same directory.
 
 # Ubuntu mirror for local building
-# source /etc/os-release
-# cat >/etc/apt/sources.list <<EOF
-# deb http://opentuna.cn/ubuntu/ ${UBUNTU_CODENAME} main restricted universe multiverse
-# deb http://opentuna.cn/ubuntu/ ${UBUNTU_CODENAME}-updates main restricted universe multiverse
-# deb http://opentuna.cn/ubuntu/ ${UBUNTU_CODENAME}-backports main restricted universe multiverse
-# deb http://opentuna.cn/ubuntu/ ${UBUNTU_CODENAME}-security main restricted universe multiverse
-# EOF
-# export PIP_INDEX_URL="https://mirrors.aliyun.com/pypi/simple/"
+if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
+  source /etc/os-release
+  cat >/etc/apt/sources.list <<EOF
+deb http://mirrors.aliyun.com/ubuntu/ ${UBUNTU_CODENAME} main restricted universe multiverse
+deb http://mirrors.aliyun.com/ubuntu/ ${UBUNTU_CODENAME}-updates main restricted universe multiverse
+deb http://mirrors.aliyun.com/ubuntu/ ${UBUNTU_CODENAME}-backports main restricted universe multiverse
+deb http://mirrors.aliyun.com/ubuntu/ ${UBUNTU_CODENAME}-security main restricted universe multiverse
+EOF
+  export PIP_INDEX_URL="https://mirrors.aliyun.com/pypi/simple/"
+fi
 
 apt update
 apt install -y software-properties-common
@@ -62,7 +64,8 @@ export PYTHONWARNINGS=ignore:DEPRECATION
 if [ ! -d "${HOME}/Qt" ]; then
   pip3 install --upgrade 'pip<21' 'setuptools<51' 'setuptools_scm<6'
   pip3 install py7zr
-  curl -sSkL --compressed https://cdn.jsdelivr.net/gh/engnr/qt-downloader@master/qt-downloader | python3 - linux desktop 5.15.2 gcc_64 -o "${HOME}/Qt" -m qtbase qttools qtsvg icu
+  curl -sSkL --compressed https://cdn.jsdelivr.net/gh/engnr/qt-downloader@master/qt-downloader |
+    python3 - linux desktop 5.15.2 gcc_64 -o "${HOME}/Qt" -m qtbase qttools qtsvg icu
 fi
 export QT_BASE_DIR="$(ls -rd "${HOME}/Qt"/*/gcc_64 | head -1)"
 export QTDIR=$QT_BASE_DIR

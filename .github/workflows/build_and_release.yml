@@ -1,3 +1,5 @@
+name: Build and Release
+
 on:
   push:
     branches:
@@ -17,7 +19,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Build AppImage
-        run:  .github/workflows/build_appimage.sh
+        run: .github/workflows/build_appimage.sh
       - uses: actions/upload-artifact@v2
         with:
           name: qBittorrent-Enhanced-Edition.AppImage
