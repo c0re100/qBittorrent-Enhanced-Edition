@@ -18,6 +18,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+      - uses: actions/cache@v2
+        with:
+          path: |
+            /usr/src/
+          key: appimage-build-dependencies-cache-${{ github.sha }}
+          restore-keys: |
+            appimage-build-dependencies-cache-
       - name: Build AppImage
         run: .github/workflows/build_appimage.sh
       - uses: actions/upload-artifact@v2
