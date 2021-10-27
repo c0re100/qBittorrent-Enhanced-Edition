@@ -1,7 +1,11 @@
 #!/bin/bash -e
+
 # This scrip is for building AppImage
 # Please run this scrip in docker image: ubuntu:16.04
 # E.g: docker run --rm -v `git rev-parse --show-toplevel`:/build ubuntu:16.04 /build/.github/workflows/build_appimage.sh
+# If you need keep store build cache in docker volume, just like:
+#   $ docker volume create qbee-cache
+#   $ docker run --rm -v `git rev-parse --show-toplevel`:/build -v qbee-cache:/var/cache/apt -v qbee-cache:/usr/src ubuntu:16.04 /build/.github/workflows/build_appimage.sh
 # Artifacts will copy to the same directory.
 
 set -o pipefail
@@ -14,51 +18,46 @@ export LIBTORRENT_BRANCH="RC_2_0"
 if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
   source /etc/os-release
   cat >/etc/apt/sources.list <<EOF
-deb http://mirrors.aliyun.com/ubuntu/ ${UBUNTU_CODENAME} main restricted universe multiverse
-deb http://mirrors.aliyun.com/ubuntu/ ${UBUNTU_CODENAME}-updates main restricted universe multiverse
-deb http://mirrors.aliyun.com/ubuntu/ ${UBUNTU_CODENAME}-backports main restricted universe multiverse
-deb http://mirrors.aliyun.com/ubuntu/ ${UBUNTU_CODENAME}-security main restricted universe multiverse
+deb http://repo.huaweicloud.com/ubuntu/ ${UBUNTU_CODENAME} main restricted universe multiverse
+deb http://repo.huaweicloud.com/ubuntu/ ${UBUNTU_CODENAME}-updates main restricted universe multiverse
+deb http://repo.huaweicloud.com/ubuntu/ ${UBUNTU_CODENAME}-backports main restricted universe multiverse
+deb http://repo.huaweicloud.com/ubuntu/ ${UBUNTU_CODENAME}-security main restricted universe multiverse
 EOF
-  export PIP_INDEX_URL="https://mirrors.aliyun.com/pypi/simple/"
+  export PIP_INDEX_URL="https://repo.huaweicloud.com/repository/pypi/simple"
 fi
 
 export DEBIAN_FRONTEND=noninteractive
 
+# keep debs in container for store cache in docker volume
+rm -f /etc/apt/apt.conf.d/*
+echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' >/etc/apt/apt.conf.d/01keep-debs
+echo -e 'Acquire::https::Verify-Peer "false";\nAcquire::https::Verify-Host "false";' >/etc/apt/apt.conf.d/99-trust-https
+
 apt update
 apt install -y software-properties-common apt-transport-https
 apt-add-repository -y ppa:savoury1/backports
-apt-add-repository -y ppa:savoury1/gcc-defaults-9
-apt-add-repository -y ppa:savoury1/build-tools
-add-apt-repository -y ppa:savoury1/display
-add-apt-repository -y ppa:savoury1/graphics
-add-apt-repository -y ppa:savoury1/multimedia
-add-apt-repository -y ppa:savoury1/apt-xenial
-add-apt-repository -y ppa:savoury1/gtk-xenial
-add-apt-repository -y ppa:savoury1/gpg
+apt-add-repository -y ppa:savoury1/toolchain
 add-apt-repository -y ppa:savoury1/qt-5-15
-add-apt-repository -y ppa:savoury1/fonts
 
 if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
   sed -i 's@http://ppa.launchpad.net@https://launchpad.proxy.ustclug.org@' /etc/apt/sources.list.d/*.list
-  echo -e 'Acquire::https::Verify-Peer "false";\nAcquire::https::Verify-Host "false";' >/etc/apt/apt.conf.d/99-trust-https
 fi
 
 apt update
-apt full-upgrade -y
 apt install -y \
   curl \
   git \
   unzip \
-  build-essential \
-  libgl1-mesa-dev \
-  libgtk-3-dev \
-  libpcre2-dev \
-  libproxy-dev \
-  libudev-dev \
-  libjpeg-dev \
-  libicu-dev \
+  pkg-config \
   libssl-dev \
   libzstd-dev \
+  zlib1g-dev \
+  libbrotli-dev \
+  libxcb1-dev \
+  libicu-dev \
+  g++-8 \
+  build-essential \
+  libgl1-mesa-dev \
   libfontconfig1-dev \
   libfreetype6-dev \
   libx11-dev \
@@ -83,7 +82,10 @@ apt install -y \
   libxcb-xkb-dev \
   libxkbcommon-dev \
   libxkbcommon-x11-dev
+
 apt autoremove --purge -y
+export CC=gcc-8
+export CXX=g++-8
 # Force refresh ld.so.cache
 ldconfig
 SELF_DIR="$(dirname "$(readlink -f "${0}")")"
@@ -137,7 +139,19 @@ if [ ! -f "/usr/src/qtbase-${qt_ver}/.unpack_ok" ]; then
   touch "/usr/src/qtbase-${qt_ver}/.unpack_ok"
 fi
 cd "/usr/src/qtbase-${qt_ver}"
-./configure -release -optimize-size -c++std c++17 -openssl-linked -no-feature-testlib -ltcg -- -DQT_FEATURE_optimize_full=on
+rm -fr CMakeCache.txt CMakeFiles
+./configure \
+  -release \
+  -c++std c++17 \
+  -optimize-size \
+  -openssl-linked \
+  -no-opengl \
+  -no-directfb \
+  -no-linuxfb \
+  -no-eglfs \
+  -no-feature-testlib \
+  -no-feature-vnc \
+  -feature-optimize_full
 cmake --build . --parallel
 cmake --install .
 export QT_BASE_DIR="$(ls -rd /usr/local/Qt-* | head -1)"
@@ -149,6 +163,7 @@ if [ ! -f "/usr/src/qtsvg-${qt_ver}/.unpack_ok" ]; then
   touch "/usr/src/qtsvg-${qt_ver}/.unpack_ok"
 fi
 cd "/usr/src/qtsvg-${qt_ver}"
+rm -fr CMakeCache.txt
 "${QT_BASE_DIR}/bin/qt-configure-module" .
 cmake --build . --parallel
 cmake --install .
@@ -158,6 +173,7 @@ if [ ! -f "/usr/src/qttools-${qt_ver}/.unpack_ok" ]; then
   touch "/usr/src/qttools-${qt_ver}/.unpack_ok"
 fi
 cd "/usr/src/qttools-${qt_ver}"
+rm -fr CMakeCache.txt
 "${QT_BASE_DIR}/bin/qt-configure-module" .
 cmake --build . --parallel
 cmake --install .
@@ -192,6 +208,7 @@ fi
 cd "/usr/src/libtorrent-rasterbar-${LIBTORRENT_BRANCH}/"
 git pull
 mkdir -p build
+rm -fr build/CMakeCache.txt
 cmake \
   -B build \
   -G "Ninja" \
@@ -205,6 +222,7 @@ ldconfig
 # build qbittorrent
 cd "${SELF_DIR}/../../"
 mkdir -p build
+rm -fr build/CMakeCache.txt
 cmake \
   -B build \
   -G "Ninja" \
@@ -214,6 +232,7 @@ cmake \
   -DCMAKE_CXX_STANDARD="17" \
   -DCMAKE_INSTALL_PREFIX="/tmp/qbee/AppDir/usr"
 cmake --build build
+rm -fr /tmp/qbee/
 cmake --install build
 
 # build AppImage
@@ -265,7 +284,7 @@ APPIMAGE_EXTRACT_AND_RUN=1 \
   -appimage \
   -no-copy-copyright-files \
   -updateinformation="zsync|https://github.com/${GITHUB_REPOSITORY}/releases/latest/download/qBittorrent-Enhanced-Edition.AppImage.zsync" \
-  -extra-plugins=iconengines,imageformats,platforminputcontexts,platforms/libqxcb.so,platformthemes,sqldrivers,xcbglintegrations,tls
+  -extra-plugins=iconengines,imageformats,platforminputcontexts,platforms/libqxcb.so,platformthemes,sqldrivers,tls
 
 cp -fv /tmp/qbee/qBittorrent-x86_64.AppImage "${SELF_DIR}/qBittorrent-Enhanced-Edition.AppImage"
 cp -fv /tmp/qbee/qBittorrent-x86_64.AppImage.zsync "${SELF_DIR}/qBittorrent-Enhanced-Edition.AppImage.zsync"

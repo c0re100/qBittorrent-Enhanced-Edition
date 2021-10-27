@@ -22,6 +22,7 @@ jobs:
         with:
           path: |
             /usr/src/
+            /var/cache/apt/
           key: appimage-build-dependencies-cache-${{ github.sha }}
           restore-keys: |
             appimage-build-dependencies-cache-
