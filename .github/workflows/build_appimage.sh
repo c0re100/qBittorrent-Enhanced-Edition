@@ -112,21 +112,37 @@ retry() {
 if ! which cmake &>/dev/null; then
   cmake_latest_ver="$(retry curl -ksSL --compressed https://cmake.org/download/ \| grep "'Latest Release'" \| sed -r "'s/.*Latest Release\s*\((.+)\).*/\1/'" \| head -1)"
   cmake_binary_url="https://github.com/Kitware/CMake/releases/download/v${cmake_latest_ver}/cmake-${cmake_latest_ver}-linux-x86_64.tar.gz"
+  cmake_sha256_url="https://github.com/Kitware/CMake/releases/download/v${cmake_latest_ver}/cmake-${cmake_latest_ver}-SHA-256.txt"
   if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
     cmake_binary_url="https://ghproxy.com/${cmake_binary_url}"
+    cmake_sha256_url="https://ghproxy.com/${cmake_sha256_url}"
   fi
-  retry curl -kSL "${cmake_binary_url}" \| tar -zxf - -C /usr/local/ --strip-components 1
+  if [ -f "/usr/src/cmake-${cmake_latest_ver}-linux-x86_64.tar.gz" ]; then
+    cd /usr/src
+    if ! retry curl -ksSL --compressed "${cmake_sha256_url}" \| grep "cmake-${cmake_latest_ver}-linux-x86_64.tar.gz" \| sha256sum -c; then
+      rm -f "/usr/src/cmake-${cmake_latest_ver}-linux-x86_64.tar.gz"
+    fi
+  fi
+  if [ ! -f "/usr/src/cmake-${cmake_latest_ver}-linux-x86_64.tar.gz" ]; then
+    retry curl -kLo "/usr/src/cmake-${cmake_latest_ver}-linux-x86_64.tar.gz" "${cmake_binary_url}"
+  fi
+  tar -zxf "/usr/src/cmake-${cmake_latest_ver}-linux-x86_64.tar.gz" -C /usr/local --strip-components 1
 fi
 cmake --version
 if ! which ninja &>/dev/null; then
-  ninja_binary_url="https://github.com/ninja-build/ninja/releases/latest/download/ninja-linux.zip"
+  ninja_ver="$(retry curl -ksSL --compressed https://ninja-build.org/ \| grep "'The last Ninja release is'" \| sed -r "'s@.*<b>(.+)</b>.*@\1@'" \| head -1)"
+  ninja_binary_url="https://github.com/ninja-build/ninja/releases/download/${ninja_ver}/ninja-linux.zip"
   if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
     ninja_binary_url="https://ghproxy.com/${ninja_binary_url}"
   fi
-  retry curl -kSLo /tmp/ninja-linux.zip "${ninja_binary_url}"
-  unzip /tmp/ninja-linux.zip -d /usr/local/bin
+  if [ ! -f "/usr/src/ninja-${ninja_ver}-linux.zip.download_ok" ]; then
+    rm -f "/usr/src/ninja-${ninja_ver}-linux.zip"
+    retry curl -kLC- -o "/usr/src/ninja-${ninja_ver}-linux.zip" "${ninja_binary_url}"
+    touch "/usr/src/ninja-${ninja_ver}-linux.zip.download_ok"
+  fi
+  unzip -d /usr/local/bin "/usr/src/ninja-${ninja_ver}-linux.zip"
 fi
-echo "ninja version $(ninja --version)"
+echo "Ninja version $(ninja --version)"
 
 # install qt
 qt_major_ver="$(retry curl -ksSL --compressed https://download.qt.io/official_releases/qt/ \| sed -nr "'s@.*href=\"([0-9]+(\.[0-9]+)*)/\".*@\1@p'" \| grep \"^${QT_VER_PREFIX}\" \| head -1)"
@@ -141,6 +157,7 @@ fi
 cd "/usr/src/qtbase-${qt_ver}"
 rm -fr CMakeCache.txt CMakeFiles
 ./configure \
+  -ltcg \
   -release \
   -c++std c++17 \
   -optimize-size \
@@ -188,10 +205,14 @@ if [ ! -f "/usr/src/boost-${boost_ver}/.unpack_ok" ]; then
   touch "/usr/src/boost-${boost_ver}/.unpack_ok"
 fi
 cd "/usr/src/boost-${boost_ver}"
-./bootstrap.sh
+if [ ! -f ./b2 ]; then
+  ./bootstrap.sh
+fi
 ./b2 -d0 -q install --with-system variant=release link=shared runtime-link=shared
 cd "/usr/src/boost-${boost_ver}/tools/build"
-./bootstrap.sh
+if [ ! -f ./b2 ]; then
+  ./bootstrap.sh
+fi
 ./b2 -d0 -q install variant=release link=shared runtime-link=shared
 
 # build libtorrent-rasterbar
@@ -207,7 +228,6 @@ if [ ! -d "/usr/src/libtorrent-rasterbar-${LIBTORRENT_BRANCH}/" ]; then
 fi
 cd "/usr/src/libtorrent-rasterbar-${LIBTORRENT_BRANCH}/"
 git pull
-mkdir -p build
 rm -fr build/CMakeCache.txt
 cmake \
   -B build \
@@ -221,7 +241,6 @@ ldconfig
 
 # build qbittorrent
 cd "${SELF_DIR}/../../"
-mkdir -p build
 rm -fr build/CMakeCache.txt
 cmake \
   -B build \
@@ -267,11 +286,13 @@ cat >/tmp/qbee/AppDir/AppRun <<EOF
 #!/bin/bash -e
 
 this_dir="\$(readlink -f "\$(dirname "\$0")")"
-case "\${XDG_CURRENT_DESKTOP}" in
-    *GNOME*|*gnome*|*XFCE*)
-        export QT_QPA_PLATFORMTHEME=gtk3
-        ;;
-esac
+if [ -z "\${QT_QPA_PLATFORMTHEME}" ]; then
+  case "\${XDG_CURRENT_DESKTOP}" in
+      *GNOME*|*gnome*|*XFCE*)
+          export QT_QPA_PLATFORMTHEME=gtk3
+          ;;
+  esac
+fi
 export XDG_DATA_DIRS="\${this_dir}/usr/share:\${XDG_DATA_DIRS}:/usr/share:/usr/local/share"
 
 exec "\${this_dir}/usr/bin/qbittorrent" "\$@"

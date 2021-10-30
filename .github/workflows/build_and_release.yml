@@ -47,50 +47,39 @@ jobs:
   # cross compile for some other platforms, like arm, mips, etc.
   cross-compile:
     runs-on: ubuntu-latest
-    container: "alpine:latest"
+    container: "ubuntu:20.04"
     strategy:
       fail-fast: false
       matrix:
-        include:
+        cross_host:
           # cross toolchain downloads from: https://musl.cc/
           # you need to find the name ${cross_host}-cross.tgz
-          # openssl_compiler choose from openssl source directory `./Configure LIST`
-          # qt_device choose from https://github.com/qt/qtbase/tree/dev/mkspecs/devices/
-          # qt_xplatform choose from https://github.com/qt/qtbase/tree/dev/mkspecs/
-          - cross_host: arm-linux-musleabi
-            openssl_compiler: linux-armv4
-            qt_device: linux-arm-generic-g++
-          - cross_host: aarch64-linux-musl
-            openssl_compiler: linux-aarch64
-            qt_device: linux-arm-generic-g++
-          - cross_host: mips-linux-musl
-            openssl_compiler: linux-mips32
-            qt_device: linux-generic-g++
-          - cross_host: mipsel-linux-musl
-            openssl_compiler: linux-mips32
-            qt_device: linux-generic-g++
-          - cross_host: mips64-linux-musl
-            openssl_compiler: linux64-mips64
-            qt_device: linux-generic-g++
-          - cross_host: x86_64-linux-musl
-            openssl_compiler: linux-x86_64
-            qt_device: linux-generic-g++
-          # - cross_host: x86_64-w64-mingw32
-          #   openssl_compiler: mingw64
-          #   qt_xplatform: win32-g++
+          - arm-linux-musleabi
+          - arm-linux-musleabihf
+          - aarch64-linux-musl
+          - mips-linux-musl
+          - mipsel-linux-musl
+          - mips64-linux-musl
+          - mips64el-linux-musl
+          - x86_64-linux-musl
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+      - uses: actions/cache@v2
+        with:
+          path: |
+            /usr/src/
+            /var/cache/apt/
+          key: cross-build-dependencies-cache-${{ matrix.cross_host }}-${{ github.sha }}
+          restore-keys: |
+            cross-build-dependencies-cache-${{ matrix.cross_host }}-
       - name: cross compile nox-static
         env:
           CROSS_HOST: "${{ matrix.cross_host }}"
-          OPENSSL_COMPILER: "${{ matrix.openssl_compiler }}"
-          QT_DEVICE: "${{ matrix.qt_device }}"
-          QT_XPLATFORM: "${{matrix.qt_xplatform}}"
         run: .github/workflows/cross_build.sh
       - uses: actions/upload-artifact@v2
         with:
-          name: qbittorrent-nox_${{ matrix.cross_host }}_static
+          name: qbittorrent-enhanced-nox_${{ matrix.cross_host }}_static
           path: |
             /tmp/qbittorrent-nox*
       - name: Upload Github Assets
@@ -98,6 +87,6 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ".github/workflows/qbittorrent-nox_${{ matrix.cross_host }}_static.zip"
+          file: ".github/workflows/qbittorrent-enhanced-nox_${{ matrix.cross_host }}_static.zip"
           tag: ${{ github.ref }}
           overwrite: true
