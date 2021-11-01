@@ -83,6 +83,9 @@ esac
 export QT_VER_PREFIX="6"
 export LIBTORRENT_BRANCH="RC_2_0"
 export CROSS_ROOT="${CROSS_ROOT:-/cross_root}"
+# strip all compiled files by default
+export CFLAGS='-s'
+export CXXFLAGS='-s'
 
 TARGET_ARCH="${CROSS_HOST%%-*}"
 TARGET_HOST="${CROSS_HOST#*-}"
@@ -373,7 +376,7 @@ build_qbittorrent() {
     -DCMAKE_SYSTEM_PROCESSOR="${TARGET_ARCH}" \
     -DCMAKE_SYSROOT="${CROSS_PREFIX}" \
     -DCMAKE_CXX_COMPILER="${CROSS_HOST}-g++" \
-    -DCMAKE_CXX_FLAGS="-s -static"
+    -DCMAKE_EXE_LINKER_FLAGS="-static"
   cmake --build build
   cmake --install build
   if [ x"${TARGET_HOST}" = xWindows ]; then

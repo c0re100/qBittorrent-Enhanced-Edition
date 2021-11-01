@@ -39,8 +39,6 @@ apt-add-repository -y ppa:savoury1/backports
 apt-add-repository -y ppa:savoury1/toolchain
 add-apt-repository -y ppa:savoury1/qt-5-15
 add-apt-repository -y ppa:savoury1/gtk-xenial
-add-apt-repository -y ppa:savoury1/display
-add-apt-repository -y ppa:savoury1/graphics
 
 if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
   sed -i 's@http://ppa.launchpad.net@https://launchpad.proxy.ustclug.org@' /etc/apt/sources.list.d/*.list
@@ -90,6 +88,9 @@ apt install -y \
 apt autoremove --purge -y
 export CC=gcc-8
 export CXX=g++-8
+# strip all compiled files by default
+export CFLAGS='-s'
+export CXXFLAGS='-s'
 # Force refresh ld.so.cache
 ldconfig
 SELF_DIR="$(dirname "$(readlink -f "${0}")")"
