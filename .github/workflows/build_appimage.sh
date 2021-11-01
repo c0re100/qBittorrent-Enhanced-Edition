@@ -38,6 +38,9 @@ apt install -y software-properties-common apt-transport-https
 apt-add-repository -y ppa:savoury1/backports
 apt-add-repository -y ppa:savoury1/toolchain
 add-apt-repository -y ppa:savoury1/qt-5-15
+add-apt-repository -y ppa:savoury1/gtk-xenial
+add-apt-repository -y ppa:savoury1/display
+add-apt-repository -y ppa:savoury1/graphics
 
 if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
   sed -i 's@http://ppa.launchpad.net@https://launchpad.proxy.ustclug.org@' /etc/apt/sources.list.d/*.list
@@ -55,6 +58,7 @@ apt install -y \
   libbrotli-dev \
   libxcb1-dev \
   libicu-dev \
+  libgtk-3-dev \
   g++-8 \
   build-essential \
   libgl1-mesa-dev \
@@ -280,7 +284,7 @@ fi
 [ -x "/tmp/linuxdeployqt-continuous-x86_64.AppImage" ] || retry curl -kSLC- -o /tmp/linuxdeployqt-continuous-x86_64.AppImage "${linuxdeploy_qt_download_url}"
 chmod -v +x '/tmp/linuxdeployqt-continuous-x86_64.AppImage'
 cd "/tmp/qbee"
-cp -fv /tmp/qbee/AppDir/usr/share/icons/hicolor/scalable/apps/qbittorrent.svg /tmp/qbee/AppDir/
+ln -svf usr/share/icons/hicolor/scalable/apps/qbittorrent.svg /tmp/qbee/AppDir/
 # this script is from linuxdeploy-plugin-qt: https://github.com/linuxdeploy/linuxdeploy-plugin-qt/blob/master/src/deployment.h#L98
 cat >/tmp/qbee/AppDir/AppRun <<EOF
 #!/bin/bash -e
