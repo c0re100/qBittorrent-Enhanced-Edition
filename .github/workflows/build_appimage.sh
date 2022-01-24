@@ -168,6 +168,10 @@ rm -fr CMakeCache.txt CMakeFiles
   -c++std c++17 \
   -optimize-size \
   -openssl-linked \
+  -qt-libjpeg \
+  -qt-libpng \
+  -qt-pcre \
+  -qt-harfbuzz \
   -no-opengl \
   -no-directfb \
   -no-linuxfb \
@@ -211,7 +215,6 @@ if [ ! -d "/usr/src/qt6gtk2/" ]; then
 fi
 cd "/usr/src/qt6gtk2/"
 git pull
-git clean -fdx
 qmake
 make -j$(nproc) install
 

@@ -35,6 +35,7 @@ echo -e 'Acquire::https::Verify-Peer "false";\nAcquire::https::Verify-Host "fals
 
 apt update
 apt install -y \
+  jq \
   curl \
   git \
   make \
@@ -50,6 +51,8 @@ apt install -y \
 
 # value from: https://musl.cc/ (without -cross or -native)
 export CROSS_HOST="${CROSS_HOST:-arm-linux-musleabi}"
+# use zlib-ng instead of zlib by default
+USE_ZLIB_NG=${USE_ZLIB_NG:-1}
 
 # OPENSSL_COMPILER value is from openssl source: ./Configure LIST
 # QT_DEVICE and QT_DEVICE_OPTIONS value are from https://github.com/qt/qtbase/tree/dev/mkspecs/devices/
@@ -196,22 +199,42 @@ prepare_toolchain() {
 }
 
 prepare_zlib() {
-  zlib_ver="$(retry curl -ksSL --compressed https://zlib.net/ \| grep -i "'<FONT.*FONT>'" \| sed -r "'s/.*zlib\s*([^<]+).*/\1/'" \| head -1)"
-  echo "zlib version ${zlib_ver}"
-  if [ ! -f "/usr/src/zlib-${zlib_ver}/.unpack_ok" ]; then
-    mkdir -p "/usr/src/zlib-${zlib_ver}"
-    zlib_latest_url="https://sourceforge.net/projects/libpng/files/zlib/${zlib_ver}/zlib-${zlib_ver}.tar.xz/download"
-    retry curl -kL "${zlib_latest_url}" \| tar -Jxf - --strip-components=1 -C "/usr/src/zlib-${zlib_ver}"
-    touch "/usr/src/zlib-${zlib_ver}/.unpack_ok"
-  fi
-  cd "/usr/src/zlib-${zlib_ver}"
-
-  if [ x"${TARGET_HOST}" = xWindows ]; then
-    make -f win32/Makefile.gcc BINARY_PATH="${CROSS_PREFIX}/bin" INCLUDE_PATH="${CROSS_PREFIX}/include" LIBRARY_PATH="${CROSS_PREFIX}/lib" SHARED_MODE=0 PREFIX="${CROSS_HOST}-" -j$(nproc) install
-  else
-    CHOST="${CROSS_HOST}" ./configure --prefix="${CROSS_PREFIX}" --static
+  if [ x"${USE_ZLIB_NG}" = x"1" ]; then
+    zlib_ng_latest_tag="$(retry curl -ksSL --compressed https://api.github.com/repos/zlib-ng/zlib-ng/releases \| jq -r "'.[0].tag_name'")"
+    zlib_ng_latest_url="https://github.com/zlib-ng/zlib-ng/archive/refs/tags/${zlib_ng_latest_tag}.tar.gz"
+    echo "zlib-ng version ${zlib_ng_latest_tag}"
+    if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
+      zlib_ng_latest_url="https://ghproxy.com/${zlib_ng_latest_url}"
+    fi
+    if [ ! -f "/usr/src/zlib-ng-${zlib_ng_latest_tag}/.unpack_ok" ]; then
+      mkdir -p "/usr/src/zlib-ng-${zlib_ng_latest_tag}/"
+      retry curl -ksSL "${zlib_ng_latest_url}" \| tar -zxf - --strip-components=1 -C "/usr/src/zlib-ng-${zlib_ng_latest_tag}/"
+      touch "/usr/src/zlib-ng-${zlib_ng_latest_tag}/.unpack_ok"
+    fi
+    cd "/usr/src/zlib-ng-${zlib_ng_latest_tag}/"
+    CHOST="${CROSS_HOST}" ./configure --prefix="${CROSS_PREFIX}" --static --zlib-compat
     make -j$(nproc)
     make install
+    # Fix mingw build sharedlibdir lost issue
+    sed -i 's@^sharedlibdir=.*@sharedlibdir=${libdir}@' "${CROSS_PREFIX}/lib/pkgconfig/zlib.pc"
+  else
+    zlib_ver="$(retry curl -ksSL --compressed https://zlib.net/ \| grep -i "'<FONT.*FONT>'" \| sed -r "'s/.*zlib\s*([^<]+).*/\1/'" \| head -1)"
+    echo "zlib version ${zlib_ver}"
+    if [ ! -f "/usr/src/zlib-${zlib_ver}/.unpack_ok" ]; then
+      mkdir -p "/usr/src/zlib-${zlib_ver}"
+      zlib_latest_url="https://sourceforge.net/projects/libpng/files/zlib/${zlib_ver}/zlib-${zlib_ver}.tar.xz/download"
+      retry curl -kL "${zlib_latest_url}" \| tar -Jxf - --strip-components=1 -C "/usr/src/zlib-${zlib_ver}"
+      touch "/usr/src/zlib-${zlib_ver}/.unpack_ok"
+    fi
+    cd "/usr/src/zlib-${zlib_ver}"
+
+    if [ x"${TARGET_HOST}" = xWindows ]; then
+      make -f win32/Makefile.gcc BINARY_PATH="${CROSS_PREFIX}/bin" INCLUDE_PATH="${CROSS_PREFIX}/include" LIBRARY_PATH="${CROSS_PREFIX}/lib" SHARED_MODE=0 PREFIX="${CROSS_HOST}-" -j$(nproc) install
+    else
+      CHOST="${CROSS_HOST}" ./configure --prefix="${CROSS_PREFIX}" --static
+      make -j$(nproc)
+      make install
+    fi
   fi
 }
 
