@@ -55,7 +55,8 @@ jobs:
           # cross toolchain downloads from: https://musl.cc/
           # you need to find the name ${cross_host}-cross.tgz
           - arm-linux-musleabi
-          - arm-linux-musleabihf
+          # Waiting this issue to be resolved: https://github.com/zlib-ng/zlib-ng/issues/1138
+          # - arm-linux-musleabihf
           - aarch64-linux-musl
           - mips-linux-musl
           - mipsel-linux-musl

@@ -114,6 +114,15 @@ retry() {
   return 1
 }
 
+# join array to string. E.g join_by ',' "${arr[@]}"
+join_by() {
+  local separator="$1"
+  shift
+  local first="$1"
+  shift
+  printf "%s" "$first" "${@/#/$separator}"
+}
+
 # install cmake and ninja-build
 if ! which cmake &>/dev/null; then
   cmake_latest_ver="$(retry curl -ksSL --compressed https://cmake.org/download/ \| grep "'Latest Release'" \| sed -r "'s/.*Latest Release\s*\((.+)\).*/\1/'" \| head -1)"
@@ -215,6 +224,7 @@ if [ ! -d "/usr/src/qt6gtk2/" ]; then
 fi
 cd "/usr/src/qt6gtk2/"
 git pull
+git clean -fdx
 qmake
 make -j$(nproc) install
 
@@ -298,6 +308,54 @@ export QT_STYLE_OVERRIDE=qt6gtk2
 exec "\${this_dir}/usr/bin/qbittorrent" "\$@"
 EOF
 chmod 755 -v /tmp/qbee/AppDir/AppRun
+
+extra_plugins=(
+  iconengines
+  imageformats
+  platforminputcontexts
+  platforms/libqxcb.so
+  platformthemes
+  styles
+  sqldrivers
+  tls
+)
+exclude_libs=(
+  libatk-1.0.so.0
+  libatk-bridge-2.0.so.0
+  libatspi.so.0
+  libblkid.so.1
+  libboost_filesystem.so.1.58.0
+  libboost_system.so.1.58.0
+  libcairo-gobject.so.2
+  libcairo.so.2
+  libcapnp-0.5.3.so
+  libdatrie.so.1
+  libdbus-1.so.3
+  libepoxy.so.0
+  libffi.so.6
+  libgcrypt.so.20
+  libgdk-3.so.0
+  libgdk_pixbuf-2.0.so.0
+  libgdk-x11-2.0.so.0
+  libgmodule-2.0.so.0
+  libgraphite2.so.3
+  libgtk-3.so.0
+  libgtk-x11-2.0.so.0
+  libkj-0.5.3.so
+  libmirclient.so.9
+  libmircommon.so.7
+  libmircore.so.1
+  libmirprotobuf.so.3
+  libmount.so.1
+  libpixman-1.so.0
+  libprotobuf-lite.so.9
+  libselinux.so.1
+  libsystemd.so.0
+  libwayland-client.so.0
+  libwayland-cursor.so.0
+  libwayland-egl.so.1
+)
+
 APPIMAGE_EXTRACT_AND_RUN=1 \
   /tmp/linuxdeployqt-continuous-x86_64.AppImage \
   /tmp/qbee/AppDir/usr/share/applications/*.desktop \
@@ -305,8 +363,8 @@ APPIMAGE_EXTRACT_AND_RUN=1 \
   -appimage \
   -no-copy-copyright-files \
   -updateinformation="zsync|https://github.com/${GITHUB_REPOSITORY}/releases/latest/download/qBittorrent-Enhanced-Edition.AppImage.zsync" \
-  -extra-plugins=iconengines,imageformats,platforminputcontexts,platforms/libqxcb.so,platformthemes,styles,sqldrivers,tls \
-  -exclude-libs=libgtk-x11-2.0.so.0,libgdk-x11-2.0.so.0,libgmodule-2.0.so.0,libgdk_pixbuf-2.0.so.0,libcairo.so.2,libpixman-1.so.0,libgdk-3.so.0,libgtk-3.so.0
+  -extra-plugins="$(join_by ',' "${extra_plugins[@]}")" \
+  -exclude-libs="$(join_by ',' "${exclude_libs[@]}")"
 
 cp -fv /tmp/qbee/qBittorrent-x86_64.AppImage "${SELF_DIR}/qBittorrent-Enhanced-Edition.AppImage"
 cp -fv /tmp/qbee/qBittorrent-x86_64.AppImage.zsync "${SELF_DIR}/qBittorrent-Enhanced-Edition.AppImage.zsync"
