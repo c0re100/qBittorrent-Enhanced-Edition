@@ -1,4 +1,4 @@
-name: CI - macOS
+name: CI - macOS - Universal
 on: [pull_request, push]
 
 jobs:
@@ -9,15 +9,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        libt_version: ["2.0.5", "1.2.15"]
-        qbt_gui: ["GUI=ON", "GUI=OFF"]
-        qt_version: ["5.15.2", "6.2.0"]
+        libt_version: ["2.0.5"]
+        qbt_gui: ["GUI=ON"]
+        qt_version: ["6.2.0"]
         exclude:
           - libt_version: "1.2.15"
             qt_version: "6.2.0"
 
     env:
-      openssl_root: /usr/local/opt/openssl@1.1
+      openssl_ver: 1.1.1m
 
     steps:
       - name: Checkout repository
@@ -28,12 +28,37 @@ jobs:
           brew update > /dev/null
           brew install \
             cmake ninja \
-            boost openssl@1.1 zlib
+            boost zlib
 
       - name: Setup ccache
         uses: Chocobo1/setup-ccache-action@v1
         with:
           update_packager_index: false
+      
+      - name: Install OpenSSL-Universal
+        run: |
+          function build_openssl_arch()
+          {
+              local arch=$1
+
+              mkdir -p lib-$1 && cd lib-$1
+              "$GITHUB_WORKSPACE/openssl-$openssl_ver/Configure" no-comp no-deprecated no-dynamic-engine no-tests no-shared no-zlib --openssldir=/etc/ssl --prefix=$GITHUB_WORKSPACE/openssl-$openssl_ver/lib-$1 -mmacosx-version-min=10.15 darwin64-${arch}-cc
+              make -j$(sysctl -n hw.ncpu)
+              make install_sw
+              cd -
+          }
+          curl -L https://www.openssl.org/source/openssl-$openssl_ver.tar.gz | tar xz
+          build_openssl_arch arm64
+          build_openssl_arch x86_64
+          
+          mkdir -p "$GITHUB_WORKSPACE/openssl-$openssl_ver-universal/lib"
+          cp -r "$GITHUB_WORKSPACE/openssl-$openssl_ver/lib-x86_64/include" "$GITHUB_WORKSPACE/openssl-$openssl_ver-universal/"
+          
+          lipo -create "$GITHUB_WORKSPACE/openssl-$openssl_ver/lib-x86_64/lib/libcrypto.a" "$GITHUB_WORKSPACE/openssl-$openssl_ver/lib-arm64/lib/libcrypto.a" -output "$GITHUB_WORKSPACE/openssl-$openssl_ver-universal/lib/libcrypto.a"
+          lipo -create "$GITHUB_WORKSPACE/openssl-$openssl_ver/lib-x86_64/lib/libssl.a" "$GITHUB_WORKSPACE/openssl-$openssl_ver/lib-arm64/lib/libssl.a" -output "$GITHUB_WORKSPACE/openssl-$openssl_ver-universal/lib/libssl.a"
+
+          echo "openssl_root=$GITHUB_WORKSPACE/openssl-$openssl_ver-universal" >> $GITHUB_ENV
+
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v2
@@ -43,7 +68,7 @@ jobs:
       - name: Install libtorrent
         run: |
           git clone \
-            --branch v${{ matrix.libt_version }} \
+            --branch v2.0.5 \
             --depth 1 \
             --recurse-submodules \
             https://github.com/arvidn/libtorrent.git
@@ -52,12 +77,16 @@ jobs:
             -B build \
             -G "Ninja" \
             -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+            -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" \
             -DCMAKE_CXX_STANDARD=17 \
             -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
             -Ddeprecated-functions=OFF \
             -DOPENSSL_ROOT_DIR="${{ env.openssl_root }}"
           cmake --build build
           sudo cmake --install build
+
+      - name: Setup Debug Session(Yes)
+        uses: csexton/debugger-action@master    
 
       - name: Build qBittorrent (Qt5)
         if: ${{ startsWith(matrix.qt_version, 5) }}
@@ -67,6 +96,7 @@ jobs:
             -B build \
             -G "Ninja" \
             -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+            -DCMAKE_OSX_ARCHITECTURES=x86_64;arm64 \
             -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
             -DOPENSSL_ROOT_DIR="${{ env.openssl_root }}" \
             -DVERBOSE_CONFIGURE=ON \
@@ -81,6 +111,7 @@ jobs:
             -B build \
             -G "Ninja" \
             -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+            -DCMAKE_OSX_ARCHITECTURES=x86_64;arm64 \
             -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
             -DOPENSSL_ROOT_DIR="${{ env.openssl_root }}" \
             -DQT6=ON \
