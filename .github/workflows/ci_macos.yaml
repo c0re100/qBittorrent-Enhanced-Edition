@@ -4,7 +4,7 @@ on: [pull_request, push]
 jobs:
   ci:
     name: Build
-    runs-on: self-hosted
+    runs-on: macos-latest
 
     strategy:
       fail-fast: false
