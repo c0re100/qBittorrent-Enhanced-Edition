@@ -81,7 +81,7 @@ jobs:
             -DCMAKE_CXX_STANDARD=17 \
             -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
             -Ddeprecated-functions=OFF \
-            -DOPENSSL_ROOT_DIR="${{ env.openssl_root }}"
+            -DOPENSSL_ROOT_DIR="${openssl_root}"
           cmake --build build
           sudo cmake --install build
 
