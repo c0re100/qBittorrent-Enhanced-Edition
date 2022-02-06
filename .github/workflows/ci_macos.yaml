@@ -83,10 +83,7 @@ jobs:
             -Ddeprecated-functions=OFF \
             -DOPENSSL_ROOT_DIR="${{ env.openssl_root }}"
           cmake --build build
-          sudo cmake --install build
-
-      - name: Setup Debug Session(Yes)
-        uses: csexton/debugger-action@master    
+          sudo cmake --install build  
 
       - name: Build qBittorrent (Qt5)
         if: ${{ startsWith(matrix.qt_version, 5) }}
