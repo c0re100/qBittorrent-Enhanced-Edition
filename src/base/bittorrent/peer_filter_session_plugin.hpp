@@ -17,16 +17,17 @@ std::unique_ptr<peer_filter> create_peer_filter(const QString& filename)
   QString filter_file = qbt_data_dir.absoluteFilePath(filename);
   // do not create plugin if filter file doesn't exists
   if (!QFile::exists(filter_file)) {
-    LogMsg(QString("'%1' doesn't exist, do not enabling filter").arg(filename), Log::NORMAL);
+    LogMsg(QString("'%1' doesn't exist. The corresponding filter is disabled.").arg(filename), Log::NORMAL);
+
     return nullptr;
   }
 
   auto filter = std::make_unique<peer_filter>(filter_file);
   if (filter->is_empty()) {
-    LogMsg(QString("'%1' has no valid rules, do not enabling filter").arg(filename), Log::WARNING);
+    LogMsg(QString("'%1' has no valid rules. The corresponding filter is disabled.").arg(filename), Log::WARNING);
     filter.reset();
   } else {
-    LogMsg(QString("'%1' contains %2 valid rules").arg(filename).arg(filter->rules_count()), Log::INFO);
+    LogMsg(QString("'%1' contains %2 valid rules.").arg(filename).arg(filter->rules_count()), Log::INFO);
   }
 
   return filter;
@@ -49,11 +50,16 @@ public:
   {
   }
 
-  std::shared_ptr<lt::torrent_plugin> new_torrent(const lt::torrent_handle&, client_data) override
+  std::shared_ptr<lt::torrent_plugin> new_torrent(const lt::torrent_handle& th, client_data) override
   {
     // do not waste CPU and memory for useless objects when no filters are enabled
     if (!m_blacklist && !m_whitelist)
       return nullptr;
+
+    // ignore private torrents
+    if (th.torrent_file() && th.torrent_file()->priv())
+      return nullptr;
+
     return std::make_shared<peer_action_plugin>([this](auto&&... args) { return filter(args...); }, drop_peer_connection);
   }
 
@@ -61,21 +67,28 @@ protected:
   bool filter(const lt::peer_info& info, bool handshake, bool* stop_filtering) const
   {
     if (m_blacklist) {
-      bool matched = m_blacklist->match_peer(info, false);
-      *stop_filtering = !handshake && !matched;
-      if (matched)
+      // always match with both pid & client name when applying blacklist
+      bool matched_blacklist = m_blacklist->match_peer(info, false);
+      if (matched_blacklist) {
         peer_logger_singleton::instance().log_peer(info, "blacklist");
-      return matched;
+        *stop_filtering = true;
+        return true;
+      }
     }
 
     if (m_whitelist) {
-      bool matched = m_whitelist->match_peer(info, handshake);
-      *stop_filtering = !handshake && matched;
-      if (!matched)
+      bool matched_whitelist = m_whitelist->match_peer(info, handshake);
+      if (!matched_whitelist) {
         peer_logger_singleton::instance().log_peer(info, "whitelist");
-      return !matched;
+        *stop_filtering = true;
+        return true;
+      }
     }
 
+    // if the peer got passed the handshake phase and get here, don't filter it anymore
+    if (!handshake) {
+      *stop_filtering = true;
+    }
     return false;
   }
 
