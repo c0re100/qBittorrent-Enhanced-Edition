@@ -30,16 +30,14 @@ jobs:
         run: .github/workflows/build_appimage.sh
       - uses: actions/upload-artifact@v2
         with:
-          name: qBittorrent-Enhanced-Edition.AppImage
-          path: |
-            .github/workflows/qBittorrent-Enhanced-Edition.AppImage
-            .github/workflows/qBittorrent-Enhanced-Edition.AppImage.zsync
+          name: qBittorrent-Enhanced-Edition-x86_64.AppImage
+          path: ".github/workflows/qBittorrent-Enhanced-Edition*.AppImage*"
       - name: Upload Github Assets
         if: startsWith(github.ref, 'refs/tags/')
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ".github/workflows/qBittorrent-Enhanced-Edition.AppImage*"
+          file: ".github/workflows/qBittorrent-Enhanced-Edition*.AppImage*"
           tag: ${{ github.ref }}
           overwrite: true
           file_glob: true

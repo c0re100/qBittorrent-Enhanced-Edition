@@ -356,15 +356,18 @@ exclude_libs=(
   libwayland-egl.so.1
 )
 
+# fix AppImage output file name
+sed -i 's/Name=qBittorrent.*/Name=qBittorrent-Enhanced-Edition/' /tmp/qbee/AppDir/usr/share/applications/*.desktop
+
 APPIMAGE_EXTRACT_AND_RUN=1 \
   /tmp/linuxdeployqt-continuous-x86_64.AppImage \
   /tmp/qbee/AppDir/usr/share/applications/*.desktop \
   -always-overwrite \
   -appimage \
   -no-copy-copyright-files \
-  -updateinformation="zsync|https://github.com/${GITHUB_REPOSITORY}/releases/latest/download/qBittorrent-Enhanced-Edition.AppImage.zsync" \
+  -updateinformation="zsync|https://github.com/${GITHUB_REPOSITORY}/releases/latest/download/qBittorrent-Enhanced-Edition-x86_64.AppImage.zsync" \
   -extra-plugins="$(join_by ',' "${extra_plugins[@]}")" \
   -exclude-libs="$(join_by ',' "${exclude_libs[@]}")"
 
-cp -fv /tmp/qbee/qBittorrent-x86_64.AppImage "${SELF_DIR}/qBittorrent-Enhanced-Edition.AppImage"
-cp -fv /tmp/qbee/qBittorrent-x86_64.AppImage.zsync "${SELF_DIR}/qBittorrent-Enhanced-Edition.AppImage.zsync"
+# output file name should be qBittorrent-Enhanced-Edition-x86_64.AppImage
+cp -fv /tmp/qbee/qBittorrent-Enhanced-Edition*.AppImage* "${SELF_DIR}/"

@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-# This scrip is for building AppImage
+# This scrip is for static cross compiling
 # Please run this scrip in docker image: ubuntu:20.04
 # E.g: docker run --rm -v `git rev-parse --show-toplevel`:/build ubuntu:20.04 /build/.github/workflows/cross_build.sh
 # If you need keep store build cache in docker volume, just like:
