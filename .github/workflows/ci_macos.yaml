@@ -9,9 +9,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        libt_version: ["2.0.5", "1.2.15"]
-        qbt_gui: ["GUI=ON", "GUI=OFF"]
-        qt_version: ["5.15.2", "6.2.0"]
+        libt_version: ["2.0.5"]
+        qbt_gui: ["GUI=ON"]
+        qt_version: ["5.15.2"]
         exclude:
           - libt_version: "1.2.15"
             qt_version: "6.2.0"
@@ -59,7 +59,7 @@ jobs:
 
           echo "openssl_root=$GITHUB_WORKSPACE/openssl-$openssl_ver-universal" >> $GITHUB_ENV
 
-      - name: Install Qt 5
+      - name: Install Qt 5(arm64)
         if: ${{ startsWith(matrix.qt_version, 5) }}
         run: |
           function build_qt5_arch()
@@ -90,12 +90,10 @@ jobs:
           perl init-repository --module-subset=qtbase,qtmacextras,qtsvg,qttools,qttranslations
           git apply --whitespace=nowarn $GITHUB_WORKSPACE/qt5_xcode13.patch
           cd -
-          build_qt5_arch x86_64
           build_qt5_arch arm64
           
 
-      - name: Install Qt 6
-        if: ${{ startsWith(matrix.qt_version, 6) }}
+      - name: Install Qt
         uses: jurplel/install-qt-action@v2
         with:
           version: ${{ matrix.qt_version }}
