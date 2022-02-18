@@ -136,7 +136,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     Preferences *const pref = Preferences::instance();
     m_uiLocked = pref->isUILocked();
-    setWindowTitle("qBittorrent Enhanced Edition" QBT_VERSION);
+    setWindowTitle("qBittorrent Enhanced Edition " QBT_VERSION);
     m_displaySpeedInTitle = pref->speedInTitleBar();
     // Setting icons
 #ifndef Q_OS_MACOS
@@ -1235,6 +1235,7 @@ void MainWindow::closeEvent(QCloseEvent *e)
 #ifndef Q_OS_MACOS
     if (m_systrayIcon)
     {
+        m_systrayIcon->disconnect();
         m_systrayIcon->setToolTip(tr("qBittorrent is shutting down..."));
         m_trayIconMenu->setEnabled(false);
     }

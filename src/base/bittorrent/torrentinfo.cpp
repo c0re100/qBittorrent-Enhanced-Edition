@@ -140,7 +140,7 @@ nonstd::expected<void, QString> TorrentInfo::saveToFile(const QString &path) con
 
     try
     {
-        const auto torrentCreator = lt::create_torrent(*nativeInfo());
+        const auto torrentCreator = lt::create_torrent(*m_nativeInfo);
         const lt::entry torrentEntry = torrentCreator.generate();
         const nonstd::expected<void, QString> result = Utils::IO::saveToFile(path, torrentEntry);
         if (!result)
@@ -407,19 +407,6 @@ int TorrentInfo::fileIndex(const QString &fileName) const
     }
 
     return -1;
-}
-
-QString TorrentInfo::rootFolder() const
-{
-    if (!isValid())
-        return {};
-
-    return Utils::Fs::findRootFolder(filePaths());
-}
-
-bool TorrentInfo::hasRootFolder() const
-{
-    return !rootFolder().isEmpty();
 }
 
 TorrentContentLayout TorrentInfo::contentLayout() const

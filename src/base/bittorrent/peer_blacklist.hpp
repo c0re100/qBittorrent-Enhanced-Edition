@@ -37,7 +37,10 @@ bool is_offline_downloader(const lt::peer_info& info)
 // BitTorrent Media Player Peer filter
 bool is_bittorrent_media_player(const lt::peer_info& info)
 {
-  std::regex player_filter("-(UW\\w{4})-");
+  if (info.client.find("StellarPlayer") != std::string::npos) {
+    return true;
+  }
+  std::regex player_filter("-(UW\\w{4}|\bSP(0|[1-9][0-9]{0,2}|[1-2][0-9]{0,3}|3[0-5][0-9]{0,2}|3599)\b)-");
   return !!std::regex_match(info.pid.data(), info.pid.data() + 8, player_filter);
 }
 

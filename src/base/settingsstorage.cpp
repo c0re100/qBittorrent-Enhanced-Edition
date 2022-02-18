@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Bittorrent Client using Qt and libtorrent.
  * Copyright (C) 2016  Vladimir Golovnev <glassez@yandex.ru>
  * Copyright (C) 2014  sledgehammer999 <hammered999@gmail.com>
