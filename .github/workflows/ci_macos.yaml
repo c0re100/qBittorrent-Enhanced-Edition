@@ -66,9 +66,9 @@ jobs:
           {
               local arch=$1
               local _target_mkspec_name="macx-clang-$1"
-              if ! [[ -d "${_qt_src_dir}/qtbase/mkspecs/${_target_mkspec_name}" ]]
+              if ! [[ -d "$GITHUB_WORKSPACE/qt5/qtbase/mkspecs/${_target_mkspec_name}" ]]
               then
-                  cp -r "${_qt_src_dir}/qtbase/mkspecs/macx-clang" "${_qt_src_dir}/qtbase/mkspecs/${_target_mkspec_name}"
+                  cp -r "$GITHUB_WORKSPACE/qt5/qtbase/mkspecs/macx-clang" "$GITHUB_WORKSPACE/qt5/qtbase/mkspecs/${_target_mkspec_name}"
                   target_macx_conf_file="$GITHUB_WORKSPACE/qt5/qtbase/mkspecs/${_target_mkspec_name}/qmake.conf"
                   sed -i '' -e '$ d' "${target_macx_conf_file}"
                   echo "QMAKE_APPLE_DEVICE_ARCHS = $1" >> "${target_macx_conf_file}"
