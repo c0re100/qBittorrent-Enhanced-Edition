@@ -116,10 +116,6 @@ jobs:
           build_qbt_arch arm64
           mkdir -p $GITHUB_WORKSPACE/build
           cp -r $GITHUB_WORKSPACE/build-x86_64/qbittorrent*.app $GITHUB_WORKSPACE/build
-
-      - name: Setup Debug Session
-        if: ${{ startsWith(matrix.qt_version, 5) }}
-        uses: csexton/debugger-action@master 
           
       - name: Build qBittorrent (Qt6)
         if: ${{ startsWith(matrix.qt_version, 6) }}
@@ -136,6 +132,10 @@ jobs:
             -DVERBOSE_CONFIGURE=ON \
             -D${{ matrix.qbt_gui }}
           cmake --build build
+
+      - name: Setup Debug Session
+        if: ${{ startsWith(matrix.qt_version, 5) }}
+        uses: csexton/debugger-action@master 
 
       - name: Prepare build artifacts
         run: |
