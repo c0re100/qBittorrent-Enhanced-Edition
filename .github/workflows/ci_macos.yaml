@@ -89,6 +89,10 @@ jobs:
             -DOPENSSL_ROOT_DIR="${{ env.openssl_root }}"
           cmake --build build
           sudo cmake --install build  
+      
+      - name: Setup Debug Session
+        if: ${{ startsWith(matrix.qt_version, 5) }}
+        uses: csexton/debugger-action@master 
 
       - name: Build qBittorrent (Qt5)
         if: ${{ startsWith(matrix.qt_version, 5) }}
