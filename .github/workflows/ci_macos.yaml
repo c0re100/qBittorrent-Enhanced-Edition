@@ -62,37 +62,9 @@ jobs:
       - name: Install Qt 5(arm64)
         if: ${{ startsWith(matrix.qt_version, 5) }}
         run: |
-          function build_qt5_arch()
-          {
-              local arch=$1
-              local _target_mkspec_name="macx-clang-$1"
-              if ! [[ -d "$GITHUB_WORKSPACE/qt5/qtbase/mkspecs/${_target_mkspec_name}" ]]
-              then
-                  cp -r "$GITHUB_WORKSPACE/qt5/qtbase/mkspecs/macx-clang" "$GITHUB_WORKSPACE/qt5/qtbase/mkspecs/${_target_mkspec_name}"
-                  target_macx_conf_file="$GITHUB_WORKSPACE/qt5/qtbase/mkspecs/${_target_mkspec_name}/qmake.conf"
-                  sed -i '' -e '$ d' "${target_macx_conf_file}"
-                  echo "QMAKE_APPLE_DEVICE_ARCHS = $1" >> "${target_macx_conf_file}"
-                  echo "" >> "${target_macx_conf_file}"
-                  echo "load(qt_config)" >> "${target_macx_conf_file}"
-              fi
-              local _qt_cross_compile_args="-xplatform ${_target_mkspec_name}"
-
-              mkdir -p lib-$1 && cd lib-$1
-              "$GITHUB_WORKSPACE/qt5/configure" -prefix $GITHUB_WORKSPACE/lib_$1 -opensource -confirm-license -release -static -appstore-compliant -c++std c++17 -no-pch -I "${{ env.openssl_root }}/include" -L "${{ env.openssl_root }}/lib" -make libs -no-compile-examples -no-dbus -no-icu -qt-pcre -system-zlib -ssl -openssl-linked -no-cups -qt-libpng -qt-libjpeg -no-feature-testlib -no-feature-concurrent -platform macx-clang ${_qt_cross_compile_args}
-              make -j$(sysctl -n hw.ncpu)
-              make install
-              cd -
-          }
-          curl -L https://gist.githubusercontent.com/R0GERIUS/a2d62e21995e732b9fe510efce71965d/raw/26e9f02b88d6eb41b3a6b636248d6290094ecdc9/qt5_xcode13.patch -o $GITHUB_WORKSPACE/qt5_xcode13.patch
-          git clone https://code.qt.io/qt/qt5.git $GITHUB_WORKSPACE/qt5
-          cd qt5
-          git checkout "${{ matrix.qt_version }}"
-          perl init-repository --module-subset=qtbase,qtmacextras,qtsvg,qttools,qttranslations
-          git apply --whitespace=nowarn $GITHUB_WORKSPACE/qt5_xcode13.patch
-          cd -
-          build_qt5_arch arm64
+          wget https://github.com/lunjielee/build-qt5-arm64-action/releases/download/latest/lib_arm64.zip
+          unzip lib_arm64.zip
           
-
       - name: Install Qt
         uses: jurplel/install-qt-action@v2
         with:
