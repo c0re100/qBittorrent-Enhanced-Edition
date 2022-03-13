@@ -37,8 +37,7 @@ apt update
 apt install -y software-properties-common apt-transport-https
 apt-add-repository -y ppa:savoury1/backports
 apt-add-repository -y ppa:savoury1/toolchain
-add-apt-repository -y ppa:savoury1/qt-5-15
-add-apt-repository -y ppa:savoury1/gtk-xenial
+add-apt-repository -y ppa:savoury1/display
 
 if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
   sed -i 's@http://ppa.launchpad.net@https://launchpad.proxy.ustclug.org@' /etc/apt/sources.list.d/*.list
@@ -83,7 +82,10 @@ apt install -y \
   libxcb-xinerama0-dev \
   libxcb-xkb-dev \
   libxkbcommon-dev \
-  libxkbcommon-x11-dev
+  libxkbcommon-x11-dev \
+  libwayland-dev \
+  libwayland-egl-backend-dev
+# libgtk-3-dev
 
 apt autoremove --purge -y
 # make gcc-8 as default gcc
@@ -163,7 +165,10 @@ echo "Ninja version $(ninja --version)"
 qt_major_ver="$(retry curl -ksSL --compressed https://download.qt.io/official_releases/qt/ \| sed -nr "'s@.*href=\"([0-9]+(\.[0-9]+)*)/\".*@\1@p'" \| grep \"^${QT_VER_PREFIX}\" \| head -1)"
 qt_ver="$(retry curl -ksSL --compressed https://download.qt.io/official_releases/qt/${qt_major_ver}/ \| sed -nr "'s@.*href=\"([0-9]+(\.[0-9]+)*)/\".*@\1@p'" \| grep \"^${QT_VER_PREFIX}\" \| head -1)"
 echo "Using qt version: ${qt_ver}"
-mkdir -p "/usr/src/qtbase-${qt_ver}" "/usr/src/qttools-${qt_ver}" "/usr/src/qtsvg-${qt_ver}"
+mkdir -p "/usr/src/qtbase-${qt_ver}" \
+  "/usr/src/qttools-${qt_ver}" \
+  "/usr/src/qtsvg-${qt_ver}" \
+  "/usr/src/qtwayland-${qt_ver}"
 if [ ! -f "/usr/src/qtbase-${qt_ver}/.unpack_ok" ]; then
   qtbase_url="https://download.qt.io/official_releases/qt/${qt_major_ver}/${qt_ver}/submodules/qtbase-everywhere-src-${qt_ver}.tar.xz"
   retry curl -kSL --compressed "${qtbase_url}" \| tar Jxf - -C "/usr/src/qtbase-${qt_ver}" --strip-components 1
@@ -181,7 +186,7 @@ rm -fr CMakeCache.txt CMakeFiles
   -qt-libpng \
   -qt-pcre \
   -qt-harfbuzz \
-  -no-opengl \
+  -no-icu \
   -no-directfb \
   -no-linuxfb \
   -no-eglfs \
@@ -209,6 +214,18 @@ if [ ! -f "/usr/src/qttools-${qt_ver}/.unpack_ok" ]; then
   touch "/usr/src/qttools-${qt_ver}/.unpack_ok"
 fi
 cd "/usr/src/qttools-${qt_ver}"
+rm -fr CMakeCache.txt
+"${QT_BASE_DIR}/bin/qt-configure-module" .
+cmake --build . --parallel
+cmake --install .
+
+# qt-wayland
+if [ ! -f "/usr/src/qtwayland-${qt_ver}/.unpack_ok" ]; then
+  qtwayland_url="https://download.qt.io/official_releases/qt/${qt_major_ver}/${qt_ver}/submodules/qtwayland-everywhere-src-${qt_ver}.tar.xz"
+  retry curl -kSL --compressed "${qtwayland_url}" \| tar Jxf - -C "/usr/src/qtwayland-${qt_ver}" --strip-components 1
+  touch "/usr/src/qtwayland-${qt_ver}/.unpack_ok"
+fi
+cd "/usr/src/qtwayland-${qt_ver}"
 rm -fr CMakeCache.txt
 "${QT_BASE_DIR}/bin/qt-configure-module" .
 cmake --build . --parallel
@@ -302,7 +319,7 @@ cat >/tmp/qbee/AppDir/AppRun <<EOF
 
 this_dir="\$(readlink -f "\$(dirname "\$0")")"
 export XDG_DATA_DIRS="\${this_dir}/usr/share:\${XDG_DATA_DIRS}:/usr/share:/usr/local/share"
-export QT_QPA_PLATFORMTHEMES=qt6gtk2
+export QT_QPA_PLATFORMTHEMES=gtk2
 export QT_STYLE_OVERRIDE=qt6gtk2
 
 exec "\${this_dir}/usr/bin/qbittorrent" "\$@"
@@ -313,11 +330,16 @@ extra_plugins=(
   iconengines
   imageformats
   platforminputcontexts
-  platforms/libqxcb.so
+  platforms
   platformthemes
-  styles
   sqldrivers
+  styles
   tls
+  wayland-decoration-client
+  wayland-graphics-integration-client
+  wayland-graphics-integration-server
+  wayland-shell-integration
+  xcbglintegrations
 )
 exclude_libs=(
   libatk-1.0.so.0
@@ -326,9 +348,12 @@ exclude_libs=(
   libblkid.so.1
   libboost_filesystem.so.1.58.0
   libboost_system.so.1.58.0
+  libboost_system.so.1.65.1
+  libbsd.so.0
   libcairo-gobject.so.2
   libcairo.so.2
   libcapnp-0.5.3.so
+  libcapnp-0.6.1.so
   libdatrie.so.1
   libdbus-1.so.3
   libepoxy.so.0
@@ -342,6 +367,7 @@ exclude_libs=(
   libgtk-3.so.0
   libgtk-x11-2.0.so.0
   libkj-0.5.3.so
+  libkj-0.6.1.so
   libmirclient.so.9
   libmircommon.so.7
   libmircore.so.1
@@ -354,6 +380,34 @@ exclude_libs=(
   libwayland-client.so.0
   libwayland-cursor.so.0
   libwayland-egl.so.1
+  libwayland-server.so.0
+  libX11-xcb.so.1
+  libXau.so.6
+  libxcb-glx.so.0
+  libxcb-icccm.so.4
+  libxcb-image.so.0
+  libxcb-keysyms.so.1
+  libxcb-randr.so.0
+  libxcb-render.so.0
+  libxcb-render-util.so.0
+  libxcb-shape.so.0
+  libxcb-shm.so.0
+  libxcb-sync.so.1
+  libxcb-util.so.1
+  libxcb-xfixes.so.0
+  libxcb-xkb.so.1
+  libXcomposite.so.1
+  libXcursor.so.1
+  libXdamage.so.1
+  libXdmcp.so.6
+  libXext.so.6
+  libXfixes.so.3
+  libXinerama.so.1
+  libXi.so.6
+  libxkbcommon.so.0
+  libxkbcommon-x11.so.0
+  libXrandr.so.2
+  libXrender.so.1
 )
 
 # fix AppImage output file name
