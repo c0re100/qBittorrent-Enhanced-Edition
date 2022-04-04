@@ -14,7 +14,7 @@
 // bad peer filter
 bool is_bad_peer(const lt::peer_info& info)
 {
-  std::regex id_filter("-(XL|SD|XF|QD|BN|DL)(\\d+)-");
+  std::regex id_filter("-(XL|SD|XF|QD|BN|DL|TS)(\\d+)-");
   std::regex ua_filter(R"((\d+.\d+.\d+.\d+|cacao_torrent))");
   return std::regex_match(info.pid.data(), info.pid.data() + 8, id_filter) || std::regex_match(info.client, ua_filter);
 }
