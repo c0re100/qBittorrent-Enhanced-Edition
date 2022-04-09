@@ -320,6 +320,8 @@ prepare_qt() {
     -no-feature-testlib \
     -no-feature-animation \
     -feature-optimize_full \
+    -nomake examples \
+    -nomake tests \
     ${QT_BASE_EXTRA_CONF} \
     -device-option "CROSS_COMPILE=${CROSS_HOST}-" \
     -- \
@@ -328,6 +330,7 @@ prepare_qt() {
     -DCMAKE_C_COMPILER="${CROSS_HOST}-gcc" \
     -DCMAKE_SYSROOT="${CROSS_PREFIX}" \
     -DCMAKE_CXX_COMPILER="${CROSS_HOST}-g++"
+  cat config.summary
   cmake --build . --parallel
   cmake --install .
   export QT_BASE_DIR="${CROSS_PREFIX}/opt/qt"

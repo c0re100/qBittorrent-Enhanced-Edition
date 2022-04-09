@@ -1,11 +1,11 @@
 #!/bin/bash -e
 
 # This scrip is for building AppImage
-# Please run this scrip in docker image: ubuntu:16.04
-# E.g: docker run --rm -v `git rev-parse --show-toplevel`:/build ubuntu:16.04 /build/.github/workflows/build_appimage.sh
+# Please run this scrip in docker image: ubuntu:18.04
+# E.g: docker run --rm -v `git rev-parse --show-toplevel`:/build ubuntu:18.04 /build/.github/workflows/build_appimage.sh
 # If you need keep store build cache in docker volume, just like:
 #   $ docker volume create qbee-cache
-#   $ docker run --rm -v `git rev-parse --show-toplevel`:/build -v qbee-cache:/var/cache/apt -v qbee-cache:/usr/src ubuntu:16.04 /build/.github/workflows/build_appimage.sh
+#   $ docker run --rm -v `git rev-parse --show-toplevel`:/build -v qbee-cache:/var/cache/apt -v qbee-cache:/usr/src ubuntu:18.04 /build/.github/workflows/build_appimage.sh
 # Artifacts will copy to the same directory.
 
 set -o pipefail
@@ -14,6 +14,7 @@ set -o pipefail
 export QT_VER_PREFIX="6"
 export LIBTORRENT_BRANCH="RC_2_0"
 
+rm -f /etc/apt/sources.list.d/*.list*
 # Ubuntu mirror for local building
 if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
   source /etc/os-release
@@ -38,9 +39,8 @@ echo '/usr/local/lib/x86_64-linux-gnu' > /etc/ld.so.conf.d/x86_64-linux-gnu-loca
 
 apt update
 apt install -y software-properties-common apt-transport-https
-apt-add-repository -y ppa:savoury1/backports
-apt-add-repository -y ppa:savoury1/toolchain
-add-apt-repository -y ppa:savoury1/display
+apt-add-repository -yn ppa:savoury1/backports
+add-apt-repository -yn ppa:savoury1/display
 
 if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
   sed -i 's@http://ppa.launchpad.net@https://launchpad.proxy.ustclug.org@' /etc/apt/sources.list.d/*.list
@@ -59,7 +59,6 @@ apt install -y \
   libxcb1-dev \
   libicu-dev \
   libgtk2.0-dev \
-  g++-8 \
   build-essential \
   libgl1-mesa-dev \
   libfontconfig1-dev \
@@ -87,8 +86,8 @@ apt install -y \
   libxkbcommon-dev \
   libxkbcommon-x11-dev \
   libwayland-dev \
-  libwayland-egl-backend-dev
-# libgtk-3-dev
+  libwayland-egl-backend-dev \
+  g++-8
 
 apt autoremove --purge -y
 # make gcc-8 as default gcc
@@ -195,7 +194,10 @@ rm -fr CMakeCache.txt CMakeFiles
   -no-eglfs \
   -no-feature-testlib \
   -no-feature-vnc \
-  -feature-optimize_full
+  -feature-optimize_full \
+  -nomake examples \
+  -nomake tests
+cat config.summary
 cmake --build . --parallel
 cmake --install .
 export QT_BASE_DIR="$(ls -rd /usr/local/Qt-* | head -1)"
@@ -219,6 +221,7 @@ fi
 cd "/usr/src/qttools-${qt_ver}"
 rm -fr CMakeCache.txt
 "${QT_BASE_DIR}/bin/qt-configure-module" .
+cat config.summary
 cmake --build . --parallel
 cmake --install .
 
@@ -231,6 +234,7 @@ fi
 cd "/usr/src/qtwayland-${qt_ver}"
 rm -fr CMakeCache.txt
 "${QT_BASE_DIR}/bin/qt-configure-module" .
+cat config.summary
 cmake --build . --parallel
 cmake --install .
 
