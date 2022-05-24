@@ -35,7 +35,7 @@ echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' >/etc/apt/apt.conf.d/0
 echo -e 'Acquire::https::Verify-Peer "false";\nAcquire::https::Verify-Host "false";' >/etc/apt/apt.conf.d/99-trust-https
 
 # Since cmake 3.23.0 CMAKE_INSTALL_LIBDIR will force set to lib/<multiarch-tuple> on Debian
-echo '/usr/local/lib/x86_64-linux-gnu' > /etc/ld.so.conf.d/x86_64-linux-gnu-local.conf
+echo '/usr/local/lib/x86_64-linux-gnu' >/etc/ld.so.conf.d/x86_64-linux-gnu-local.conf
 
 apt update
 apt install -y software-properties-common apt-transport-https
@@ -274,17 +274,25 @@ fi
 
 # build libtorrent-rasterbar
 echo "libtorrent-rasterbar branch: ${LIBTORRENT_BRANCH}"
+libtorrent_git_url="https://github.com/arvidn/libtorrent.git"
+if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
+  libtorrent_git_url="https://ghproxy.com/${libtorrent_git_url}"
+fi
 if [ ! -d "/usr/src/libtorrent-rasterbar-${LIBTORRENT_BRANCH}/" ]; then
-  libtorrent_git_url="https://github.com/arvidn/libtorrent.git"
-  if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
-    libtorrent_git_url="https://ghproxy.com/${libtorrent_git_url}"
-  fi
   retry git clone --depth 1 --recursive --shallow-submodules --branch "${LIBTORRENT_BRANCH}" \
     "${libtorrent_git_url}" \
     "/usr/src/libtorrent-rasterbar-${LIBTORRENT_BRANCH}/"
 fi
 cd "/usr/src/libtorrent-rasterbar-${LIBTORRENT_BRANCH}/"
-git pull
+if ! git pull; then
+  # if pull failed, retry clone the repository.
+  cd /
+  rm -fr "/usr/src/libtorrent-rasterbar-${LIBTORRENT_BRANCH}/"
+  retry git clone --depth 1 --recursive --shallow-submodules --branch "${LIBTORRENT_BRANCH}" \
+    "${libtorrent_git_url}" \
+    "/usr/src/libtorrent-rasterbar-${LIBTORRENT_BRANCH}/"
+  cd "/usr/src/libtorrent-rasterbar-${LIBTORRENT_BRANCH}/"
+fi
 rm -fr build/CMakeCache.txt
 cmake \
   -B build \

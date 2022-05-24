@@ -340,17 +340,25 @@ prepare_qt() {
 
 prepare_libtorrent() {
   echo "libtorrent-rasterbar branch: ${LIBTORRENT_BRANCH}"
+  libtorrent_git_url="https://github.com/arvidn/libtorrent.git"
+  if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
+    libtorrent_git_url="https://ghproxy.com/${libtorrent_git_url}"
+  fi
   if [ ! -d "/usr/src/libtorrent-rasterbar-${LIBTORRENT_BRANCH}/" ]; then
-    libtorrent_git_url="https://github.com/arvidn/libtorrent.git"
-    if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
-      libtorrent_git_url="https://ghproxy.com/${libtorrent_git_url}"
-    fi
     retry git clone --depth 1 --recursive --shallow-submodules --branch "${LIBTORRENT_BRANCH}" \
       "${libtorrent_git_url}" \
       "/usr/src/libtorrent-rasterbar-${LIBTORRENT_BRANCH}/"
   fi
   cd "/usr/src/libtorrent-rasterbar-${LIBTORRENT_BRANCH}/"
-  git pull
+  if ! git pull; then
+    # if pull failed, retry clone the repository.
+    cd /
+    rm -fr "/usr/src/libtorrent-rasterbar-${LIBTORRENT_BRANCH}/"
+    retry git clone --depth 1 --recursive --shallow-submodules --branch "${LIBTORRENT_BRANCH}" \
+      "${libtorrent_git_url}" \
+      "/usr/src/libtorrent-rasterbar-${LIBTORRENT_BRANCH}/"
+    cd "/usr/src/libtorrent-rasterbar-${LIBTORRENT_BRANCH}/"
+  fi
   rm -fr build/CMakeCache.txt
   # TODO: solve mingw build
   if [ x"${TARGET_HOST}" = xWindows ]; then
