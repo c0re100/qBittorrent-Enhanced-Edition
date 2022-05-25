@@ -398,7 +398,10 @@ exclude_libs=(
   libgdk-3.so.0
   libgdk_pixbuf-2.0.so.0
   libgdk-x11-2.0.so.0
+  libgio-2.0.so.0
+  libglib-2.0.so.0
   libgmodule-2.0.so.0
+  libgobject-2.0.so.0
   libgraphite2.so.3
   libgtk-3.so.0
   libgtk-x11-2.0.so.0
