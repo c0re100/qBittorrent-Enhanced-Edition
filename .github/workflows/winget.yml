@@ -1,0 +1,13 @@
+name: Publish to WinGet
+on:
+  release:
+    types: [released]
+jobs:
+  publish:
+    runs-on: windows-latest # action can only be run on windows
+    steps:
+      - uses: vedantmgoyal2009/winget-releaser@latest
+        with:
+          identifier: c0re100.qBittorrent-Enhanced-Edition
+          installers-regex: 'qbittorrent_enhanced_[0-9.]+(_x64)?_setup.exe$'
+          token: ${{ secrets.WINGET_TOKEN }}
