@@ -174,12 +174,20 @@ prepare_ninja() {
 prepare_toolchain() {
   if [ -f "/usr/src/${CROSS_HOST}-cross.tgz" ]; then
     cd /usr/src/
-    if ! curl -ksSL --compressed http://musl.cc/SHA512SUMS | grep "${CROSS_HOST}-cross.tgz" | head -1 | sha512sum -c; then
-      rm -f "/usr/src/${CROSS_HOST}-cross.tgz"
+    cached_file_ts="$(stat -c '%Y' "/usr/src/${CROSS_HOST}-cross.tgz")"
+    current_ts="$(date +%s)"
+    if [ "$((${current_ts} - "${cached_file_ts}"))" -gt 2592000 ]; then
+      SHA512SUMS="$(retry curl -ksSL --compressed https://musl.cc/SHA512SUMS)"
+      if echo "${SHA512SUMS}" | grep "${CROSS_HOST}-cross.tgz" | head -1 | sha512sum -c; then
+        touch "/usr/src/${CROSS_HOST}-cross.tgz"
+      else
+        rm -f "/usr/src/${CROSS_HOST}-cross.tgz"
+      fi
     fi
   fi
+
   if [ ! -f "/usr/src/${CROSS_HOST}-cross.tgz" ]; then
-    retry curl -kLC- -o "/usr/src/${CROSS_HOST}-cross.tgz" "http://musl.cc/${CROSS_HOST}-cross.tgz"
+    retry curl -kLC- -o "/usr/src/${CROSS_HOST}-cross.tgz" "https://musl.cc/${CROSS_HOST}-cross.tgz"
   fi
   tar -zxf "/usr/src/${CROSS_HOST}-cross.tgz" --transform='s|^\./||S' --strip-components=1 -C "${CROSS_ROOT}"
   # mingw does not contains posix thread support: https://github.com/meganz/mingw-std-threads
