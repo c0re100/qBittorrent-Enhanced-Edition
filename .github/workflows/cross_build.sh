@@ -83,8 +83,6 @@ i686-*-mingw*)
   ;;
 esac
 
-export QT_VER_PREFIX="6"
-export LIBTORRENT_BRANCH="RC_2_0"
 export CROSS_ROOT="${CROSS_ROOT:-/cross_root}"
 # strip all compiled files by default
 export CFLAGS='-s'
