@@ -336,7 +336,6 @@ prepare_qt() {
     -DCMAKE_C_COMPILER="${CROSS_HOST}-gcc" \
     -DCMAKE_SYSROOT="${CROSS_PREFIX}" \
     -DCMAKE_CXX_COMPILER="${CROSS_HOST}-g++"
-  cat config.summary
   cmake --build . --parallel
   cmake --install .
   export QT_BASE_DIR="${CROSS_PREFIX}/opt/qt"

@@ -197,7 +197,6 @@ rm -fr CMakeCache.txt CMakeFiles
   -feature-optimize_full \
   -nomake examples \
   -nomake tests
-cat config.summary
 cmake --build . --parallel
 cmake --install .
 export QT_BASE_DIR="$(ls -rd /usr/local/Qt-* | head -1)"
@@ -227,17 +226,17 @@ cmake --install .
 
 # Remove qt-wayland until next release: https://bugreports.qt.io/browse/QTBUG-104318
 # qt-wayland
-# if [ ! -f "/usr/src/qtwayland-${qt_ver}/.unpack_ok" ]; then
-#   qtwayland_url="https://download.qt.io/official_releases/qt/${qt_major_ver}/${qt_ver}/submodules/qtwayland-everywhere-src-${qt_ver}.tar.xz"
-#   retry curl -kSL --compressed "${qtwayland_url}" \| tar Jxf - -C "/usr/src/qtwayland-${qt_ver}" --strip-components 1
-#   touch "/usr/src/qtwayland-${qt_ver}/.unpack_ok"
-# fi
-# cd "/usr/src/qtwayland-${qt_ver}"
-# rm -fr CMakeCache.txt
-# "${QT_BASE_DIR}/bin/qt-configure-module" .
-# cat config.summary
-# cmake --build . --parallel
-# cmake --install .
+if [ ! -f "/usr/src/qtwayland-${qt_ver}/.unpack_ok" ]; then
+  qtwayland_url="https://download.qt.io/official_releases/qt/${qt_major_ver}/${qt_ver}/submodules/qtwayland-everywhere-src-${qt_ver}.tar.xz"
+  retry curl -kSL --compressed "${qtwayland_url}" \| tar Jxf - -C "/usr/src/qtwayland-${qt_ver}" --strip-components 1
+  touch "/usr/src/qtwayland-${qt_ver}/.unpack_ok"
+fi
+cd "/usr/src/qtwayland-${qt_ver}"
+rm -fr CMakeCache.txt
+"${QT_BASE_DIR}/bin/qt-configure-module" .
+cat config.summary
+cmake --build . --parallel
+cmake --install .
 
 # install qt6gtk2 for better look
 if [ ! -d "/usr/src/qt6gtk2/" ]; then
@@ -372,10 +371,10 @@ extra_plugins=(
   sqldrivers
   styles
   tls
-  # wayland-decoration-client
-  # wayland-graphics-integration-client
-  # wayland-graphics-integration-server
-  # wayland-shell-integration
+  wayland-decoration-client
+  wayland-graphics-integration-client
+  wayland-graphics-integration-server
+  wayland-shell-integration
   xcbglintegrations
 )
 exclude_libs=(
