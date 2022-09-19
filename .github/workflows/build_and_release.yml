@@ -45,7 +45,7 @@ jobs:
   # cross compile for some other platforms, like arm, mips, etc.
   cross-compile:
     runs-on: ubuntu-latest
-    container: "ubuntu:20.04"
+    container: "abcfy2/muslcc-toolchain-ubuntu:${{ matrix.cross_host }}"
     strategy:
       fail-fast: false
       matrix:
