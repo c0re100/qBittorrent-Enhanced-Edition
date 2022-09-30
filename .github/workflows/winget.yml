@@ -6,8 +6,16 @@ jobs:
   publish:
     runs-on: windows-latest # action can only be run on windows
     steps:
-      - uses: vedantmgoyal2009/winget-releaser@latest
+      - name: Get version
+        id: get-version
+        run: |
+          # Finding the version from release name
+          $VERSION = "${{ github.event.release.tag_name }}".TrimStart('release-')
+          echo "::set-output name=version::$VERSION"
+        shell: pwsh
+      - uses: vedantmgoyal2009/winget-releaser@v1
         with:
           identifier: c0re100.qBittorrent-Enhanced-Edition
+          version: ${{ steps.get-version.outputs.version }}
           installers-regex: 'qbittorrent_enhanced_[0-9.]+(_x64)?_setup.exe$'
           token: ${{ secrets.WINGET_TOKEN }}
