@@ -77,6 +77,12 @@ brew install c0re100-qbittorrent
 
 #### Windows
 
+Windows 10 & 11 (Maintainer: [c0re100](https://github.com/c0re100))
+
+```
+winget install c0re100.qBittorrent-Enhanced-Edition
+```
+
 Chocolatey (Maintainer: [iYato](https://github.com/iYato))
 
 ```
