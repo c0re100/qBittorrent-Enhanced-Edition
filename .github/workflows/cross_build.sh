@@ -205,7 +205,7 @@ prepare_zlib() {
 }
 
 prepare_ssl() {
-  openssl_filename="$(retry curl -ksSL --compressed https://www.openssl.org/source/ \| grep -o "'href=\"openssl-3.*tar.gz\"'" \| grep -o "'[^\"]*.tar.gz'")"
+  openssl_filename="$(retry curl -ksSL --compressed https://www.openssl.org/source/ \| grep -o "'href=\"openssl-3\(\.[0-9]*\)*tar.gz\"'" \| grep -o "'[^\"]*.tar.gz'" \| head -1)"
   openssl_ver="$(echo "${openssl_filename}" | sed -r 's/openssl-(.+)\.tar\.gz/\1/')"
   echo "OpenSSL version ${openssl_ver}"
   if [ ! -f "/usr/src/openssl-${openssl_ver}/.unpack_ok" ]; then
