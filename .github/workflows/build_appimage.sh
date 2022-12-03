@@ -91,8 +91,7 @@ apt install -y \
 
 apt autoremove --purge -y
 # make gcc-8 as default gcc
-ln -svf /usr/bin/gcc-8 /usr/bin/gcc
-ln -svf /usr/bin/g++-8 /usr/bin/g++
+update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 800 --slave /usr/bin/g++ g++ /usr/bin/g++-8
 # strip all compiled files by default
 export CFLAGS='-s'
 export CXXFLAGS='-s'
@@ -311,6 +310,7 @@ cmake \
   -B build \
   -G "Ninja" \
   -DQT6=ON \
+  -DCMAKE_CXX_STANDARD_LIBRARIES="-lstdc++fs" \
   -DCMAKE_PREFIX_PATH="${QT_BASE_DIR}/lib/cmake/" \
   -DCMAKE_BUILD_TYPE="Release" \
   -DCMAKE_CXX_STANDARD="17" \
@@ -453,7 +453,7 @@ exclude_libs=(
 )
 
 # fix AppImage output file name
-sed -i 's/Name=qBittorrent.*/Name=qBittorrent-Enhanced-Edition/' /tmp/qbee/AppDir/usr/share/applications/*.desktop
+sed -i 's/Name=qBittorrent.*/Name=qBittorrent-Enhanced-Edition/;/SingleMainWindow/d' /tmp/qbee/AppDir/usr/share/applications/*.desktop
 
 APPIMAGE_EXTRACT_AND_RUN=1 \
   /tmp/linuxdeployqt-continuous-x86_64.AppImage \
