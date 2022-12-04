@@ -89,10 +89,10 @@ Chocolatey (Maintainer: [iYato](https://github.com/iYato))
 choco install qbittorrent-enhanced
 ```
 
-Scoop (Maintainer: [Chawye Hsu](https://github.com/chawyehsu))
+Scoop
 
 ```
-scoop bucket add dorado https://github.com/chawyehsu/dorado
+scoop bucket add extras
 scoop install qbittorrent-enhanced
 ```
 
