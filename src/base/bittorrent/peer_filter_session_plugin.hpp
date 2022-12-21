@@ -7,6 +7,7 @@
 #include "base/path.h"
 
 #include "peer_filter_plugin.hpp"
+#include "peer_plugins_compat.hpp"
 #include "peer_filter.hpp"
 #include "peer_logger.hpp"
 
@@ -51,7 +52,7 @@ public:
   {
   }
 
-  std::shared_ptr<lt::torrent_plugin> new_torrent(const lt::torrent_handle& th, client_data) override
+  std::shared_ptr<lt::torrent_plugin> new_torrent(const lt::torrent_handle& th, lt::client_data_t) override
   {
     // do not waste CPU and memory for useless objects when no filters are enabled
     if (!m_blacklist && !m_whitelist)
