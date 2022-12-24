@@ -17,5 +17,5 @@ jobs:
         with:
           identifier: c0re100.qBittorrent-Enhanced-Edition
           version: ${{ steps.get-version.outputs.version }}
-          installers-regex: 'qbittorrent_enhanced_[0-9.]+(_x64)?_setup.exe$'
+          installers-regex: 'qbittorrent_enhanced_[0-9.]+(_qt6_x64)?_setup.exe$'
           token: ${{ secrets.WINGET_TOKEN }}
