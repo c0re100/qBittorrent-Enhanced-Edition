@@ -13,7 +13,7 @@ jobs:
           $VERSION = "${{ github.event.release.tag_name }}".TrimStart('release-')
           echo "::set-output name=version::$VERSION"
         shell: pwsh
-      - uses: vedantmgoyal2009/winget-releaser@v1
+      - uses: vedantmgoyal2009/winget-releaser@v2
         with:
           identifier: c0re100.qBittorrent-Enhanced-Edition
           version: ${{ steps.get-version.outputs.version }}
