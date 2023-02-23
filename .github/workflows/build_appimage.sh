@@ -37,17 +37,34 @@ echo -e 'Acquire::https::Verify-Peer "false";\nAcquire::https::Verify-Host "fals
 # Since cmake 3.23.0 CMAKE_INSTALL_LIBDIR will force set to lib/<multiarch-tuple> on Debian
 echo '/usr/local/lib/x86_64-linux-gnu' >/etc/ld.so.conf.d/x86_64-linux-gnu-local.conf
 
-apt update
-apt install -y software-properties-common apt-transport-https
-apt-add-repository -yn ppa:savoury1/backports
-add-apt-repository -yn ppa:savoury1/display
+retry() {
+  # max retry 5 times
+  try=5
+  # sleep 1 min every retry
+  sleep_time=60
+  for i in $(seq ${try}); do
+    echo "executing with retry: $@" >&2
+    if eval "$@"; then
+      return 0
+    else
+      echo "execute '$@' failed, tries: ${i}" >&2
+      sleep ${sleep_time}
+    fi
+  done
+  echo "execute '$@' failed" >&2
+  return 1
+}
+
+retry apt update
+retry apt install -y software-properties-common apt-transport-https
+retry apt-add-repository -yn ppa:savoury1/backports
 
 if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
   sed -i 's@http://ppa.launchpad.net@https://launchpad.proxy.ustclug.org@' /etc/apt/sources.list.d/*.list
 fi
 
-apt update
-apt install -y \
+retry apt update
+retry apt install -y \
   curl \
   git \
   unzip \
@@ -98,24 +115,6 @@ export CXXFLAGS='-s'
 # Force refresh ld.so.cache
 ldconfig
 SELF_DIR="$(dirname "$(readlink -f "${0}")")"
-
-retry() {
-  # max retry 5 times
-  try=5
-  # sleep 3s every retry
-  sleep_time=3
-  for i in $(seq ${try}); do
-    echo "executing with retry: $@" >&2
-    if eval "$@"; then
-      return 0
-    else
-      echo "execute '$@' failed, tries: ${i}" >&2
-      sleep ${sleep_time}
-    fi
-  done
-  echo "execute '$@' failed" >&2
-  return 1
-}
 
 # join array to string. E.g join_by ',' "${arr[@]}"
 join_by() {

@@ -109,8 +109,8 @@ mkdir -p "/usr/src"
 retry() {
   # max retry 5 times
   try=5
-  # sleep 3s every retry
-  sleep_time=3
+  # sleep 1 min every retry
+  sleep_time=60
   for i in $(seq ${try}); do
     echo "executing with retry: $@" >&2
     if eval "$@"; then
