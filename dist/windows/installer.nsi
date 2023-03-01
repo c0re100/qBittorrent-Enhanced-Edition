@@ -63,8 +63,7 @@ Section $(inst_qbt_req) ;"qBittorrent (required)"
 
 SectionEnd
 
-; Optional section (can be disabled by the user)
-Section "Install with Debug Symbol File"
+Section /o "Install with Debug Symbol File"
 
   ; Set output path to the installation directory.
   SetOutPath $INSTDIR
