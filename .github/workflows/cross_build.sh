@@ -97,7 +97,11 @@ case "${TARGET_HOST}" in
 *)
   TARGET_HOST=Linux
   apt install -y "qemu-user-static"
-  RUNNER_CHECKER="qemu-${TARGET_ARCH}-static"
+  if [ x"${TARGET_ARCH}" = xi686 ]; then
+    RUNNER_CHECKER="qemu-i386-static"
+  else
+    RUNNER_CHECKER="qemu-${TARGET_ARCH}-static"
+  fi
   ;;
 esac
 

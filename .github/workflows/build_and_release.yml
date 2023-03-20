@@ -61,6 +61,7 @@ jobs:
           - mips64-linux-musl
           - mips64el-linux-musl
           - x86_64-linux-musl
+          - i686-linux-musl
     steps:
       - name: Checkout
         uses: actions/checkout@v3
