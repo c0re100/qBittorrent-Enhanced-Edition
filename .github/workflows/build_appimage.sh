@@ -239,7 +239,7 @@ prepare_qt() {
   fi
   cd "/usr/src/qttools-${qt_ver}"
   rm -fr CMakeCache.txt
-  "${QT_BASE_DIR}/bin/qt-configure-module" . -no-feature-designer
+  "${QT_BASE_DIR}/bin/qt-configure-module" .
   cat config.summary
   cmake --build . --parallel
   cmake --install .
