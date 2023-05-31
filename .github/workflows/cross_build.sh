@@ -182,9 +182,19 @@ prepare_zlib() {
       touch "/usr/src/zlib-ng-${zlib_ng_latest_tag}/.unpack_ok"
     fi
     cd "/usr/src/zlib-ng-${zlib_ng_latest_tag}/"
-    CHOST="${CROSS_HOST}" ./configure --prefix="${CROSS_PREFIX}" --static --zlib-compat
-    make -j$(nproc)
-    make install
+    rm -fr build
+    cmake -B build \
+      -G Ninja \
+      -DBUILD_SHARED_LIBS=OFF \
+      -DZLIB_COMPAT=ON \
+      -DCMAKE_SYSTEM_NAME="${TARGET_HOST}" \
+      -DCMAKE_INSTALL_PREFIX="${CROSS_PREFIX}" \
+      -DCMAKE_C_COMPILER="${CROSS_HOST}-gcc" \
+      -DCMAKE_CXX_COMPILER="${CROSS_HOST}-g++" \
+      -DCMAKE_SYSTEM_PROCESSOR="${TARGET_ARCH}" \
+      -DWITH_GTEST=OFF
+    cmake --build build
+    cmake --install build
     # Fix mingw build sharedlibdir lost issue
     sed -i 's@^sharedlibdir=.*@sharedlibdir=${libdir}@' "${CROSS_PREFIX}/lib/pkgconfig/zlib.pc"
   else
