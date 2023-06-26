@@ -2,7 +2,7 @@ qBittorrent 增强版
 ------------------------------------------
 [用户和跟踪器运营商的重要注意事项](NOTE.md)
 **********************************
-＃ 特征：
+# 特征：
 1.自动禁止迅雷、QQ、百度、Xfplay、DLBT和离线下载器
 
 2._自动禁止来自中国的未知对等_选项（默认：关闭）
@@ -13,7 +13,7 @@ qBittorrent 增强版
 
 5. 对端白名单/黑名单
 **********************************
-＃＃＃ 描述：
+# 描述：
 qBittorrent 是一个用 C++ / Qt 编写的 BitTorrent 客户端，它使用
 libtorrent（有时称为 libtorrent-rasterbar），作者：Arvid Norberg。
 
@@ -23,7 +23,7 @@ libtorrent（有时称为 libtorrent-rasterbar），作者：Arvid Norberg。
 
 [DB-IP](https://db-ip.com/) 提供的免费 [IP to Country Lite 数据库](https://db-ip.com/db/download/ip-to-country-lite) 用于解析同行的国家/地区。 该数据库根据 [知识共享署名 4.0 国际许可证](https://creativecommons.org/licenses/by/4.0/) 获得许可。
 
-＃＃＃ 安装：
+# 安装：
 安装时，请按照 INSTALL 文件中的说明进行操作，但很简单：
 
 ````
