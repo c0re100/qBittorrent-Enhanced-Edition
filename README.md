@@ -1,6 +1,8 @@
-qBittorrent Enhanced Edition
+qBittorrent Enhanced Edition  
+
+[英文](README.md)  [中文](README-ZH.md)  
 ------------------------------------------
-[Important Note for user and tracker operators](NOTE.md)
+[Important Note for user and tracker operators](NOTE.md) 
 ********************************
 # Features:
 1. Auto Ban Xunlei, QQ, Baidu, Xfplay, DLBT and Offline downloader
@@ -21,7 +23,7 @@ It aims to be a good alternative to all other bittorrent clients
 out there. qBittorrent is fast, stable and provides unicode
 support as well as many features.
 
-The free [IP to Country Lite database](https://db-ip.com/db/download/ip-to-country-lite) by [DB-IP](https://db-ip.com/) is used for resolving the countries of peers. The database is licensed under the [Creative Commons Attribution 4.0 International License](https://creativecommons.org/licenses/by/4.0/).
+The free [IP to Country Lite database](https://db-ip.com/db/download/ip-to-country-lite) by [DB-IP](https://db-ip.com/) is used for resolving the countries of peers. The database is licensed under the [Creative Commons Attribution 4.0 International License](https://creativecommons.org/licenses/by/4.0/). 
 
 ### Installation:
 For installation, follow the instructions from INSTALL file, but simple:
