@@ -2007,6 +2007,16 @@ void Preferences::setAutoBanBTPlayerPeer(const bool checked)
     setValue(u"Preferences/Advanced/AutoBanBTPlayerPeer"_s, checked);
 }
 
+bool Preferences::getShadowBan() const
+{
+    return value(u"Preferences/Advanced/ShadowBan"_s, false);
+}
+
+void Preferences::setShadowBan(const bool checked)
+{
+    setValue(u"Preferences/Advanced/ShadowBan"_s, checked);
+}
+
 QString Preferences::customizeTrackersListUrl() const
 {
     return value(u"Preferences/Bittorrent/CustomizeTrackersListUrl"_s, u"https://cdn.jsdelivr.net/gh/ngosang/trackerslist/trackers_best.txt"_s);

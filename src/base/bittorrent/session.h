@@ -240,6 +240,12 @@ namespace BitTorrent
         virtual bool isAutoBanBTPlayerPeerEnabled() const = 0;
         virtual void setAutoBanBTPlayerPeer(bool value) = 0;
 
+        // Shadowban IP
+        virtual bool isShadowBanEnabled() const = 0;
+        virtual void setShadowBan(bool value) = 0;
+        virtual QStringList shadowBannedIPs() const = 0;
+        virtual void setShadowBannedIPs(const QStringList &newList) = 0;
+
         // Trackers list
         virtual bool isAutoUpdateTrackersEnabled() const = 0;
         virtual void setAutoUpdateTrackersEnabled(bool enabled) = 0;

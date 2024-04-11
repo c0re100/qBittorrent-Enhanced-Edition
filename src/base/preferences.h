@@ -420,6 +420,8 @@ public:
     void setAutoBanUnknownPeer(const bool checked);
     bool getAutoBanBTPlayerPeer() const;
     void setAutoBanBTPlayerPeer(const bool checked);
+    bool getShadowBan() const;
+    void setShadowBan(const bool checked);
     QString customizeTrackersListUrl() const;
     void setCustomizeTrackersListUrl(const QString &trackersUrl);
 

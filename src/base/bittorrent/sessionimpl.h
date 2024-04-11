@@ -483,6 +483,12 @@ namespace BitTorrent
         bool isAutoBanBTPlayerPeerEnabled() const override;
         void setAutoBanBTPlayerPeer(bool value) override;
 
+        // Shadowban Peers
+        bool isShadowBanEnabled() const override;
+        void setShadowBan(bool value) override;
+        QStringList shadowBannedIPs() const override;
+        void setShadowBannedIPs(const QStringList &newList) override;
+
         // Trackers list
         bool isAutoUpdateTrackersEnabled() const override;
         void setAutoUpdateTrackersEnabled(bool enabled) override;
@@ -751,6 +757,8 @@ namespace BitTorrent
         CachedSettingValue<QString> m_publicTrackers;
         CachedSettingValue<bool> m_autoBanUnknownPeer;
         CachedSettingValue<bool> m_autoBanBTPlayerPeer;
+        CachedSettingValue<bool> m_shadowBan;
+        CachedSettingValue<QStringList> m_shadowBannedIPs;
         CachedSettingValue<bool> m_isAutoUpdateTrackersEnabled;
         QTimer *m_updateTimer;
 
