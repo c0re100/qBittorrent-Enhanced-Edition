@@ -61,6 +61,7 @@
 #include "addnewtorrentdialog.h"
 #include "advancedsettings.h"
 #include "banlistoptionsdialog.h"
+#include "shadowbanlistoptionsdialog.h"
 #include "interfaces/iguiapplication.h"
 #include "ipsubnetwhitelistoptionsdialog.h"
 #include "rss/automatedrssdownloader.h"
@@ -1436,6 +1437,11 @@ bool OptionsDialog::isIPFilteringEnabled() const
     return m_ui->checkIPFilter->isChecked();
 }
 
+bool OptionsDialog::isShadowBanEnabled() const
+{
+    return m_ui->shadowBanEnabled->isChecked();
+}
+
 Net::ProxyType OptionsDialog::getProxyType() const
 {
     return m_ui->comboProxyType->currentData().value<Net::ProxyType>();
@@ -1972,6 +1978,14 @@ bool OptionsDialog::schedTimesOk()
 void OptionsDialog::on_banListButton_clicked()
 {
     auto *dialog = new BanListOptionsDialog(this);
+    dialog->setAttribute(Qt::WA_DeleteOnClose);
+    connect(dialog, &QDialog::accepted, this, &OptionsDialog::enableApplyButton);
+    dialog->open();
+}
+
+void OptionsDialog::on_shadowBanListButton_clicked()
+{
+    auto *dialog = new ShadowBanListOptionsDialog(this);
     dialog->setAttribute(Qt::WA_DeleteOnClose);
     connect(dialog, &QDialog::accepted, this, &OptionsDialog::enableApplyButton);
     dialog->open();

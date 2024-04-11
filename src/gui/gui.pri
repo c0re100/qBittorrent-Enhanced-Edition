@@ -54,6 +54,7 @@ HEADERS += \
     $$PWD/search/searchjobwidget.h \
     $$PWD/search/searchsortmodel.h \
     $$PWD/search/searchwidget.h \
+    $$PWD/shadowbanlistoptionsdialog.h \
     $$PWD/shutdownconfirmdialog.h \
     $$PWD/speedlimitdialog.h \
     $$PWD/statsdialog.h \
@@ -147,6 +148,7 @@ SOURCES += \
     $$PWD/search/searchjobwidget.cpp \
     $$PWD/search/searchsortmodel.cpp \
     $$PWD/search/searchwidget.cpp \
+    $$PWD/shadowbanlistoptionsdialog.cpp \
     $$PWD/shutdownconfirmdialog.cpp \
     $$PWD/speedlimitdialog.cpp \
     $$PWD/statsdialog.cpp \
@@ -209,6 +211,7 @@ FORMS += \
     $$PWD/search/pluginsourcedialog.ui \
     $$PWD/search/searchjobwidget.ui \
     $$PWD/search/searchwidget.ui \
+    $$PWD/shadowbanlistoptionsdialog.ui \
     $$PWD/shutdownconfirmdialog.ui \
     $$PWD/speedlimitdialog.ui \
     $$PWD/statsdialog.ui \

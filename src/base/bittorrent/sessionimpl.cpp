@@ -5103,7 +5103,6 @@ void SessionImpl::setShadowBannedIPs(const QStringList &newList)
     // also here we have to recreate filter list including 3rd party ban file
     // and install it again into m_session
     m_shadowBannedIPs = filteredList;
-    m_IPFilteringConfigured = false;
     configureDeferred();
 }
 
