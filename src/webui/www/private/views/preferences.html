@@ -1115,6 +1115,21 @@ Use ';' to split multiple entries. Can use wildcard '*'.)QBT_TR[CONTEXT=OptionsD
         </table>
     </fieldset>
     <fieldset class="settings">
+        <legend>
+            <label>QBT_TR(Shadow Ban)QBT_TR[CONTEXT=OptionsDialog]</label>
+        </legend>
+        <div class="formRow">
+            <label for="shadowBan">QBT_TR(Enable Shadowban behavior:)QBT_TR[CONTEXT=OptionsDialog]</label>
+            <input type="checkbox" id="shadowBan">
+        </div>
+        <div class="formRow">
+            <fieldset class="settings">
+                <legend>QBT_TR(Manually shadow banned IP addresses...)QBT_TR[CONTEXT=OptionsDialog]</legend>
+                <textarea id="shadowBannedIPs" rows="5" cols="70"></textarea>
+            </fieldset>
+        </div>
+    </fieldset>
+    <fieldset class="settings">
         <legend>QBT_TR(libtorrent Section)QBT_TR[CONTEXT=OptionsDialog]&nbsp;(<a href="https://www.libtorrent.org/reference-Settings.html" target="_blank">QBT_TR(Open documentation)QBT_TR[CONTEXT=HttpServer]</a>)</legend>
         <table>
             <tr>
@@ -2308,6 +2323,8 @@ Use ';' to split multiple entries. Can use wildcard '*'.)QBT_TR[CONTEXT=OptionsD
                         $('reannounceWhenAddressChanged').setProperty('checked', pref.reannounce_when_address_changed);
                         $('autoBanUnknownPeer').setProperty('checked', pref.auto_ban_unknown_peer);
                         $('autoBanBittorrentPlayer').setProperty('checked', pref.auto_ban_bt_player_peer);
+                        $('shadowBan').setProperty('checked', pref.shadow_ban_enabled);
+                        $('shadowBannedIPs').setProperty('value', pref.shadow_banned_IPs);
                         // libtorrent section
                         $('bdecodeDepthLimit').setProperty('value', pref.bdecode_depth_limit);
                         $('bdecodeTokenLimit').setProperty('value', pref.bdecode_token_limit);
@@ -2752,6 +2769,8 @@ Use ';' to split multiple entries. Can use wildcard '*'.)QBT_TR[CONTEXT=OptionsD
             settings.set('resolve_peer_countries', $('resolvePeerCountries').getProperty('checked'));
             settings.set('reannounce_when_address_changed', $('reannounceWhenAddressChanged').getProperty('checked'));
             settings.set('auto_ban_unknown_peer', $('autoBanUnknownPeer').getProperty('checked'));
+            settings.set('shadow_ban', $('shadowBan').getProperty('checked'));
+            settings.set('shadow_banned_IPs', $('shadowBannedIPs').getProperty('value'));
             settings.set('auto_ban_bt_player_peer', $('autoBanBittorrentPlayer').getProperty('checked'));
 
             // libtorrent section
