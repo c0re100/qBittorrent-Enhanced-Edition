@@ -14,9 +14,9 @@
 // bad peer filter
 bool is_bad_peer(const lt::peer_info& info)
 {
-  std::regex id_filter("-(XL|SD|XF|QD|BN|DL|TS|DT)(\\d+)-");
-  std::regex ua_filter(R"((\d+.\d+.\d+.\d+|cacao_torrent))");
-  std::regex consume_filter(R"((dt/torrent|Taipei-torrent))");
+  static const std::regex id_filter("-(XL|SD|XF|QD|BN|DL|TS|DT)(\\d+)-");
+  static const std::regex ua_filter(R"((\d+.\d+.\d+.\d+|cacao_torrent))");
+  static const std::regex consume_filter(R"((dt/torrent|Taipei-torrent))");
 
   // TODO: trafficConsume by thank243(senis) but it's hard to determine GT0003 is legitimate client or not...
   // Anyway, block dt/torrent and Taipei-torrent with specific case first.
@@ -38,7 +38,7 @@ bool is_unknown_peer(const lt::peer_info& info)
 // Offline Downloader filter
 bool is_offline_downloader(const lt::peer_info& info)
 {
-  std::regex id_filter("-LT(1220|2070)-");
+  static const std::regex id_filter("-LT(1220|2070)-");
   unsigned short port = info.ip.port();
   QString country = Net::GeoIPManager::instance()->lookup(QHostAddress(info.ip.data()));
   // 115: Old data, may out of date.
@@ -55,7 +55,7 @@ bool is_bittorrent_media_player(const lt::peer_info& info)
   if (info.client.find("StellarPlayer") != std::string::npos || info.client.find("Elementum") != std::string::npos) {
     return true;
   }
-  std::regex player_filter("-(UW\\w{4}|SP(([0-2]\\d{3})|(3[0-5]\\d{2})))-");
+  static const std::regex player_filter("-(UW\\w{4}|SP(([0-2]\\d{3})|(3[0-5]\\d{2})))-");
   return !!std::regex_match(info.pid.data(), info.pid.data() + 8, player_filter);
 }
 
