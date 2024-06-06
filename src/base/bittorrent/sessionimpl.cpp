@@ -5063,9 +5063,9 @@ bool SessionImpl::isShadowBanEnabled() const
 
 void SessionImpl::setShadowBan(bool value)
 {
-    if (value != isAutoBanBTPlayerPeerEnabled()) {
-        m_autoBanBTPlayerPeer = value;
-        LogMsg(tr("Restart is required to toggle Auto Ban Bittorrent Media Player support"), Log::WARNING);
+    if (value != isShadowBanEnabled()) {
+        m_shadowBan = value;
+        LogMsg(tr("Restart is required to toggle Auto Ban Shadow Ban"), Log::WARNING);
     }
 }
 
