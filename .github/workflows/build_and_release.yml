@@ -17,8 +17,8 @@ jobs:
     container: "ubuntu:20.04"
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
-      - uses: actions/cache@v3
+        uses: actions/checkout@v4
+      - uses: actions/cache@v4
         with:
           path: |
             /usr/src/
@@ -28,7 +28,7 @@ jobs:
             appimage-build-dependencies-cache-
       - name: Build AppImage
         run: .github/workflows/build_appimage.sh
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: qBittorrent-Enhanced-Edition-x86_64.AppImage
           path: ".github/workflows/qBittorrent-Enhanced-Edition*.AppImage*"
@@ -53,8 +53,7 @@ jobs:
           # cross toolchain downloads from: https://musl.cc/
           # you need to find the name ${cross_host}-cross.tgz
           - arm-linux-musleabi
-          # Waiting this issue to be resolved: https://github.com/zlib-ng/zlib-ng/issues/1138
-          # - arm-linux-musleabihf
+          - arm-linux-musleabihf
           - aarch64-linux-musl
           - mips-linux-musl
           - mipsel-linux-musl
@@ -64,8 +63,8 @@ jobs:
           - i686-linux-musl
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
-      - uses: actions/cache@v3
+        uses: actions/checkout@v4
+      - uses: actions/cache@v4
         with:
           path: |
             /usr/src/
@@ -77,7 +76,7 @@ jobs:
         env:
           CROSS_HOST: "${{ matrix.cross_host }}"
         run: .github/workflows/cross_build.sh
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: qbittorrent-enhanced-nox_${{ matrix.cross_host }}_static
           path: |

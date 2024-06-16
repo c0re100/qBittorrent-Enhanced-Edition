@@ -1,7 +1,7 @@
 #!/bin/bash -e
 
-# This scrip is for static cross compiling
-# Please run this scrip in docker image: abcfy2/muslcc-toolchain-ubuntu:${CROSS_HOST}
+# This script is for static cross compiling
+# Please run this script in docker image: abcfy2/muslcc-toolchain-ubuntu:${CROSS_HOST}
 # E.g: docker run --rm -v `git rev-parse --show-toplevel`:/build abcfy2/muslcc-toolchain-ubuntu:arm-linux-musleabi /build/.github/workflows/cross_build.sh
 # If you need keep store build cache in docker volume, just like:
 #   $ docker volume create qbee-nox-cache
@@ -17,12 +17,22 @@ export LIBTORRENT_BRANCH="RC_1_2"
 # Ubuntu mirror for local building
 if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
   source /etc/os-release
-  cat >/etc/apt/sources.list <<EOF
+  if [ -f /etc/apt/sources.list.d/ubuntu.sources ]; then
+    cat >/etc/apt/sources.list.d/ubuntu.sources <<EOF
+Types: deb
+URIs: http://repo.huaweicloud.com/ubuntu/
+Suites: ${UBUNTU_CODENAME} ${UBUNTU_CODENAME}-updates ${UBUNTU_CODENAME}-backports ${UBUNTU_CODENAME}-security
+Components: main universe restricted multiverse
+Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg
+EOF
+  else
+    cat >/etc/apt/sources.list <<EOF
 deb http://repo.huaweicloud.com/ubuntu/ ${UBUNTU_CODENAME} main restricted universe multiverse
 deb http://repo.huaweicloud.com/ubuntu/ ${UBUNTU_CODENAME}-updates main restricted universe multiverse
 deb http://repo.huaweicloud.com/ubuntu/ ${UBUNTU_CODENAME}-backports main restricted universe multiverse
 deb http://repo.huaweicloud.com/ubuntu/ ${UBUNTU_CODENAME}-security main restricted universe multiverse
 EOF
+  fi
   export PIP_INDEX_URL="https://repo.huaweicloud.com/repository/pypi/simple"
 fi
 
@@ -43,10 +53,7 @@ apt install -y \
   unzip \
   zip \
   pkg-config \
-  python3 \
-  python3-requests \
-  python3-semantic-version \
-  python3-lxml \
+  pipx \
   python3-pip
 
 # use zlib-ng instead of zlib by default
@@ -128,14 +135,19 @@ retry() {
   return 1
 }
 
+# This function is used to check version less than or equal to another version
+verlte() {
+  printf '%s\n' "$1" "$2" | sort -C -V
+}
+
 prepare_cmake() {
   if ! which cmake &>/dev/null; then
     cmake_latest_ver="$(retry curl -ksSL --compressed https://cmake.org/download/ \| grep "'Latest Release'" \| sed -r "'s/.*Latest Release\s*\((.+)\).*/\1/'" \| head -1)"
     cmake_binary_url="https://github.com/Kitware/CMake/releases/download/v${cmake_latest_ver}/cmake-${cmake_latest_ver}-linux-x86_64.tar.gz"
     cmake_sha256_url="https://github.com/Kitware/CMake/releases/download/v${cmake_latest_ver}/cmake-${cmake_latest_ver}-SHA-256.txt"
     if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
-      cmake_binary_url="https://ghproxy.com/${cmake_binary_url}"
-      cmake_sha256_url="https://ghproxy.com/${cmake_sha256_url}"
+      cmake_binary_url="https://mirror.ghproxy.com/${cmake_binary_url}"
+      cmake_sha256_url="https://mirror.ghproxy.com/${cmake_sha256_url}"
     fi
     if [ -f "/usr/src/cmake-${cmake_latest_ver}-linux-x86_64.tar.gz" ]; then
       cd /usr/src
@@ -156,7 +168,7 @@ prepare_ninja() {
     ninja_ver="$(retry curl -ksSL --compressed https://ninja-build.org/ \| grep "'The last Ninja release is'" \| sed -r "'s@.*<b>(.+)</b>.*@\1@'" \| head -1)"
     ninja_binary_url="https://github.com/ninja-build/ninja/releases/download/${ninja_ver}/ninja-linux.zip"
     if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
-      ninja_binary_url="https://ghproxy.com/${ninja_binary_url}"
+      ninja_binary_url="https://mirror.ghproxy.com/${ninja_binary_url}"
     fi
     if [ ! -f "/usr/src/ninja-${ninja_ver}-linux.zip.download_ok" ]; then
       rm -f "/usr/src/ninja-${ninja_ver}-linux.zip"
@@ -174,7 +186,7 @@ prepare_zlib() {
     zlib_ng_latest_url="https://github.com/zlib-ng/zlib-ng/archive/refs/tags/${zlib_ng_latest_tag}.tar.gz"
     echo "zlib-ng version ${zlib_ng_latest_tag}"
     if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
-      zlib_ng_latest_url="https://ghproxy.com/${zlib_ng_latest_url}"
+      zlib_ng_latest_url="https://mirror.ghproxy.com/${zlib_ng_latest_url}"
     fi
     if [ ! -f "/usr/src/zlib-ng-${zlib_ng_latest_tag}/.unpack_ok" ]; then
       mkdir -p "/usr/src/zlib-ng-${zlib_ng_latest_tag}/"
@@ -208,7 +220,7 @@ prepare_zlib() {
     fi
     cd "/usr/src/zlib-${zlib_ver}"
 
-    if [ x"${TARGET_HOST}" = xWindows ]; then
+    if [ x"${TARGET_HOST}" = x"Windows" ]; then
       make -f win32/Makefile.gcc BINARY_PATH="${CROSS_PREFIX}/bin" INCLUDE_PATH="${CROSS_PREFIX}/include" LIBRARY_PATH="${CROSS_PREFIX}/lib" SHARED_MODE=0 PREFIX="${CROSS_HOST}-" -j$(nproc) install
     else
       CHOST="${CROSS_HOST}" ./configure --prefix="${CROSS_PREFIX}" --static
@@ -219,13 +231,13 @@ prepare_zlib() {
 }
 
 prepare_ssl() {
-  openssl_filename="$(retry curl -ksSL --compressed https://www.openssl.org/source/ \| grep -o "'href=\"openssl-3\(\.[0-9]*\)*tar.gz\"'" \| grep -o "'[^\"]*.tar.gz'" \| head -1)"
+  openssl_filename="$(retry curl -ksSL --compressed https://www.openssl.org/source/ \| grep -o "'href=\"openssl-3\(\.[0-9]*\)*tar.gz\"'" \| grep -o "'[^\"]*.tar.gz'" \| sort -r \| head -1)"
   openssl_ver="$(echo "${openssl_filename}" | sed -r 's/openssl-(.+)\.tar\.gz/\1/')"
   echo "OpenSSL version ${openssl_ver}"
   if [ ! -f "/usr/src/openssl-${openssl_ver}/.unpack_ok" ]; then
     openssl_download_url="https://github.com/openssl/openssl/archive/refs/tags/${openssl_filename}"
     if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
-      openssl_download_url="https://ghproxy.com/${openssl_download_url}"
+      openssl_download_url="https://mirror.ghproxy.com/${openssl_download_url}"
     fi
     mkdir -p "/usr/src/openssl-${openssl_ver}/"
     retry curl -kL "${openssl_download_url}" \| tar -zxf - --strip-components=1 -C "/usr/src/openssl-${openssl_ver}/"
@@ -271,8 +283,8 @@ prepare_qt() {
   echo "Using qt version: ${qt_ver}"
   mkdir -p "/usr/src/qtbase-${qt_ver}" "/usr/src/qttools-${qt_ver}"
   if [ ! -f "/usr/src/qt-host/${qt_ver}/gcc_64/bin/qt.conf" ]; then
-    pip3 install py7zr
-    retry curl -ksSL --compressed "https://cdn.jsdelivr.net/gh/engnr/qt-downloader@master/qt-downloader" \| python3 - linux desktop "${qt_ver}" gcc_64 -o "/usr/src/qt-host" -m qtbase qttools icu
+    pipx install aqtinstall
+    retry "${HOME}/.local/bin/aqt" install-qt -O /usr/src/qt-host linux desktop "${qt_ver}" --archives qtbase qttools icu
   fi
   if [ ! -f "/usr/src/qtbase-${qt_ver}/.unpack_ok" ]; then
     qtbase_url="https://download.qt.io/official_releases/qt/${qt_major_ver}/${qt_ver}/submodules/qtbase-everywhere-src-${qt_ver}.tar.xz"
@@ -281,7 +293,7 @@ prepare_qt() {
   fi
   cd "/usr/src/qtbase-${qt_ver}"
   rm -fr CMakeCache.txt CMakeFiles
-  if [ x"${TARGET_HOST}" = xWindows ]; then
+  if [ x"${TARGET_HOST}" = x"Windows" ]; then
     QT_BASE_EXTRA_CONF='-xplatform win32-g++'
   fi
 
@@ -321,7 +333,7 @@ prepare_libtorrent() {
   echo "libtorrent-rasterbar branch: ${LIBTORRENT_BRANCH}"
   libtorrent_git_url="https://github.com/arvidn/libtorrent.git"
   if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
-    libtorrent_git_url="https://ghproxy.com/${libtorrent_git_url}"
+    libtorrent_git_url="https://mirror.ghproxy.com/${libtorrent_git_url}"
   fi
   if [ ! -d "/usr/src/libtorrent-rasterbar-${LIBTORRENT_BRANCH}/" ]; then
     retry git clone --depth 1 --recursive --shallow-submodules --branch "${LIBTORRENT_BRANCH}" \
@@ -340,7 +352,7 @@ prepare_libtorrent() {
   fi
   rm -fr build/CMakeCache.txt
   # TODO: solve mingw build
-  if [ x"${TARGET_HOST}" = xWindows ]; then
+  if [ x"${TARGET_HOST}" = x"Windows" ]; then
     find -type f \( -name '*.cpp' -o -name '*.h' -o -name '*.hpp' \) -print0 |
       xargs -0 -r sed -i 's/Windows\.h/windows.h/g;
                           s/Shellapi\.h/shellapi.h/g;
@@ -392,7 +404,7 @@ build_qbittorrent() {
     -DCMAKE_EXE_LINKER_FLAGS="-static"
   cmake --build build
   cmake --install build
-  if [ x"${TARGET_HOST}" = xWindows ]; then
+  if [ x"${TARGET_HOST}" = x"Windows" ]; then
     cp -fv "src/release/qbittorrent-nox.exe" /tmp/
   else
     cp -fv "${CROSS_PREFIX}/bin/qbittorrent-nox" /tmp/

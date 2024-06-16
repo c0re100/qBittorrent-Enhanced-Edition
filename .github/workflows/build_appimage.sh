@@ -1,7 +1,7 @@
 #!/bin/bash -e
 
-# This scrip is for building AppImage
-# Please run this scrip in docker image: ubuntu:20.04
+# This script is for building AppImage
+# Please run this script in docker image: ubuntu:20.04
 # E.g: docker run --rm -v `git rev-parse --show-toplevel`:/build ubuntu:20.04 /build/.github/workflows/build_appimage.sh
 # If you need keep store build cache in docker volume, just like:
 #   $ docker volume create qbee-cache
@@ -81,6 +81,7 @@ EOF
     curl \
     git \
     unzip \
+    g++-10 \
     pkg-config \
     libssl-dev \
     libzstd-dev \
@@ -119,6 +120,9 @@ EOF
     libwayland-dev \
     libwayland-egl-backend-dev
 
+  update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 100
+  update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-10 100
+
   apt autoremove --purge -y
   # strip all compiled files by default
   export CFLAGS='-s'
@@ -134,8 +138,8 @@ prepare_buildenv() {
     cmake_binary_url="https://github.com/Kitware/CMake/releases/download/v${cmake_latest_ver}/cmake-${cmake_latest_ver}-linux-x86_64.tar.gz"
     cmake_sha256_url="https://github.com/Kitware/CMake/releases/download/v${cmake_latest_ver}/cmake-${cmake_latest_ver}-SHA-256.txt"
     if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
-      cmake_binary_url="https://ghproxy.com/${cmake_binary_url}"
-      cmake_sha256_url="https://ghproxy.com/${cmake_sha256_url}"
+      cmake_binary_url="https://mirror.ghproxy.com/${cmake_binary_url}"
+      cmake_sha256_url="https://mirror.ghproxy.com/${cmake_sha256_url}"
     fi
     if [ -f "/usr/src/cmake-${cmake_latest_ver}-linux-x86_64.tar.gz" ]; then
       cd /usr/src
@@ -154,7 +158,7 @@ prepare_buildenv() {
     ninja_ver="$(retry curl -ksSL --compressed https://ninja-build.org/ \| grep "'The last Ninja release is'" \| sed -r "'s@.*<b>(.+)</b>.*@\1@'" \| head -1)"
     ninja_binary_url="https://github.com/ninja-build/ninja/releases/download/${ninja_ver}/ninja-linux.zip"
     if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
-      ninja_binary_url="https://ghproxy.com/${ninja_binary_url}"
+      ninja_binary_url="https://mirror.ghproxy.com/${ninja_binary_url}"
     fi
     if [ ! -f "/usr/src/ninja-${ninja_ver}-linux.zip.download_ok" ]; then
       rm -f "/usr/src/ninja-${ninja_ver}-linux.zip"
@@ -172,7 +176,7 @@ prepare_ssl() {
   echo "openssl version: ${openssl_ver}"
   openssl_latest_url="https://github.com/openssl/openssl/archive/refs/tags/${openssl_filename}"
   if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
-    openssl_latest_url="https://ghproxy.com/${openssl_latest_url}"
+    openssl_latest_url="https://mirror.ghproxy.com/${openssl_latest_url}"
   fi
   mkdir -p "/usr/src/openssl-${openssl_ver}/"
   if [ ! -f "/usr/src/openssl-${openssl_ver}/.unpack_ok" ]; then
@@ -205,7 +209,6 @@ prepare_qt() {
   ./configure \
     -ltcg \
     -release \
-    -c++std c++17 \
     -optimize-size \
     -openssl-linked \
     -no-icu \
@@ -262,7 +265,7 @@ prepare_qt() {
   if [ ! -d "/usr/src/qt6gtk2/" ]; then
     qt6gtk2_git_url="https://github.com/trialuser02/qt6gtk2.git"
     if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
-      qt6gtk2_git_url="https://ghproxy.com/${qt6gtk2_git_url}"
+      qt6gtk2_git_url="https://mirror.ghproxy.com/${qt6gtk2_git_url}"
     fi
     retry git clone --depth 1 --recursive "${qt6gtk2_git_url}" "/usr/src/qt6gtk2/"
   fi
@@ -300,7 +303,7 @@ prepare_libtorrent() {
   echo "libtorrent-rasterbar branch: ${LIBTORRENT_BRANCH}"
   libtorrent_git_url="https://github.com/arvidn/libtorrent.git"
   if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
-    libtorrent_git_url="https://ghproxy.com/${libtorrent_git_url}"
+    libtorrent_git_url="https://mirror.ghproxy.com/${libtorrent_git_url}"
   fi
   if [ ! -d "/usr/src/libtorrent-rasterbar-${LIBTORRENT_BRANCH}/" ]; then
     retry git clone --depth 1 --recursive --shallow-submodules --branch "${LIBTORRENT_BRANCH}" \
@@ -350,7 +353,7 @@ build_appimage() {
   # build AppImage
   linuxdeploy_qt_download_url="https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage"
   if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
-    linuxdeploy_qt_download_url="https://ghproxy.com/${linuxdeploy_qt_download_url}"
+    linuxdeploy_qt_download_url="https://mirror.ghproxy.com/${linuxdeploy_qt_download_url}"
   fi
   [ -x "/tmp/linuxdeployqt-continuous-x86_64.AppImage" ] || retry curl -kSLC- -o /tmp/linuxdeployqt-continuous-x86_64.AppImage "${linuxdeploy_qt_download_url}"
   chmod -v +x '/tmp/linuxdeployqt-continuous-x86_64.AppImage'
@@ -404,6 +407,18 @@ EOF
     wayland-shell-integration
   )
   exclude_libs=(
+    libX11-xcb.so.1
+    libXau.so.6
+    libXcomposite.so.1
+    libXcursor.so.1
+    libXdamage.so.1
+    libXdmcp.so.6
+    libXext.so.6
+    libXfixes.so.3
+    libXi.so.6
+    libXinerama.so.1
+    libXrandr.so.2
+    libXrender.so.1
     libatk-1.0.so.0
     libatk-bridge-2.0.so.0
     libatspi.so.0
@@ -422,8 +437,8 @@ EOF
     libffi.so.6
     libgcrypt.so.20
     libgdk-3.so.0
-    libgdk_pixbuf-2.0.so.0
     libgdk-x11-2.0.so.0
+    libgdk_pixbuf-2.0.so.0
     libgio-2.0.so.0
     libglib-2.0.so.0
     libgmodule-2.0.so.0
@@ -441,6 +456,8 @@ EOF
     libpango-1.0.so.0
     libpangocairo-1.0.so.0
     libpangoft2-1.0.so.0
+    libpcre.so.3
+    libpcre2-8.so.0
     libpixman-1.so.0
     libprotobuf-lite.so.9
     libselinux.so.1
@@ -449,34 +466,22 @@ EOF
     libwayland-cursor.so.0
     libwayland-egl.so.1
     libwayland-server.so.0
-    libX11-xcb.so.1
-    libXau.so.6
     libxcb-cursor.so.0
     libxcb-glx.so.0
     libxcb-icccm.so.4
     libxcb-image.so.0
     libxcb-keysyms.so.1
     libxcb-randr.so.0
-    libxcb-render.so.0
     libxcb-render-util.so.0
+    libxcb-render.so.0
     libxcb-shape.so.0
     libxcb-shm.so.0
     libxcb-sync.so.1
     libxcb-util.so.1
     libxcb-xfixes.so.0
     libxcb-xkb.so.1
-    libXcomposite.so.1
-    libXcursor.so.1
-    libXdamage.so.1
-    libXdmcp.so.6
-    libXext.so.6
-    libXfixes.so.3
-    libXinerama.so.1
-    libXi.so.6
-    libxkbcommon.so.0
     libxkbcommon-x11.so.0
-    libXrandr.so.2
-    libXrender.so.1
+    libxkbcommon.so.0
   )
 
   # fix AppImage output file name
