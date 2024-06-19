@@ -237,6 +237,21 @@ namespace BitTorrent
         virtual Path finishedTorrentExportDirectory() const = 0;
         virtual void setFinishedTorrentExportDirectory(const Path &path) = 0;
 
+        // Auto ban Unknown Peer
+        virtual bool isAutoBanUnknownPeerEnabled() const = 0;
+        virtual void setAutoBanUnknownPeer(bool value) = 0;
+
+        // Auto ban Bittorrent Media Player Peer
+        virtual bool isAutoBanBTPlayerPeerEnabled() const = 0;
+        virtual void setAutoBanBTPlayerPeer(bool value) = 0;
+
+        // Trackers list
+        virtual bool isAutoUpdateTrackersEnabled() const = 0;
+        virtual void setAutoUpdateTrackersEnabled(bool enabled) = 0;
+        virtual QString publicTrackers() const = 0;
+        virtual void setPublicTrackers(const QString &trackers) = 0;
+        virtual void updatePublicTracker() = 0;
+
         virtual int globalDownloadSpeedLimit() const = 0;
         virtual void setGlobalDownloadSpeedLimit(int limit) = 0;
         virtual int globalUploadSpeedLimit() const = 0;

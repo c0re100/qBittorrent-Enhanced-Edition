@@ -33,6 +33,7 @@
 
 #include "base/pathfwd.h"
 #include "base/settingvalue.h"
+#include "base/net/downloadmanager.h"
 #include "guiapplicationcomponent.h"
 
 class QListWidgetItem;
@@ -110,6 +111,8 @@ private slots:
     void webUIHttpsKeyChanged(const Path &path);
     void on_registerDNSBtn_clicked();
 #endif
+    void on_fetchButton_clicked();
+    void handlePublicTrackersListChanged(const Net::DownloadResult &result);
 
 private:
     void showEvent(QShowEvent *e) override;

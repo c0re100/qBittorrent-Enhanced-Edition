@@ -1956,6 +1956,35 @@ void Preferences::setSpeedWidgetGraphEnable(const int id, const bool enable)
     setValue(u"SpeedWidget/graph_enable_%1"_s.arg(id), enable);
 }
 
+bool Preferences::getAutoBanUnknownPeer() const
+{
+    return value(u"Preferences/Advanced/AutoBanUnknownPeer"_s, false);
+}
+
+void Preferences::setAutoBanUnknownPeer(const bool checked)
+{
+    setValue(u"Preferences/Advanced/AutoBanUnknownPeer"_s, checked);
+}
+
+bool Preferences::getAutoBanBTPlayerPeer() const
+{
+    return value(u"Preferences/Advanced/AutoBanBTPlayerPeer"_s, false);
+}
+
+void Preferences::setAutoBanBTPlayerPeer(const bool checked)
+{
+    setValue(u"Preferences/Advanced/AutoBanBTPlayerPeer"_s, checked);
+}
+
+QString Preferences::customizeTrackersListUrl() const
+{
+    return value(u"Preferences/Bittorrent/CustomizeTrackersListUrl"_s, u"https://cdn.jsdelivr.net/gh/ngosang/trackerslist/trackers_best.txt"_s);
+}
+
+void Preferences::setCustomizeTrackersListUrl(const QString &trackersUrl) {
+    setValue(u"Preferences/Bittorrent/CustomizeTrackersListUrl"_s, trackersUrl);
+}
+
 bool Preferences::isAddNewTorrentDialogEnabled() const
 {
     return value(u"AddNewTorrentDialog/Enabled"_s, true);

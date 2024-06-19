@@ -67,6 +67,11 @@ class FileSearcher;
 class FilterParserThread;
 class NativeSessionExtension;
 
+namespace Net
+{
+    struct DownloadResult;
+}
+
 namespace BitTorrent
 {
     enum class MoveStorageMode;
@@ -483,6 +488,21 @@ namespace BitTorrent
 
         void invokeAsync(std::function<void ()> func);
 
+        // Auto ban Unknown Peer
+        bool isAutoBanUnknownPeerEnabled() const override;
+        void setAutoBanUnknownPeer(bool value) override;
+
+        // Auto ban Bittorrent Media Player Peer
+        bool isAutoBanBTPlayerPeerEnabled() const override;
+        void setAutoBanBTPlayerPeer(bool value) override;
+
+        // Trackers list
+        bool isAutoUpdateTrackersEnabled() const override;
+        void setAutoUpdateTrackersEnabled(bool enabled) override;
+        QString publicTrackers() const override;
+        void setPublicTrackers(const QString &trackers) override;
+        void updatePublicTracker() override;
+
     signals:
         void addTorrentAlertsReceived(qsizetype count);
 
@@ -495,6 +515,9 @@ namespace BitTorrent
         void handleIPFilterError();
         void fileSearchFinished(const TorrentID &id, const Path &savePath, const PathList &fileNames);
         void torrentContentRemovingFinished(const QString &torrentName, const QString &errorMessage);
+
+        // Public Tracker handle slots
+        void handlePublicTrackerTxtDownloadFinished(const Net::DownloadResult &result);
 
     private:
         struct ResumeSessionContext;
@@ -529,7 +552,9 @@ namespace BitTorrent
         lt::settings_pack loadLTSettings() const;
         void applyNetworkInterfacesSettings(lt::settings_pack &settingsPack) const;
         void configurePeerClasses();
+        int adjustLimit(int limit) const;
         void initMetrics();
+        void adjustLimits();
         void applyBandwidthLimits();
         void processBannedIPs(lt::ip_filter &filter);
         QStringList getListeningIPs() const;
@@ -588,6 +613,8 @@ namespace BitTorrent
         void saveResumeData();
         void saveTorrentsQueue();
         void removeTorrentsQueue();
+
+        void populatePublicTrackers();
 
         std::vector<lt::alert *> getPendingAlerts(lt::time_duration time = lt::time_duration::zero()) const;
 
@@ -741,6 +768,13 @@ namespace BitTorrent
         bool m_IPFilteringConfigured = false;
         mutable bool m_listenInterfaceConfigured = false;
 
+        // Enhanced Function
+        CachedSettingValue<QString> m_publicTrackers;
+        CachedSettingValue<bool> m_autoBanUnknownPeer;
+        CachedSettingValue<bool> m_autoBanBTPlayerPeer;
+        CachedSettingValue<bool> m_isAutoUpdateTrackersEnabled;
+        QTimer *m_updateTimer;
+
         bool m_isRestored = false;
         bool m_isPaused = isStartPaused();
 
@@ -750,7 +784,9 @@ namespace BitTorrent
         const bool m_wasPexEnabled = m_isPeXEnabled;
 
         int m_numResumeData = 0;
+        int m_extraLimit = 0;
         QVector<TrackerEntry> m_additionalTrackerEntries;
+        QVector<TrackerEntry> m_publicTrackerList;
         QVector<QRegularExpression> m_excludedFileNamesRegExpList;
 
         // Statistics

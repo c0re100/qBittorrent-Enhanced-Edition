@@ -79,6 +79,8 @@ namespace
         TORRENT_FILE_SIZE_LIMIT,
         CONFIRM_RECHECK_TORRENT,
         RECHECK_COMPLETED,
+        CONFIRM_AUTO_BAN_UNKNOWN_PEER,
+        CONFIRM_AUTO_BAN_BT_Player,
         // UI related
         APP_INSTANCE_NAME,
         LIST_REFRESH,
@@ -309,6 +311,10 @@ void AdvancedSettings::saveAdvancedSettings() const
     session->setMaxConcurrentHTTPAnnounces(m_spinBoxMaxConcurrentHTTPAnnounces.value());
     // Stop tracker timeout
     session->setStopTrackerTimeout(m_spinBoxStopTrackerTimeout.value());
+    // Auto ban Unknown Peer
+    session->setAutoBanUnknownPeer(m_autoBanUnknownPeer.isChecked());
+    // Auto ban Bittorrent Media Player Peer
+    session->setAutoBanBTPlayerPeer(m_autoBanBTPlayerPeer.isChecked());
     // Program notification
     app()->desktopIntegration()->setNotificationsEnabled(m_checkBoxProgramNotifications.isChecked());
 #ifdef QBT_USES_DBUS
@@ -790,6 +796,12 @@ void AdvancedSettings::loadAdvancedSettings()
     addRow(ANNOUNCE_IP, (tr("IP address reported to trackers (requires restart)")
         + u' ' + makeLink(u"https://www.libtorrent.org/reference-Settings.html#announce_ip", u"(?)"))
         , &m_lineEditAnnounceIP);
+    // Auto Ban Unknown Peer from China
+    m_autoBanUnknownPeer.setChecked(session->isAutoBanUnknownPeerEnabled());
+    addRow(CONFIRM_AUTO_BAN_UNKNOWN_PEER, tr("Auto Ban Unknown Peer from China"), &m_autoBanUnknownPeer);
+    // Auto Ban Bittorrent Media Player Peer
+    m_autoBanBTPlayerPeer.setChecked(session->isAutoBanBTPlayerPeerEnabled());
+    addRow(CONFIRM_AUTO_BAN_BT_Player, tr("Auto Ban Bittorrent Media Player Peer"), &m_autoBanBTPlayerPeer);
     // Max concurrent HTTP announces
     m_spinBoxMaxConcurrentHTTPAnnounces.setMaximum(std::numeric_limits<int>::max());
     m_spinBoxMaxConcurrentHTTPAnnounces.setValue(session->maxConcurrentHTTPAnnounces());

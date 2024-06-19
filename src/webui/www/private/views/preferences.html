@@ -733,6 +733,25 @@
         </legend>
         <textarea id="add_trackers_textarea" rows="5" cols="70"></textarea>
     </fieldset>
+
+    <fieldset class="settings">
+        <legend><input type="checkbox" id="auto_update_trackers_checkbox" />
+            <label for="auto_update_trackers_checkbox">QBT_TR(Automatically update public trackers list:)QBT_TR[CONTEXT=OptionsDialog]</label>
+        </legend>
+        <table>
+            <tr>
+                <td>
+                    Customize Trackers List Url:
+                    <input type="text" id="customize_trackers_list_url" style="width: 40em;" />
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <textarea id="public_trackers_textarea" rows="5" cols="70" readonly></textarea>
+                </td>
+            </tr>
+        </table>
+    </fieldset>
 </div>
 
 <div id="RSSTab" class="PrefTab invisible">
@@ -1146,6 +1165,22 @@ Use ';' to split multiple entries. Can use wildcard '*'.)QBT_TR[CONTEXT=OptionsD
                 </td>
                 <td>
                     <input type="text" id="pythonExecutablePath" placeholder="QBT_TR((Auto detect if empty))QBT_TR[CONTEXT=OptionsDialog]" style="width: 15em;" />
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="autoBanUnknownPeer">QBT_TR(Auto Ban Unknown Client From China:)QBT_TR[CONTEXT=OptionsDialog]</label>
+                </td>
+                <td>
+                    <input type="checkbox" id="autoBanUnknownPeer">
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="autoBanBittorrentPlayer">QBT_TR(Auto Ban Bittorrent Media Player:)QBT_TR[CONTEXT=OptionsDialog]</label>
+                </td>
+                <td>
+                    <input type="checkbox" id="autoBanBittorrentPlayer">
                 </td>
             </tr>
         </table>
@@ -2282,6 +2317,9 @@ Use ';' to split multiple entries. Can use wildcard '*'.)QBT_TR[CONTEXT=OptionsD
                     // Add trackers
                     $("add_trackers_checkbox").setProperty("checked", pref.add_trackers_enabled);
                     $("add_trackers_textarea").setProperty("value", pref.add_trackers);
+                    $("auto_update_trackers_checkbox").setProperty("checked", pref.auto_update_trackers_enabled);
+                    $("public_trackers_textarea").setProperty("value", pref.public_trackers);
+                    $("customize_trackers_list_url").setProperty("value", pref.customize_trackers_list_url);
                     updateAddTrackersEnabled();
 
                     // RSS Tab
@@ -2368,6 +2406,8 @@ Use ';' to split multiple entries. Can use wildcard '*'.)QBT_TR[CONTEXT=OptionsD
                     $("markOfTheWeb").setProperty("checked", pref.mark_of_the_web);
                     $("ignoreSSLErrors").setProperty("checked", pref.ignore_ssl_errors);
                     $("pythonExecutablePath").setProperty("value", pref.python_executable_path);
+                    $("autoBanUnknownPeer").setProperty("checked", pref.auto_ban_unknown_peer);
+                    $("autoBanBittorrentPlayer").setProperty("checked", pref.auto_ban_bt_player_peer);
                     // libtorrent section
                     $("bdecodeDepthLimit").setProperty("value", pref.bdecode_depth_limit);
                     $("bdecodeTokenLimit").setProperty("value", pref.bdecode_token_limit);
@@ -2701,6 +2741,8 @@ Use ';' to split multiple entries. Can use wildcard '*'.)QBT_TR[CONTEXT=OptionsD
             // Add trackers
             settings["add_trackers_enabled"] = $("add_trackers_checkbox").getProperty("checked");
             settings["add_trackers"] = $("add_trackers_textarea").getProperty("value");
+            settings["auto_update_trackers_enabled"] = $("auto_update_trackers_checkbox").getProperty("checked");
+            settings["customize_trackers_list_url"] = $("customize_trackers_list_url").getProperty("value");
 
             // RSS Tab
             settings["rss_processing_enabled"] = $("enable_fetching_rss_feeds_checkbox").getProperty("checked");
@@ -2818,6 +2860,8 @@ Use ';' to split multiple entries. Can use wildcard '*'.)QBT_TR[CONTEXT=OptionsD
             settings["mark_of_the_web"] = $("markOfTheWeb").getProperty("checked");
             settings["ignore_ssl_errors"] = $("ignoreSSLErrors").getProperty("checked");
             settings["python_executable_path"] = $("pythonExecutablePath").getProperty("value");
+            settings["auto_ban_unknown_peer"] = $("autoBanUnknownPeer").getProperty("checked");
+            settings["auto_ban_bt_player_peer"] = $("autoBanBittorrentPlayer").getProperty("checked");
 
             // libtorrent section
             settings["bdecode_depth_limit"] = Number($("bdecodeDepthLimit").getProperty("value"));

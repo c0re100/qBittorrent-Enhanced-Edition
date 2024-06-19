@@ -78,6 +78,7 @@
 #include "base/algorithm.h"
 #include "base/global.h"
 #include "base/logger.h"
+#include "base/net/downloadmanager.h"
 #include "base/net/proxyconfigurationmanager.h"
 #include "base/preferences.h"
 #include "base/profile.h"
@@ -99,6 +100,8 @@
 #include "loadtorrentparams.h"
 #include "lttypecast.h"
 #include "nativesessionextension.h"
+#include "peer_blacklist.hpp"
+#include "peer_filter_session_plugin.hpp"
 #include "portforwarderimpl.h"
 #include "resumedatastorage.h"
 #include "torrentcontentremover.h"
@@ -528,6 +531,10 @@ SessionImpl::SessionImpl(QObject *parent)
     , m_I2POutboundLength {BITTORRENT_SESSION_KEY(u"I2P/OutboundLength"_s), 3}
     , m_torrentContentRemoveOption {BITTORRENT_SESSION_KEY(u"TorrentContentRemoveOption"_s), TorrentContentRemoveOption::Delete}
     , m_startPaused {BITTORRENT_SESSION_KEY(u"StartPaused"_s)}
+    , m_publicTrackers(BITTORRENT_SESSION_KEY(u"PublicTrackersList"_s))
+    , m_autoBanUnknownPeer(BITTORRENT_SESSION_KEY(u"AutoBanUnknownPeer"_s), false)
+    , m_autoBanBTPlayerPeer(BITTORRENT_SESSION_KEY(u"AutoBanBTPlayerPeer"_s), false)
+    , m_isAutoUpdateTrackersEnabled(BITTORRENT_SESSION_KEY(u"AutoUpdateTrackersEnabled"_s), false)
     , m_seedingLimitTimer {new QTimer(this)}
     , m_resumeDataTimer {new QTimer(this)}
     , m_ioThread {new QThread}
@@ -583,6 +590,7 @@ SessionImpl::SessionImpl(QObject *parent)
 
     updateSeedingLimitTimer();
     populateAdditionalTrackers();
+    populatePublicTrackers();
     if (isExcludedFileNamesEnabled())
         populateExcludedFileNamesRegExpList();
 
@@ -612,6 +620,15 @@ SessionImpl::SessionImpl(QObject *parent)
     enableTracker(isTrackerEnabled());
 
     prepareStartup();
+
+    // Update Tracker
+    m_updateTimer = new QTimer(this);
+    m_updateTimer->setInterval(86400*1000);
+    connect(m_updateTimer, &QTimer::timeout, this, &SessionImpl::updatePublicTracker);
+    if (isAutoUpdateTrackersEnabled()) {
+        updatePublicTracker();
+        m_updateTimer->start();
+    }
 }
 
 SessionImpl::~SessionImpl()
@@ -790,6 +807,54 @@ void SessionImpl::setRefreshInterval(const int value)
 bool SessionImpl::isPreallocationEnabled() const
 {
     return m_isPreallocationEnabled;
+}
+
+bool SessionImpl::isAutoUpdateTrackersEnabled() const
+{
+    return m_isAutoUpdateTrackersEnabled;
+}
+
+void SessionImpl::setAutoUpdateTrackersEnabled(bool enabled)
+{
+    m_isAutoUpdateTrackersEnabled = enabled;
+
+    if(!enabled) {
+        m_updateTimer->stop();
+    } else {
+        m_updateTimer->start();
+        updatePublicTracker();
+    }
+}
+
+QString SessionImpl::publicTrackers() const
+{
+    return m_publicTrackers;
+}
+
+void SessionImpl::setPublicTrackers(const QString &trackers)
+{
+    if (trackers != publicTrackers()) {
+        m_publicTrackers = trackers;
+        populatePublicTrackers();
+    }
+}
+
+void SessionImpl::updatePublicTracker()
+{
+    Preferences *const pref = Preferences::instance();
+    Net::DownloadManager::instance()->download(Net::DownloadRequest(pref->customizeTrackersListUrl()).userAgent(QStringLiteral("qBittorrent Enhanced/" QBT_VERSION_2)), Preferences::instance()->useProxyForGeneralPurposes(), this, &SessionImpl::handlePublicTrackerTxtDownloadFinished);
+}
+
+void SessionImpl::handlePublicTrackerTxtDownloadFinished(const Net::DownloadResult &result)
+{
+    switch (result.status) {
+        case Net::DownloadStatus::Success:
+            setPublicTrackers(QString::fromUtf8(result.data.data()));
+            LogMsg(tr("The public tracker list updated."), Log::INFO);
+            break;
+        default:
+            LogMsg(tr("Updating the public tracker list failed: %1").arg(result.errorString, Log::WARNING));
+    }
 }
 
 void SessionImpl::setPreallocationEnabled(const bool enabled)
@@ -1239,6 +1304,18 @@ void SessionImpl::setGlobalMaxInactiveSeedingMinutes(int minutes)
     }
 }
 
+void SessionImpl::adjustLimits()
+{
+    if (isQueueingSystemEnabled())
+    {
+        lt::settings_pack settingsPack;
+        // Internally increase the queue limits to ensure that the magnet is started
+        settingsPack.set_int(lt::settings_pack::active_downloads, adjustLimit(maxActiveDownloads()));
+        settingsPack.set_int(lt::settings_pack::active_limit, adjustLimit(maxActiveTorrents()));
+        m_nativeSession->apply_settings(std::move(settingsPack));
+    }
+}
+
 void SessionImpl::applyBandwidthLimits()
 {
     lt::settings_pack settingsPack;
@@ -1675,6 +1752,17 @@ void SessionImpl::initializeNativeSession()
     LogMsg(tr("HTTP User-Agent: \"%1\"").arg(USER_AGENT), Log::INFO);
     LogMsg(tr("Distributed Hash Table (DHT) support: %1").arg(isDHTEnabled() ? tr("ON") : tr("OFF")), Log::INFO);
     LogMsg(tr("Local Peer Discovery support: %1").arg(isLSDEnabled() ? tr("ON") : tr("OFF")), Log::INFO);
+    // Enhanced features
+    const Path peersDbPath = specialFolderLocation(SpecialFolder::Data) / Path(u"peers.db"_s);
+    db_connection::instance().init(peersDbPath.toString());
+    m_nativeSession->add_extension(&create_drop_bad_peers_plugin);
+    if (isAutoBanUnknownPeerEnabled()) {
+        m_nativeSession->add_extension(&create_drop_unknown_peers_plugin);
+        m_nativeSession->add_extension(&create_drop_offline_downloader_plugin);
+    }
+    if (isAutoBanBTPlayerPeerEnabled())
+        m_nativeSession->add_extension(&create_drop_bittorrent_media_player_plugin);
+    m_nativeSession->add_extension(std::make_shared<peer_filter_session_plugin>());
     LogMsg(tr("Peer Exchange (PeX) support: %1").arg(isPeXEnabled() ? tr("ON") : tr("OFF")), Log::INFO);
     LogMsg(tr("Anonymous mode: %1").arg(isAnonymousModeEnabled() ? tr("ON") : tr("OFF")), Log::INFO);
     LogMsg(tr("Encryption support: %1").arg((encryption() == 0) ? tr("ON") : ((encryption() == 1) ? tr("FORCED") : tr("OFF"))), Log::INFO);
@@ -1706,6 +1794,16 @@ void SessionImpl::processBannedIPs(lt::ip_filter &filter)
         if (!ec)
             filter.add_rule(addr, addr, lt::ip_filter::blocked);
     }
+}
+
+int SessionImpl::adjustLimit(const int limit) const
+{
+    if (limit <= -1)
+        return limit;
+    // check for overflow: (limit + m_extraLimit) < std::numeric_limits<int>::max()
+    return (m_extraLimit < (std::numeric_limits<int>::max() - limit))
+        ? (limit + m_extraLimit)
+        : std::numeric_limits<int>::max();
 }
 
 void SessionImpl::initMetrics()
@@ -1950,8 +2048,9 @@ lt::settings_pack SessionImpl::loadLTSettings() const
     // Queueing System
     if (isQueueingSystemEnabled())
     {
-        settingsPack.set_int(lt::settings_pack::active_downloads, maxActiveDownloads());
-        settingsPack.set_int(lt::settings_pack::active_limit, maxActiveTorrents());
+        // Internally increase the queue limits to ensure that the magnet is started
+        settingsPack.set_int(lt::settings_pack::active_downloads, adjustLimit(maxActiveDownloads()));
+        settingsPack.set_int(lt::settings_pack::active_limit, adjustLimit(maxActiveTorrents()));
         settingsPack.set_int(lt::settings_pack::active_seeds, maxActiveUploads());
         settingsPack.set_bool(lt::settings_pack::dont_count_slow_torrents, ignoreSlowTorrentsForQueueing());
         settingsPack.set_int(lt::settings_pack::inactive_down_rate, downloadRateForSlowTorrents() * 1024); // KiB to Bytes
@@ -2258,6 +2357,19 @@ void SessionImpl::populateAdditionalTrackers()
     m_additionalTrackerEntries = parseTrackerEntries(additionalTrackers());
 }
 
+void SessionImpl::populatePublicTrackers()
+{
+    m_publicTrackerList.clear();
+
+    const QString trackers = publicTrackers();
+    for (QStringView tracker : asConst(QStringView(trackers).split(u'\n')))
+    {
+        tracker = tracker.trimmed();
+        if (!tracker.isEmpty())
+            m_publicTrackerList.append({tracker.toString()});
+    }
+}
+
 void SessionImpl::processTorrentShareLimits(TorrentImpl *torrent)
 {
     if (!torrent->isFinished() || torrent->isForced())
@@ -2495,6 +2607,8 @@ bool SessionImpl::cancelDownloadMetadata(const TorrentID &id)
     }
 #endif
 
+    --m_extraLimit;
+    adjustLimits();
     m_nativeSession->remove_torrent(nativeHandle);
     return true;
 }
@@ -2877,6 +2991,17 @@ bool SessionImpl::addTorrent_impl(const TorrentDescriptor &source, const AddTorr
         }
     }
 
+    if (isAutoUpdateTrackersEnabled() && !(hasMetadata && p.ti->priv())) {
+        p.trackers.reserve(p.trackers.size() + static_cast<std::size_t>(m_publicTrackerList.size()));
+        p.tracker_tiers.reserve(p.trackers.size() + static_cast<std::size_t>(m_publicTrackerList.size()));
+        p.tracker_tiers.resize(p.trackers.size(), 0);
+        for (const TrackerEntry &trackerEntry : asConst(m_publicTrackerList))
+        {
+            p.trackers.push_back(trackerEntry.url.toStdString());
+            p.tracker_tiers.push_back(trackerEntry.tier);
+        }
+    }
+
     p.upload_limit = addTorrentParams.uploadLimit;
     p.download_limit = addTorrentParams.downloadLimit;
 
@@ -3049,6 +3174,8 @@ bool SessionImpl::downloadMetadata(const TorrentDescriptor &torrentDescr)
             p.tracker_tiers.emplace_back(Utils::Number::clampingAdd(trackerEntry.tier, baseTier));
         }
     }
+    ++m_extraLimit;
+    adjustLimits();
 
     // Flags
     // Preallocation mode
@@ -4944,6 +5071,32 @@ void SessionImpl::setTrackerFilteringEnabled(const bool enabled)
     }
 }
 
+bool SessionImpl::isAutoBanUnknownPeerEnabled() const
+{
+    return m_autoBanUnknownPeer;
+}
+
+void SessionImpl::setAutoBanUnknownPeer(bool value)
+{
+    if (value != isAutoBanUnknownPeerEnabled()) {
+        m_autoBanUnknownPeer = value;
+        LogMsg(tr("Restart is required to toggle Auto Ban Unknown Client support"), Log::WARNING);
+    }
+}
+
+bool SessionImpl::isAutoBanBTPlayerPeerEnabled() const
+{
+    return m_autoBanBTPlayerPeer;
+}
+
+void SessionImpl::setAutoBanBTPlayerPeer(bool value)
+{
+    if (value != isAutoBanBTPlayerPeerEnabled()) {
+        m_autoBanBTPlayerPeer = value;
+        LogMsg(tr("Restart is required to toggle Auto Ban Bittorrent Media Player support"), Log::WARNING);
+    }
+}
+
 bool SessionImpl::isListening() const
 {
     return m_nativeSessionExtension->isSessionListening();
@@ -5842,6 +5995,8 @@ void SessionImpl::handleMetadataReceivedAlert(const lt::metadata_received_alert 
     if (found)
     {
         const TorrentInfo metadata {*alert->handle.torrent_file()};
+        --m_extraLimit;
+        adjustLimits();
         m_nativeSession->remove_torrent(alert->handle, lt::session::delete_files);
 
         emit metadataDownloaded(metadata);

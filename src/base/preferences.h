@@ -416,6 +416,14 @@ public:
     bool getSpeedWidgetGraphEnable(int id) const;
     void setSpeedWidgetGraphEnable(int id, bool enable);
 
+    // Enhanced option
+    bool getAutoBanUnknownPeer() const;
+    void setAutoBanUnknownPeer(const bool checked);
+    bool getAutoBanBTPlayerPeer() const;
+    void setAutoBanBTPlayerPeer(const bool checked);
+    QString customizeTrackersListUrl() const;
+    void setCustomizeTrackersListUrl(const QString &trackersUrl);
+
     // AddNewTorrentDialog
     bool isAddNewTorrentDialogEnabled() const;
     void setAddNewTorrentDialogEnabled(bool value);

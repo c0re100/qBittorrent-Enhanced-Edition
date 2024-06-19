@@ -240,6 +240,10 @@ void AppController::preferencesAction()
     data[u"proxy_rss"_s] = pref->useProxyForRSS();
     data[u"proxy_misc"_s] = pref->useProxyForGeneralPurposes();
 
+    // Enhanced
+    data[u"auto_ban_unknown_peer"_s] = session->isAutoBanUnknownPeerEnabled();
+    data[u"auto_ban_bt_player_peer"_s] = session->isAutoBanBTPlayerPeerEnabled();
+
     // IP Filtering
     data[u"ip_filter_enabled"_s] = session->isIPFilteringEnabled();
     data[u"ip_filter_path"_s] = session->IPFilterFile().toString();
@@ -275,6 +279,10 @@ void AppController::preferencesAction()
     data[u"anonymous_mode"_s] = session->isAnonymousModeEnabled();
     // Max active checking torrents
     data[u"max_active_checking_torrents"_s] = session->maxActiveCheckingTorrents();
+    // Enhanced
+    data[u"auto_update_trackers_enabled"_s] = session->isAutoUpdateTrackersEnabled();
+    data[u"customize_trackers_list_url"_s] = pref->customizeTrackersListUrl();
+    data[u"public_trackers"_s] = session->publicTrackers();
     // Torrent Queueing
     data[u"queueing_enabled"_s] = session->isQueueingSystemEnabled();
     data[u"max_active_downloads"_s] = session->maxActiveDownloads();
@@ -738,6 +746,12 @@ void AppController::setPreferencesAction()
     if (hasKey(u"banned_IPs"_s))
         session->setBannedIPs(it.value().toString().split(u'\n', Qt::SkipEmptyParts));
 
+    // Enhanced
+    if (hasKey(u"auto_ban_unknown_peer"_s))
+        session->setAutoBanUnknownPeer(it.value().toBool());
+    if (hasKey(u"auto_ban_bt_player_peer"_s))
+        session->setAutoBanBTPlayerPeer(it.value().toBool());
+
     // Speed
     // Global Rate Limits
     if (hasKey(u"dl_limit"_s))
@@ -842,6 +856,10 @@ void AppController::setPreferencesAction()
         session->setAddTrackersEnabled(it.value().toBool());
     if (hasKey(u"add_trackers"_s))
         session->setAdditionalTrackers(it.value().toString());
+    if (hasKey(u"auto_update_trackers_enabled"_s))
+        session->setAutoUpdateTrackersEnabled(it.value().toBool());
+    if (hasKey(u"customize_trackers_list_url"_s))
+        pref->setCustomizeTrackersListUrl(it.value().toString());
 
     // WebUI
     // HTTP Server
