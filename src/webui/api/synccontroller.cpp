@@ -756,7 +756,7 @@ void SyncController::torrentPeersAction()
             {KEY_PEER_FLAGS, pi.flags()},
             {KEY_PEER_FLAGS_DESCRIPTION, pi.flagsDescription()},
             {KEY_PEER_RELEVANCE, pi.relevance()},
-            {KEY_PEER_SHADOWBANNED, pi.isShandowBanned()}
+            {KEY_PEER_SHADOWBANNED, pi.isShadowBanned()}
         };
 
         if (torrent->hasMetadata())

@@ -119,9 +119,10 @@ bool PeerInfo::isSeed() const
     return static_cast<bool>(m_nativeInfo.flags & lt::peer_info::seed);
 }
 
-bool PeerInfo::isShandowBanned() const
+bool PeerInfo::isShadowBanned() const
 {
-    if(!CachedSettingValue<bool>(u"BitTorrent/Session/ShadowBan"_s, false)){
+    if (!CachedSettingValue<bool>(u"BitTorrent/Session/ShadowBan"_s, false))
+    {
         return false;
     }
     QString peer_ip = address().ip.toString();
