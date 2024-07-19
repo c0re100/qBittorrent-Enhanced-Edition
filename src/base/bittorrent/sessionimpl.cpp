@@ -2485,6 +2485,23 @@ void SessionImpl::banIP(const QString &ip)
     m_bannedIPs = bannedIPs;
 }
 
+void SessionImpl::shadowbanIP(const QString &ip)
+{
+    if (m_shadowBannedIPs.get().contains(ip))
+        return;
+
+    lt::error_code ec;
+    const lt::address addr = lt::make_address(ip.toLatin1().constData(), ec);
+    Q_ASSERT(!ec);
+    if (ec)
+        return;
+
+    QStringList shadowBannedIPs = m_shadowBannedIPs;
+    shadowBannedIPs.append(ip);
+    shadowBannedIPs.sort();
+    m_shadowBannedIPs = shadowBannedIPs;
+}
+
 // Delete a torrent from the session, given its hash
 // and from the disk, if the corresponding deleteOption is chosen
 bool SessionImpl::deleteTorrent(const TorrentID &id, const DeleteOption deleteOption)

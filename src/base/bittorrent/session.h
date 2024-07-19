@@ -459,6 +459,7 @@ namespace BitTorrent
         virtual void setMaxRatioAction(MaxRatioAction act) = 0;
 
         virtual void banIP(const QString &ip) = 0;
+        virtual void shadowbanIP(const QString &ip) = 0;
 
         virtual bool isKnownTorrent(const InfoHash &infoHash) const = 0;
         virtual bool addTorrent(const QString &source, const AddTorrentParams &params = {}) = 0;

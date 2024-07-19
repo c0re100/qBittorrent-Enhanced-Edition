@@ -417,6 +417,7 @@ namespace BitTorrent
         void setMaxRatioAction(MaxRatioAction act) override;
 
         void banIP(const QString &ip) override;
+        void shadowbanIP(const QString &ip) override;
 
         bool isKnownTorrent(const InfoHash &infoHash) const override;
         bool addTorrent(const QString &source, const AddTorrentParams &params = {}) override;
