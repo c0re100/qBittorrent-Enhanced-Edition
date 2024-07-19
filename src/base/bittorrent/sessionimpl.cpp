@@ -2491,7 +2491,7 @@ void SessionImpl::shadowbanIP(const QString &ip)
         return;
 
     lt::error_code ec;
-    const lt::address addr = lt::make_address(ip.toLatin1().constData(), ec);
+    lt::make_address(ip.toLatin1().constData(), ec); // Only check IP valid.
     Q_ASSERT(!ec);
     if (ec)
         return;
