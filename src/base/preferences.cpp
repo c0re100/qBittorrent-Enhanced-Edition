@@ -2019,7 +2019,7 @@ void Preferences::setShadowBan(const bool checked)
 
 QString Preferences::customizeTrackersListUrl() const
 {
-    return value(u"Preferences/Bittorrent/CustomizeTrackersListUrl"_s, u"https://cdn.jsdelivr.net/gh/ngosang/trackerslist/trackers_best.txt"_s);
+    return value(u"Preferences/Bittorrent/CustomizeTrackersListUrl"_s, u"https://ngosang.github.io/trackerslist/trackers_best.txt"_s);
 }
 
 void Preferences::setCustomizeTrackersListUrl(const QString &trackersUrl) {
