@@ -138,8 +138,8 @@ prepare_buildenv() {
     cmake_binary_url="https://github.com/Kitware/CMake/releases/download/v${cmake_latest_ver}/cmake-${cmake_latest_ver}-linux-x86_64.tar.gz"
     cmake_sha256_url="https://github.com/Kitware/CMake/releases/download/v${cmake_latest_ver}/cmake-${cmake_latest_ver}-SHA-256.txt"
     if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
-      cmake_binary_url="https://mirror.ghproxy.com/${cmake_binary_url}"
-      cmake_sha256_url="https://mirror.ghproxy.com/${cmake_sha256_url}"
+      cmake_binary_url="https://ghproxy.org/${cmake_binary_url}"
+      cmake_sha256_url="https://ghproxy.org/${cmake_sha256_url}"
     fi
     if [ -f "/usr/src/cmake-${cmake_latest_ver}-linux-x86_64.tar.gz" ]; then
       cd /usr/src
@@ -158,7 +158,7 @@ prepare_buildenv() {
     ninja_ver="$(retry curl -ksSL --compressed https://ninja-build.org/ \| grep "'The last Ninja release is'" \| sed -r "'s@.*<b>(.+)</b>.*@\1@'" \| head -1)"
     ninja_binary_url="https://github.com/ninja-build/ninja/releases/download/${ninja_ver}/ninja-linux.zip"
     if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
-      ninja_binary_url="https://mirror.ghproxy.com/${ninja_binary_url}"
+      ninja_binary_url="https://ghproxy.org/${ninja_binary_url}"
     fi
     if [ ! -f "/usr/src/ninja-${ninja_ver}-linux.zip.download_ok" ]; then
       rm -f "/usr/src/ninja-${ninja_ver}-linux.zip"
@@ -176,7 +176,7 @@ prepare_ssl() {
   echo "openssl version: ${openssl_ver}"
   openssl_latest_url="https://github.com/openssl/openssl/archive/refs/tags/${openssl_filename}"
   if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
-    openssl_latest_url="https://mirror.ghproxy.com/${openssl_latest_url}"
+    openssl_latest_url="https://ghproxy.org/${openssl_latest_url}"
   fi
   mkdir -p "/usr/src/openssl-${openssl_ver}/"
   if [ ! -f "/usr/src/openssl-${openssl_ver}/.unpack_ok" ]; then
@@ -265,7 +265,7 @@ prepare_qt() {
   if [ ! -d "/usr/src/qt6gtk2/" ]; then
     qt6gtk2_git_url="https://github.com/trialuser02/qt6gtk2.git"
     if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
-      qt6gtk2_git_url="https://mirror.ghproxy.com/${qt6gtk2_git_url}"
+      qt6gtk2_git_url="https://ghproxy.org/${qt6gtk2_git_url}"
     fi
     retry git clone --depth 1 --recursive "${qt6gtk2_git_url}" "/usr/src/qt6gtk2/"
   fi
@@ -303,7 +303,7 @@ prepare_libtorrent() {
   echo "libtorrent-rasterbar branch: ${LIBTORRENT_BRANCH}"
   libtorrent_git_url="https://github.com/arvidn/libtorrent.git"
   if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
-    libtorrent_git_url="https://mirror.ghproxy.com/${libtorrent_git_url}"
+    libtorrent_git_url="https://ghproxy.org/${libtorrent_git_url}"
   fi
   if [ ! -d "/usr/src/libtorrent-rasterbar-${LIBTORRENT_BRANCH}/" ]; then
     retry git clone --depth 1 --recursive --shallow-submodules --branch "${LIBTORRENT_BRANCH}" \
@@ -353,7 +353,7 @@ build_appimage() {
   # build AppImage
   linuxdeploy_qt_download_url="https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage"
   if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
-    linuxdeploy_qt_download_url="https://mirror.ghproxy.com/${linuxdeploy_qt_download_url}"
+    linuxdeploy_qt_download_url="https://ghproxy.org/${linuxdeploy_qt_download_url}"
   fi
   [ -x "/tmp/linuxdeployqt-continuous-x86_64.AppImage" ] || retry curl -kSLC- -o /tmp/linuxdeployqt-continuous-x86_64.AppImage "${linuxdeploy_qt_download_url}"
   chmod -v +x '/tmp/linuxdeployqt-continuous-x86_64.AppImage'

@@ -146,8 +146,8 @@ prepare_cmake() {
     cmake_binary_url="https://github.com/Kitware/CMake/releases/download/v${cmake_latest_ver}/cmake-${cmake_latest_ver}-linux-x86_64.tar.gz"
     cmake_sha256_url="https://github.com/Kitware/CMake/releases/download/v${cmake_latest_ver}/cmake-${cmake_latest_ver}-SHA-256.txt"
     if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
-      cmake_binary_url="https://mirror.ghproxy.com/${cmake_binary_url}"
-      cmake_sha256_url="https://mirror.ghproxy.com/${cmake_sha256_url}"
+      cmake_binary_url="https://ghproxy.org/${cmake_binary_url}"
+      cmake_sha256_url="https://ghproxy.org/${cmake_sha256_url}"
     fi
     if [ -f "/usr/src/cmake-${cmake_latest_ver}-linux-x86_64.tar.gz" ]; then
       cd /usr/src
@@ -168,7 +168,7 @@ prepare_ninja() {
     ninja_ver="$(retry curl -ksSL --compressed https://ninja-build.org/ \| grep "'The last Ninja release is'" \| sed -r "'s@.*<b>(.+)</b>.*@\1@'" \| head -1)"
     ninja_binary_url="https://github.com/ninja-build/ninja/releases/download/${ninja_ver}/ninja-linux.zip"
     if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
-      ninja_binary_url="https://mirror.ghproxy.com/${ninja_binary_url}"
+      ninja_binary_url="https://ghproxy.org/${ninja_binary_url}"
     fi
     if [ ! -f "/usr/src/ninja-${ninja_ver}-linux.zip.download_ok" ]; then
       rm -f "/usr/src/ninja-${ninja_ver}-linux.zip"
@@ -186,7 +186,7 @@ prepare_zlib() {
     zlib_ng_latest_url="https://github.com/zlib-ng/zlib-ng/archive/refs/tags/${zlib_ng_latest_tag}.tar.gz"
     echo "zlib-ng version ${zlib_ng_latest_tag}"
     if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
-      zlib_ng_latest_url="https://mirror.ghproxy.com/${zlib_ng_latest_url}"
+      zlib_ng_latest_url="https://ghproxy.org/${zlib_ng_latest_url}"
     fi
     if [ ! -f "/usr/src/zlib-ng-${zlib_ng_latest_tag}/.unpack_ok" ]; then
       mkdir -p "/usr/src/zlib-ng-${zlib_ng_latest_tag}/"
@@ -231,13 +231,13 @@ prepare_zlib() {
 }
 
 prepare_ssl() {
-  openssl_filename="$(retry curl -ksSL --compressed https://www.openssl.org/source/ \| grep -o "'href=\"openssl-3\(\.[0-9]*\)*tar.gz\"'" \| grep -o "'[^\"]*.tar.gz'" \| sort -r \| head -1)"
+  openssl_filename="$(retry curl -ksSL --compressed https://openssl-library.org/source/ \| grep -o "'>openssl-3\(\.[0-9]*\)*tar.gz<'" \| grep -o "'[^>]*.tar.gz'" \| sort -nr \| head -1)"
   openssl_ver="$(echo "${openssl_filename}" | sed -r 's/openssl-(.+)\.tar\.gz/\1/')"
   echo "OpenSSL version ${openssl_ver}"
   if [ ! -f "/usr/src/openssl-${openssl_ver}/.unpack_ok" ]; then
-    openssl_download_url="https://github.com/openssl/openssl/archive/refs/tags/${openssl_filename}"
+    openssl_download_url="https://github.com/openssl/openssl/releases/download/openssl-${openssl_ver}/${openssl_filename}"
     if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
-      openssl_download_url="https://mirror.ghproxy.com/${openssl_download_url}"
+      openssl_download_url="https://ghproxy.org/${openssl_download_url}"
     fi
     mkdir -p "/usr/src/openssl-${openssl_ver}/"
     retry curl -kL "${openssl_download_url}" \| tar -zxf - --strip-components=1 -C "/usr/src/openssl-${openssl_ver}/"
@@ -333,7 +333,7 @@ prepare_libtorrent() {
   echo "libtorrent-rasterbar branch: ${LIBTORRENT_BRANCH}"
   libtorrent_git_url="https://github.com/arvidn/libtorrent.git"
   if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
-    libtorrent_git_url="https://mirror.ghproxy.com/${libtorrent_git_url}"
+    libtorrent_git_url="https://ghproxy.org/${libtorrent_git_url}"
   fi
   if [ ! -d "/usr/src/libtorrent-rasterbar-${LIBTORRENT_BRANCH}/" ]; then
     retry git clone --depth 1 --recursive --shallow-submodules --branch "${LIBTORRENT_BRANCH}" \
