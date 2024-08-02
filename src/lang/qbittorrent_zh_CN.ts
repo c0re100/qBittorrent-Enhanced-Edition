@@ -5949,6 +5949,11 @@ Disable encryption: Only connect to peers without protocol encryption</source>
         <translation>自动将以下 Tracker 添加到新的任务(&amp;U):</translation>
     </message>
     <message>
+        <location filename="../gui/optionsdialog.ui" line="3073"/>
+        <source>Automatically update public trackers list:</source>
+        <translation>自动更新公共 Tracker 列表:</translation>
+    </message>
+    <message>
         <location filename="../gui/optionsdialog.ui" line="3088"/>
         <source>RSS Reader</source>
         <translation>RSS 阅读器</translation>
@@ -5962,6 +5967,11 @@ Disable encryption: Only connect to peers without protocol encryption</source>
         <location filename="../gui/optionsdialog.ui" line="3103"/>
         <source>Feeds refresh interval:</source>
         <translation>RSS 订阅源更新间隔：</translation>
+    </message>
+    <message>
+        <location filename="../gui/optionsdialog.ui" line="3113"/>
+        <source>Refetch</source>
+        <translation>更新</translation>
     </message>
     <message>
         <location filename="../gui/optionsdialog.ui" line="3120"/>
