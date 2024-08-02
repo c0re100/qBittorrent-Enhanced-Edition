@@ -679,7 +679,7 @@
         <translation>自动添加以下 tracker 到新的 torrent：</translation>
     </message>
     <message>
-        <source>Automatically update public trackers list:/source>
+        <source>Automatically update public trackers list:</source>
         <translation>自动更新公共 Tracker 列表:</translation>
     </message>
     <message>
