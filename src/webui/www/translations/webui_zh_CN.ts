@@ -679,6 +679,14 @@
         <translation>自动添加以下 tracker 到新的 torrent：</translation>
     </message>
     <message>
+        <source>Automatically update public trackers list:/source>
+        <translation>自动更新公共 Tracker 列表:</translation>
+    </message>
+    <message>
+        <source>Customize Trackers List Url:</source>
+        <translation>自定义 Tracker 列表链接:</translation>
+    </message>
+    <message>
         <source>Web User Interface (Remote control)</source>
         <translation>Web 用户界面（远程控制）</translation>
     </message>
