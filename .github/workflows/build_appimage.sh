@@ -69,7 +69,7 @@ EOF
   echo '/usr/local/lib64' >/etc/ld.so.conf.d/lib64-local.conf
 
   retry apt update
-  retry apt install -y software-properties-common apt-transport-https
+  retry apt install -y software-properties-common apt-transport-https desktop-file-utils zsync
   retry apt-add-repository -yn ppa:savoury1/backports
 
   if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
@@ -484,18 +484,26 @@ EOF
     libxkbcommon.so.0
   )
 
-  # fix AppImage output file name
+  # fix AppImage output file name, maybe not needed anymore since appimagetool lets you set output file name?
   sed -i 's/Name=qBittorrent.*/Name=qBittorrent-Enhanced-Edition/;/SingleMainWindow/d' /tmp/qbee/AppDir/usr/share/applications/*.desktop
 
-  APPIMAGE_EXTRACT_AND_RUN=1 \
-    /tmp/linuxdeployqt-continuous-x86_64.AppImage \
+  export APPIMAGE_EXTRACT_AND_RUN=1
+  /tmp/linuxdeployqt-continuous-x86_64.AppImage \
     /tmp/qbee/AppDir/usr/share/applications/*.desktop \
     -always-overwrite \
-    -appimage \
+    -bundle-non-qt-libs \
     -no-copy-copyright-files \
-    -updateinformation="zsync|https://github.com/${GITHUB_REPOSITORY}/releases/latest/download/qBittorrent-Enhanced-Edition-x86_64.AppImage.zsync" \
     -extra-plugins="$(join_by ',' "${extra_plugins[@]}")" \
     -exclude-libs="$(join_by ',' "${exclude_libs[@]}")"
+
+  # Workaround to use the static runtime with the appimage
+  export ARCH=x86_64
+  appimagetool_download_url="https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-${ARCH}.AppImage"
+  [ -x "/tmp/appimagetool-${ARCH}.AppImage" ] || retry curl -kSLC- -o /tmp/appimagetool-"${ARCH}".AppImage "${appimagetool_download_url}"
+  chmod -v +x "/tmp/appimagetool-${ARCH}.AppImage"
+  /tmp/appimagetool-"${ARCH}".AppImage --comp zstd --mksquashfs-opt -Xcompression-level --mksquashfs-opt 20 \
+    -u "zsync|https://github.com/${GITHUB_REPOSITORY}/releases/latest/download/qBittorrent-Enhanced-Edition-$ARCH.AppImage.zsync" \
+    /tmp/qbee/AppDir /tmp/qbee/qBittorrent-Enhanced-Edition-"${ARCH}".AppImage
 }
 
 move_artifacts() {
