@@ -29,6 +29,16 @@ public:
         return peer_plugin::on_request(r);
     }
 
+    // don't send request if peer shadowbanned to prevent use this function to leech
+    bool write_request(lt::peer_request const &r) override
+    {
+        if (is_shadowbanned_peer())
+        {
+            return true;
+        }
+        return peer_plugin::write_request(r);
+    }
+
 protected:
     bool is_shadowbanned_peer()
     {
