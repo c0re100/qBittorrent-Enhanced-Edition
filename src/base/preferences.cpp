@@ -2017,6 +2017,16 @@ void Preferences::setShadowBan(const bool checked)
     setValue(u"Preferences/Advanced/ShadowBan"_s, checked);
 }
 
+bool Preferences::getUpstreamFingerprint() const
+{
+    return value(u"Preferences/Advanced/UpstreamFingerprint"_s, false);
+}
+
+void Preferences::setUpstreamFingerprint(const bool checked)
+{
+    setValue(u"Preferences/Advanced/UpstreamFingerprint"_s, checked);
+}
+
 QString Preferences::customizeTrackersListUrl() const
 {
     return value(u"Preferences/Bittorrent/CustomizeTrackersListUrl"_s, u"https://ngosang.github.io/trackerslist/trackers_best.txt"_s);

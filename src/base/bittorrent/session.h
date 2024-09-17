@@ -246,6 +246,10 @@ namespace BitTorrent
         virtual QStringList shadowBannedIPs() const = 0;
         virtual void setShadowBannedIPs(const QStringList &newList) = 0;
 
+        // Upstream Fingerprint
+        virtual bool isUpstreamFingerprintEnabled() const = 0;
+        virtual void setUpstreamFingerprint(bool value) = 0;
+
         // Trackers list
         virtual bool isAutoUpdateTrackersEnabled() const = 0;
         virtual void setAutoUpdateTrackersEnabled(bool enabled) = 0;

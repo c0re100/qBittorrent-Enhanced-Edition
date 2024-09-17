@@ -221,6 +221,9 @@ void AppController::preferencesAction()
     data[u"proxy_rss"_s] = pref->useProxyForRSS();
     data[u"proxy_misc"_s] = pref->useProxyForGeneralPurposes();
 
+    // Upstream Fingerprint
+    data[u"upstream_fingerprint"_s] = session->isUpstreamFingerprintEnabled();
+
     // IP Filtering
     data[u"ip_filter_enabled"_s] = session->isIPFilteringEnabled();
     data[u"ip_filter_path"_s] = session->IPFilterFile().toString();
@@ -708,6 +711,10 @@ void AppController::setPreferencesAction()
         session->setShadowBan(it.value().toBool());
     if (hasKey(u"shadow_banned_IPs"_s))
         session->setShadowBannedIPs(it.value().toString().split(u'\n', Qt::SkipEmptyParts));
+
+    // Upstream Fingerprint
+    if (hasKey(u"upstream_fingerprint"_s))
+        session->setUpstreamFingerprint(it.value().toBool());
 
     // Speed
     // Global Rate Limits

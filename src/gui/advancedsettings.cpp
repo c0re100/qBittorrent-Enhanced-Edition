@@ -80,6 +80,7 @@ namespace
         RECHECK_COMPLETED,
         CONFIRM_AUTO_BAN_UNKNOWN_PEER,
         CONFIRM_AUTO_BAN_BT_Player,
+        CONFIRM_UPSTREAM_FINGERPRINT,
         // UI related
         LIST_REFRESH,
         RESOLVE_HOSTS,
@@ -303,6 +304,8 @@ void AdvancedSettings::saveAdvancedSettings() const
     session->setAutoBanUnknownPeer(m_autoBanUnknownPeer.isChecked());
     // Auto ban Bittorrent Media Player Peer
     session->setAutoBanBTPlayerPeer(m_autoBanBTPlayerPeer.isChecked());
+    // Upstream Fingerprint
+    session->setUpstreamFingerprint(m_upstreamFingerprint.isChecked());
     // Program notification
     app()->desktopIntegration()->setNotificationsEnabled(m_checkBoxProgramNotifications.isChecked());
 #ifdef QBT_USES_DBUS
@@ -765,6 +768,9 @@ void AdvancedSettings::loadAdvancedSettings()
     // Auto Ban Bittorrent Media Player Peer
     m_autoBanBTPlayerPeer.setChecked(session->isAutoBanBTPlayerPeerEnabled());
     addRow(CONFIRM_AUTO_BAN_BT_Player, tr("Auto Ban Bittorrent Media Player Peer"), &m_autoBanBTPlayerPeer);
+    // Upstream Fingerprint
+    m_upstreamFingerprint.setChecked(session->isUpstreamFingerprintEnabled());
+    addRow(CONFIRM_UPSTREAM_FINGERPRINT, tr("Upstream Fingerprint"), &m_upstreamFingerprint);
     // Max concurrent HTTP announces
     m_spinBoxMaxConcurrentHTTPAnnounces.setMaximum(std::numeric_limits<int>::max());
     m_spinBoxMaxConcurrentHTTPAnnounces.setValue(session->maxConcurrentHTTPAnnounces());

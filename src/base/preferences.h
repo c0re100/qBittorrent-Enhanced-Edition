@@ -422,6 +422,8 @@ public:
     void setAutoBanBTPlayerPeer(const bool checked);
     bool getShadowBan() const;
     void setShadowBan(const bool checked);
+    bool getUpstreamFingerprint() const;
+    void setUpstreamFingerprint(const bool checked);
     QString customizeTrackersListUrl() const;
     void setCustomizeTrackersListUrl(const QString &trackersUrl);
 

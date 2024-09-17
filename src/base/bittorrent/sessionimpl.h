@@ -490,6 +490,10 @@ namespace BitTorrent
         QStringList shadowBannedIPs() const override;
         void setShadowBannedIPs(const QStringList &newList) override;
 
+        // Upstream Fingerprint
+        bool isUpstreamFingerprintEnabled() const override;
+        void setUpstreamFingerprint(bool value) override;
+
         // Trackers list
         bool isAutoUpdateTrackersEnabled() const override;
         void setAutoUpdateTrackersEnabled(bool enabled) override;
@@ -760,6 +764,7 @@ namespace BitTorrent
         CachedSettingValue<bool> m_autoBanBTPlayerPeer;
         CachedSettingValue<bool> m_shadowBan;
         CachedSettingValue<QStringList> m_shadowBannedIPs;
+        CachedSettingValue<bool> m_upstreamFingerprint;
         CachedSettingValue<bool> m_isAutoUpdateTrackersEnabled;
         QTimer *m_updateTimer;
 
