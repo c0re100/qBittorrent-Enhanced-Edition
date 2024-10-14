@@ -43,7 +43,7 @@
   !define QBT_INSTALLER_FILENAME "${QBT_VERSION}_x64"
 !endif
 
-!define /ifndef QBT_DIST_DIR "qBittorrent"
+!define /ifndef QBT_DIST_DIR "qBittorrent Enhanced"
 !define /ifndef QBT_NSIS_PLUGINS_DIR "NSISPlugins"
 
 Unicode true
@@ -84,10 +84,10 @@ Name "qBittorrent ${QBT_INSTALLER_WINDOWNAME}"
 OutFile "qbittorrent_${QBT_INSTALLER_FILENAME}_setup.exe"
 
 ;Installer Version Information
-VIAddVersionKey "ProductName" "qBittorrent"
-VIAddVersionKey "CompanyName" "The qBittorrent project"
+VIAddVersionKey "ProductName" "qBittorrent Enhanced"
+VIAddVersionKey "CompanyName" "The qBittorrent Enhanced project"
 VIAddVersionKey "LegalCopyright" "Copyright ©2006-2024 The qBittorrent project"
-VIAddVersionKey "FileDescription" "qBittorrent - A Bittorrent Client"
+VIAddVersionKey "FileDescription" "qBittorrent Enhanced - A Enhanced Bittorrent Client"
 VIAddVersionKey "FileVersion" "${QBT_VERSION}"
 
 ; VIProductVersion needs a 4 part version.

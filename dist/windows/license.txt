@@ -1,3 +1,11 @@
+(qBittorrent Enhanced Edition by Husky)
+Features:
+1. Auto Ban Xunlei, QQ, Baidu, Xfplay, DLBT and Offline downloader client
+2. Auto Ban Unknown Peer from China Option(Default: OFF)
+3. Auto Update Public Trackers List(Default: OFF)
+4. Auto Ban BitTorrent Media Player Peer Option(Default: OFF)
+5. Peer whitelist/blacklist
+
 The qBittorrent source code is licensed under the GNU General Public License,
 version 2 or (at your option) any later version (GPLv2+). However, the binary
 distribution is licensed under GNU General Public License, version 3 or (at

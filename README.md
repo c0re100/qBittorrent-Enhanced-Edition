@@ -1,8 +1,17 @@
-qBittorrent - A BitTorrent client in Qt
+qBittorrent Enhanced Edition
 ------------------------------------------
+[Important Note for user and tracker operators](NOTE.md)
+********************************
+# Features:
+1. Auto Ban Xunlei, QQ, Baidu, Xfplay, DLBT and Offline downloader
 
-[![GitHub Actions CI Status](https://github.com/qbittorrent/qBittorrent/actions/workflows/ci_ubuntu.yaml/badge.svg)](https://github.com/qbittorrent/qBittorrent/actions)
-[![Coverity Status](https://scan.coverity.com/projects/5494/badge.svg)](https://scan.coverity.com/projects/5494)
+2. _Auto Ban Unknown Peer from China_ Option (Default: OFF)
+
+3. Auto Update Public Trackers List (Default: OFF)
+
+4. Auto Ban BitTorrent Media Player Peer Option (Default: OFF)
+
+5. Peer whitelist/blacklist
 ********************************
 ### Description:
 qBittorrent is a bittorrent client programmed in C++ / Qt that uses
@@ -18,11 +27,67 @@ The free [IP to Country Lite database](https://db-ip.com/db/download/ip-to-count
 
 Refer to the [INSTALL](INSTALL) file.
 
-### Public key:
-Starting from v3.3.4 all source tarballs and binaries are signed.<br />
-The key currently used is 4096R/[5B7CC9A2](https://pgp.mit.edu/pks/lookup?op=get&search=0x6E4A2D025B7CC9A2) with fingerprint `D8F3DA77AAC6741053599C136E4A2D025B7CC9A2`.<br />
-You can also download it from [here](https://github.com/qbittorrent/qBittorrent/raw/master/5B7CC9A2.asc).<br />
-**PREVIOUSLY** the following key was used to sign the v3.3.4 source tarballs and v3.3.4 Windows installer **only**: 4096R/[520EC6F6](https://pgp.mit.edu/pks/lookup?op=get&search=0xA1ACCAE4520EC6F6) with fingerprint `F4A5FD201B117B1C2AB590E2A1ACCAE4520EC6F6`.<br />
+## Repository
+
+If you are using a desktop Linux distribution without any special demands, you can use AppImage from release page.
+
+Latest AppImage download: [qBittorrent-Enhanced-Edition-x86_64.AppImage](https://github.com/c0re100/qBittorrent-Enhanced-Edition/releases/latest/download/qBittorrent-Enhanced-Edition-x86_64.AppImage)
+
+#### Arch Linux (Maintainer: [c0re100](https://github.com/c0re100))
+
+[AUR](https://aur.archlinux.org/packages/qbittorrent-enhanced-git/)
+
+[nox AUR](https://aur.archlinux.org/packages/qbittorrent-enhanced-nox-git/)
+
+#### Debian (Maintainer: [Kolcha](https://github.com/Kolcha))
+
+##### Qt5 variants (Debian 11 and above):
+
+[GUI](https://software.opensuse.org//download.html?project=home%3Anikoneko%3Atest&package=qbittorrent-enhanced)
+
+[nox](https://software.opensuse.org//download.html?project=home%3Anikoneko%3Atest&package=qbittorrent-enhanced-nox)
+
+##### Qt6 variants (Debian Testing and above):
+
+[GUI](https://software.opensuse.org//download.html?project=home%3Anikoneko%3Atest&package=qbittorrent-enhanced-qt6)
+
+[nox](https://software.opensuse.org//download.html?project=home%3Anikoneko%3Atest&package=qbittorrent-enhanced-nox-qt6)
+
+The one [repository](https://build.opensuse.org/project/show/home:nikoneko:test) contains all 4 variants listed above, links to specific packages are provided for convenience.
+
+#### openSUSE (Maintainer: [openSUSE Chinese Community](https://github.com/openSUSE-zh))
+
+[openSUSE repo](https://build.opensuse.org/package/show/home:opensuse_zh/qBittorrent-Enhanced-Edition)
+
+#### Ubuntu (Maintainer: [poplite](https://github.com/poplite))
+
+[PPA](https://launchpad.net/~poplite/+archive/ubuntu/qbittorrent-enhanced)
+
+#### macOS (Homebrew) (Maintainer: [AlexaraWu](https://github.com/AlexaraWu))
+```
+brew install c0re100-qbittorrent
+```
+
+#### Windows
+
+Windows 10 & 11 (Maintainer: [c0re100](https://github.com/c0re100))
+
+```
+winget install c0re100.qBittorrent-Enhanced-Edition
+```
+
+Chocolatey (Maintainer: [iYato](https://github.com/iYato))
+
+```
+choco install qbittorrent-enhanced
+```
+
+Scoop (Maintainer: [Chawye Hsu](https://github.com/chawyehsu))
+
+```
+scoop bucket add dorado https://github.com/chawyehsu/dorado
+scoop install qbittorrent-enhanced
+```
 
 ### Misc:
 For more information please visit:
@@ -37,8 +102,5 @@ https://forum.qbittorrent.org
 Please report any bug (or feature request) to:
 https://bugs.qbittorrent.org
 
-Official IRC channel:
-[#qbittorrent on irc.libera.chat](ircs://irc.libera.chat:6697/qbittorrent)
-
-------------------------------------------
-sledgehammer999 \<sledgehammer999@qbittorrent.org\>
+For enhanced features bug(such as Auto Ban, API, Auto Update Tracker lists...), please report to:
+https://github.com/c0re100/qBittorrent-Enhanced-Edition/issues
