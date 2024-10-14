@@ -1,0 +1,91 @@
+name: Build and Release
+
+on:
+  push:
+    branches:
+      - "*"
+  pull_request:
+    branches:
+      - "*"
+  release:
+    types:
+      - released
+
+jobs:
+  appimage:
+    runs-on: ubuntu-latest
+    container: "ubuntu:22.04"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        with:
+          path: |
+            /usr/src/
+            /var/cache/apt/
+          key: appimage-build-dependencies-cache-${{ github.sha }}
+          restore-keys: |
+            appimage-build-dependencies-cache-
+      - name: Build AppImage
+        run: .github/workflows/build_appimage.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: qBittorrent-Enhanced-Edition-x86_64.AppImage
+          path: ".github/workflows/qBittorrent-Enhanced-Edition*.AppImage*"
+      - name: Upload Github Assets
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ".github/workflows/qBittorrent-Enhanced-Edition*.AppImage*"
+          tag: ${{ github.ref }}
+          overwrite: true
+          file_glob: true
+
+  # cross compile for some other platforms, like arm, mips, etc.
+  cross-compile:
+    runs-on: ubuntu-latest
+    container: "abcfy2/muslcc-toolchain-ubuntu:${{ matrix.cross_host }}"
+    strategy:
+      fail-fast: false
+      matrix:
+        cross_host:
+          # cross toolchain downloads from: https://musl.cc/
+          # you need to find the name ${cross_host}-cross.tgz
+          - arm-linux-musleabi
+          - arm-linux-musleabihf
+          - aarch64-linux-musl
+          - mips-linux-musl
+          - mipsel-linux-musl
+          - mips64-linux-musl
+          - mips64el-linux-musl
+          - x86_64-linux-musl
+          - i686-linux-musl
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        with:
+          path: |
+            /usr/src/
+            /var/cache/apt/
+          key: cross-build-dependencies-cache-${{ matrix.cross_host }}-${{ github.sha }}
+          restore-keys: |
+            cross-build-dependencies-cache-${{ matrix.cross_host }}-
+      - name: cross compile nox-static
+        env:
+          CROSS_HOST: "${{ matrix.cross_host }}"
+        run: .github/workflows/cross_build.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: qbittorrent-enhanced-nox_${{ matrix.cross_host }}_static
+          path: |
+            /tmp/qbittorrent-nox*
+      - name: Upload Github Assets
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ".github/workflows/qbittorrent-enhanced-nox_${{ matrix.cross_host }}_static.zip"
+          tag: ${{ github.ref }}
+          overwrite: true

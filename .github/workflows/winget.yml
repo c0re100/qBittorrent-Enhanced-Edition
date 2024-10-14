@@ -1,0 +1,22 @@
+name: Publish to WinGet
+on:
+  release:
+    types: [released]
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get version
+        id: get-version
+        run: |
+          # Finding the version from release tag
+          version=${RELEASE_TAG#release-}
+          echo "version=$version" >> $GITHUB_OUTPUT
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+      - uses: vedantmgoyal2009/winget-releaser@v2
+        with:
+          identifier: c0re100.qBittorrent-Enhanced-Edition
+          version: ${{ steps.get-version.outputs.version }}
+          installers-regex: 'qbittorrent_enhanced_[0-9.]+(_x64)?_setup.exe$'
+          token: ${{ secrets.WINGET_TOKEN }}
