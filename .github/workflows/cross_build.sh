@@ -146,8 +146,8 @@ prepare_cmake() {
     cmake_binary_url="https://github.com/Kitware/CMake/releases/download/v${cmake_latest_ver}/cmake-${cmake_latest_ver}-linux-x86_64.tar.gz"
     cmake_sha256_url="https://github.com/Kitware/CMake/releases/download/v${cmake_latest_ver}/cmake-${cmake_latest_ver}-SHA-256.txt"
     if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
-      cmake_binary_url="https://ghproxy.org/${cmake_binary_url}"
-      cmake_sha256_url="https://ghproxy.org/${cmake_sha256_url}"
+      cmake_binary_url="https://ghp.ci/${cmake_binary_url}"
+      cmake_sha256_url="https://ghp.ci/${cmake_sha256_url}"
     fi
     if [ -f "/usr/src/cmake-${cmake_latest_ver}-linux-x86_64.tar.gz" ]; then
       cd /usr/src
@@ -168,7 +168,7 @@ prepare_ninja() {
     ninja_ver="$(retry curl -ksSL --compressed https://ninja-build.org/ \| grep "'The last Ninja release is'" \| sed -r "'s@.*<b>(.+)</b>.*@\1@'" \| head -1)"
     ninja_binary_url="https://github.com/ninja-build/ninja/releases/download/${ninja_ver}/ninja-linux.zip"
     if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
-      ninja_binary_url="https://ghproxy.org/${ninja_binary_url}"
+      ninja_binary_url="https://ghp.ci/${ninja_binary_url}"
     fi
     if [ ! -f "/usr/src/ninja-${ninja_ver}-linux.zip.download_ok" ]; then
       rm -f "/usr/src/ninja-${ninja_ver}-linux.zip"
@@ -186,7 +186,7 @@ prepare_zlib() {
     zlib_ng_latest_url="https://github.com/zlib-ng/zlib-ng/archive/refs/tags/${zlib_ng_latest_tag}.tar.gz"
     echo "zlib-ng version ${zlib_ng_latest_tag}"
     if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
-      zlib_ng_latest_url="https://ghproxy.org/${zlib_ng_latest_url}"
+      zlib_ng_latest_url="https://ghp.ci/${zlib_ng_latest_url}"
     fi
     if [ ! -f "/usr/src/zlib-ng-${zlib_ng_latest_tag}/.unpack_ok" ]; then
       mkdir -p "/usr/src/zlib-ng-${zlib_ng_latest_tag}/"
@@ -237,7 +237,7 @@ prepare_ssl() {
   if [ ! -f "/usr/src/openssl-${openssl_ver}/.unpack_ok" ]; then
     openssl_download_url="https://github.com/openssl/openssl/releases/download/openssl-${openssl_ver}/${openssl_filename}"
     if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
-      openssl_download_url="https://ghproxy.org/${openssl_download_url}"
+      openssl_download_url="https://ghp.ci/${openssl_download_url}"
     fi
     mkdir -p "/usr/src/openssl-${openssl_ver}/"
     retry curl -kL "${openssl_download_url}" \| tar -zxf - --strip-components=1 -C "/usr/src/openssl-${openssl_ver}/"
@@ -322,6 +322,9 @@ prepare_qt() {
     -DCMAKE_C_COMPILER="${CROSS_HOST}-gcc" \
     -DCMAKE_SYSROOT="${CROSS_PREFIX}" \
     -DCMAKE_CXX_COMPILER="${CROSS_HOST}-g++"
+  echo "========================================================"
+  echo "Qt configuration:"
+  cat config.summary
   cmake --build . --parallel
   cmake --install .
   export QT_BASE_DIR="${CROSS_PREFIX}/opt/qt"
@@ -333,7 +336,7 @@ prepare_libtorrent() {
   echo "libtorrent-rasterbar branch: ${LIBTORRENT_BRANCH}"
   libtorrent_git_url="https://github.com/arvidn/libtorrent.git"
   if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
-    libtorrent_git_url="https://ghproxy.org/${libtorrent_git_url}"
+    libtorrent_git_url="https://ghp.ci/${libtorrent_git_url}"
   fi
   if [ ! -d "/usr/src/libtorrent-rasterbar-${LIBTORRENT_BRANCH}/" ]; then
     retry git clone --depth 1 --recursive --shallow-submodules --branch "${LIBTORRENT_BRANCH}" \
@@ -388,7 +391,6 @@ build_qbittorrent() {
   cmake \
     -B build \
     -G "Ninja" \
-    -DQT6=ON \
     -DGUI=off \
     -DQT_HOST_PATH="/usr/src/qt-host/${qt_ver}/gcc_64/" \
     -DSTACKTRACE=off \

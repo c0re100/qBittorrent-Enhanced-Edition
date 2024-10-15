@@ -69,8 +69,9 @@ EOF
   echo '/usr/local/lib64' >/etc/ld.so.conf.d/lib64-local.conf
 
   retry apt update
-  retry apt install -y software-properties-common apt-transport-https desktop-file-utils zsync
-  retry apt-add-repository -yn ppa:savoury1/backports
+  retry apt install -y software-properties-common apt-transport-https
+  # retry apt-add-repository -yn ppa:savoury1/backports
+  retry apt-add-repository -yn ppa:savoury1/gcc-11
 
   if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
     sed -i 's@http://ppa.launchpad.net@https://launchpad.proxy.ustclug.org@' /etc/apt/sources.list.d/*.list
@@ -118,7 +119,9 @@ EOF
     libxkbcommon-dev \
     libxkbcommon-x11-dev \
     libwayland-dev \
-    libwayland-egl-backend-dev
+    libwayland-egl-backend-dev \
+    desktop-file-utils \
+    zsync
 
   update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 100
   update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-11 100
@@ -138,8 +141,8 @@ prepare_buildenv() {
     cmake_binary_url="https://github.com/Kitware/CMake/releases/download/v${cmake_latest_ver}/cmake-${cmake_latest_ver}-linux-x86_64.tar.gz"
     cmake_sha256_url="https://github.com/Kitware/CMake/releases/download/v${cmake_latest_ver}/cmake-${cmake_latest_ver}-SHA-256.txt"
     if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
-      cmake_binary_url="https://ghproxy.org/${cmake_binary_url}"
-      cmake_sha256_url="https://ghproxy.org/${cmake_sha256_url}"
+      cmake_binary_url="https://ghp.ci/${cmake_binary_url}"
+      cmake_sha256_url="https://ghp.ci/${cmake_sha256_url}"
     fi
     if [ -f "/usr/src/cmake-${cmake_latest_ver}-linux-x86_64.tar.gz" ]; then
       cd /usr/src
@@ -158,7 +161,7 @@ prepare_buildenv() {
     ninja_ver="$(retry curl -ksSL --compressed https://ninja-build.org/ \| grep "'The last Ninja release is'" \| sed -r "'s@.*<b>(.+)</b>.*@\1@'" \| head -1)"
     ninja_binary_url="https://github.com/ninja-build/ninja/releases/download/${ninja_ver}/ninja-linux.zip"
     if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
-      ninja_binary_url="https://ghproxy.org/${ninja_binary_url}"
+      ninja_binary_url="https://ghp.ci/${ninja_binary_url}"
     fi
     if [ ! -f "/usr/src/ninja-${ninja_ver}-linux.zip.download_ok" ]; then
       rm -f "/usr/src/ninja-${ninja_ver}-linux.zip"
@@ -171,12 +174,12 @@ prepare_buildenv() {
 }
 
 prepare_ssl() {
-  openssl_filename="$(retry curl -ksSL --compressed https://www.openssl.org/source/ \| grep -o "'href=\"openssl-3.*tar.gz\"'" \| grep -o "'[^\"]*.tar.gz'" \| head -1)"
+  openssl_filename="$(retry curl -ksSL --compressed https://www.openssl.org/source/ \| grep -o "'>openssl-3\(\.[0-9]*\)*tar.gz<'" \| grep -o "'[^>]*.tar.gz'" \| head -1)"
   openssl_ver="$(echo "${openssl_filename}" | sed -r 's/openssl-(.+)\.tar\.gz/\1/')"
   echo "openssl version: ${openssl_ver}"
   openssl_latest_url="https://github.com/openssl/openssl/archive/refs/tags/${openssl_filename}"
   if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
-    openssl_latest_url="https://ghproxy.org/${openssl_latest_url}"
+    openssl_latest_url="https://ghp.ci/${openssl_latest_url}"
   fi
   mkdir -p "/usr/src/openssl-${openssl_ver}/"
   if [ ! -f "/usr/src/openssl-${openssl_ver}/.unpack_ok" ]; then
@@ -220,6 +223,9 @@ prepare_qt() {
     -feature-optimize_full \
     -nomake examples \
     -nomake tests
+  echo "========================================================"
+  echo "Qt configuration:"
+  cat config.summary
   cmake --build . --parallel
   cmake --install .
   export QT_BASE_DIR="$(ls -rd /usr/local/Qt-* | head -1)"
@@ -265,7 +271,7 @@ prepare_qt() {
   if [ ! -d "/usr/src/qt6gtk2/" ]; then
     qt6gtk2_git_url="https://github.com/trialuser02/qt6gtk2.git"
     if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
-      qt6gtk2_git_url="https://ghproxy.org/${qt6gtk2_git_url}"
+      qt6gtk2_git_url="https://ghp.ci/${qt6gtk2_git_url}"
     fi
     retry git clone --depth 1 --recursive "${qt6gtk2_git_url}" "/usr/src/qt6gtk2/"
   fi
@@ -303,7 +309,7 @@ prepare_libtorrent() {
   echo "libtorrent-rasterbar branch: ${LIBTORRENT_BRANCH}"
   libtorrent_git_url="https://github.com/arvidn/libtorrent.git"
   if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
-    libtorrent_git_url="https://ghproxy.org/${libtorrent_git_url}"
+    libtorrent_git_url="https://ghp.ci/${libtorrent_git_url}"
   fi
   if [ ! -d "/usr/src/libtorrent-rasterbar-${LIBTORRENT_BRANCH}/" ]; then
     retry git clone --depth 1 --recursive --shallow-submodules --branch "${LIBTORRENT_BRANCH}" \
@@ -339,7 +345,6 @@ build_qbee() {
   cmake \
     -B build \
     -G "Ninja" \
-    -DQT6=ON \
     -DCMAKE_PREFIX_PATH="${QT_BASE_DIR}/lib/cmake/" \
     -DCMAKE_BUILD_TYPE="Release" \
     -DCMAKE_CXX_STANDARD="17" \
@@ -353,7 +358,7 @@ build_appimage() {
   # build AppImage
   linuxdeploy_qt_download_url="https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage"
   if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
-    linuxdeploy_qt_download_url="https://ghproxy.org/${linuxdeploy_qt_download_url}"
+    linuxdeploy_qt_download_url="https://ghp.ci/${linuxdeploy_qt_download_url}"
   fi
   [ -x "/tmp/linuxdeployqt-continuous-x86_64.AppImage" ] || retry curl -kSLC- -o /tmp/linuxdeployqt-continuous-x86_64.AppImage "${linuxdeploy_qt_download_url}"
   chmod -v +x '/tmp/linuxdeployqt-continuous-x86_64.AppImage'
@@ -462,6 +467,7 @@ EOF
     libprotobuf-lite.so.9
     libselinux.so.1
     libsystemd.so.0
+    libthai.so.0
     libwayland-client.so.0
     libwayland-cursor.so.0
     libwayland-egl.so.1
@@ -493,13 +499,15 @@ EOF
     -always-overwrite \
     -bundle-non-qt-libs \
     -no-copy-copyright-files \
-    -unsupported-allow-new-glibc \
     -extra-plugins="$(join_by ',' "${extra_plugins[@]}")" \
     -exclude-libs="$(join_by ',' "${exclude_libs[@]}")"
 
   # Workaround to use the static runtime with the appimage
   ARCH="$(arch)"
   appimagetool_download_url="https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-${ARCH}.AppImage"
+  if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
+    appimagetool_download_url="https://ghp.ci/${appimagetool_download_url}"
+  fi
   [ -x "/tmp/appimagetool-${ARCH}.AppImage" ] || retry curl -kSLC- -o /tmp/appimagetool-"${ARCH}".AppImage "${appimagetool_download_url}"
   chmod -v +x "/tmp/appimagetool-${ARCH}.AppImage"
   /tmp/appimagetool-"${ARCH}".AppImage --comp zstd --mksquashfs-opt -Xcompression-level --mksquashfs-opt 20 \
@@ -514,8 +522,8 @@ move_artifacts() {
 
 prepare_baseenv
 prepare_buildenv
-# compile openssl 3.x. But fedora doesn't work
-# prepare_ssl
+# compile openssl 3.x. qBittorrent >= 5.0 required openssl 3.x
+prepare_ssl
 prepare_qt
 preapare_libboost
 prepare_libtorrent
