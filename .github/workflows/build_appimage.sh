@@ -373,6 +373,11 @@ export XDG_DATA_DIRS="\${this_dir}/usr/share:\${XDG_DATA_DIRS}:/usr/share:/usr/l
 export QT_QPA_PLATFORMTHEMES=gtk2
 export QT_STYLE_OVERRIDE=qt6gtk2
 
+# Force set openssl config directory to an invalid directory to fallback to use default openssl config.
+# This can avoid some distributions (mainly Fedora) having some strange patches or configurations
+# for openssl that make the libssl in Appimage bundle unavailable.
+export OPENSSL_CONF="\${this_dir}"
+
 # Find the system certificates location
 # https://gitlab.com/probono/platformissues/blob/master/README.md#certificates
 possible_locations=(
