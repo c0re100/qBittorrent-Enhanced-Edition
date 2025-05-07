@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.c0re100.qBittorrent_Enhanced_Edition</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later and OpenSSL</project_license>
+  <name>qBittorrent Enhanced Edition</name>
+  <developer id="io.github.c0re100">
+    <name>c0re100</name>
+  </developer>
+  <summary>An open-source Bittorrent client</summary>
+  <description>
+    <p>
+      qBittorrent Enhanced Edition is a fork of qBittorrent and provides more powerful functions.
+    </p>
+    <ol>
+      <li>Auto Ban Xunlei, QQ, Baidu, Xfplay, DLBT and Offline downloader</li>
+      <li>Auto Ban Unknown Peer from China Option (Default: OFF)</li>
+      <li>Auto Update Public Trackers List (Default: OFF)</li>
+      <li>Auto Ban BitTorrent Media Player Peer Option (Default: OFF)</li>
+      <li>Peer whitelist/blacklist</li>
+    </ol>
+  </description>
+  <launchable type="desktop-id">io.github.c0re100.qBittorrent_Enhanced_Edition.desktop</launchable>
+  <screenshots>
+    <screenshot type="default">
+      <caption>Main window (General tab collapsed)</caption>
+      <image>https://raw.githubusercontent.com/qbittorrent/qBittorrent-website/2741f2a90854604e268c6bba9e6859aad0103583/src/img/screenshots/linux/1.webp</image>
+    </screenshot>
+    <screenshot>
+      <caption>Main window (General tab expanded)</caption>
+      <image>https://raw.githubusercontent.com/qbittorrent/qBittorrent-website/2741f2a90854604e268c6bba9e6859aad0103583/src/img/screenshots/linux/2.webp</image>
+    </screenshot>
+    <screenshot>
+      <caption>Options dialog</caption>
+      <image>https://raw.githubusercontent.com/qbittorrent/qBittorrent-website/2741f2a90854604e268c6bba9e6859aad0103583/src/img/screenshots/linux/3.webp</image>
+    </screenshot>
+    <screenshot>
+      <caption>Search engine</caption>
+      <image>https://raw.githubusercontent.com/qbittorrent/qBittorrent-website/2741f2a90854604e268c6bba9e6859aad0103583/src/img/screenshots/linux/4.webp</image>
+    </screenshot>
+  </screenshots>
+  <url type="homepage">https://github.com/c0re100/qBittorrent-Enhanced-Edition</url>
+  <url type="bugtracker">https://github.com/c0re100/qBittorrent-Enhanced-Edition/issues</url>
+  <url type="help">https://github.com/c0re100/qBittorrent-Enhanced-Edition/discussions</url>
+  <url type="contribute">https://github.com/c0re100/qBittorrent-Enhanced-Edition/blob/master/CONTRIBUTING.md</url>
+  <content_rating type="oars-1.1"/>
+  <releases>
+    <release version="5.0.5.10" date="2025-04-19"/>
+  </releases>
+</component>
