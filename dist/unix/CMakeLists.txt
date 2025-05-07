@@ -33,12 +33,12 @@ foreach(manPageLanguage ${manPageLanguages})
 endforeach()
 
 if (GUI)
-    install(FILES org.qbittorrent.qBittorrent.desktop
+    install(FILES io.github.c0re100.qBittorrent_Enhanced_Edition.desktop
         DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/applications/
         COMPONENT data
     )
 
-    install(FILES org.qbittorrent.qBittorrent.metainfo.xml
+    install(FILES io.github.c0re100.qBittorrent_Enhanced_Edition.metainfo.xml
         DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/metainfo/
         COMPONENT data
     )
