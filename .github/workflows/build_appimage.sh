@@ -2,10 +2,10 @@
 
 # This script is for building AppImage
 # Please run this script in docker image: ubuntu:20.04
-# E.g: docker run --rm -v `git rev-parse --show-toplevel`:/build ubuntu:20.04 /build/.github/workflows/build_appimage.sh
+# E.g: docker run --rm -v "$(git rev-parse --show-toplevel):/build" ubuntu:20.04 /build/.github/workflows/build_appimage.sh
 # If you need keep store build cache in docker volume, just like:
 #   $ docker volume create qbee-cache
-#   $ docker run --rm -v `git rev-parse --show-toplevel`:/build -v qbee-cache:/var/cache/apt -v qbee-cache:/usr/src ubuntu:20.04 /build/.github/workflows/build_appimage.sh
+#   $ docker run --rm -v "$(git rev-parse --show-toplevel):/build" -v qbee-cache:/var/cache/apt -v qbee-cache:/usr/src ubuntu:20.04 /build/.github/workflows/build_appimage.sh
 # Artifacts will copy to the same directory.
 
 set -o pipefail
@@ -16,6 +16,7 @@ export LIBTORRENT_BRANCH="RC_1_2"
 export LC_ALL="C.UTF-8"
 export DEBIAN_FRONTEND=noninteractive
 export PKG_CONFIG_PATH=/usr/local/lib64/pkgconfig
+export ARCH="$(uname -m)"
 SELF_DIR="$(dirname "$(readlink -f "${0}")")"
 
 retry() {
@@ -49,13 +50,11 @@ prepare_baseenv() {
   rm -f /etc/apt/sources.list.d/*.list*
   # Ubuntu mirror for local building
   if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
-    source /etc/os-release
-    cat >/etc/apt/sources.list <<EOF
-deb http://repo.huaweicloud.com/ubuntu/ ${UBUNTU_CODENAME} main restricted universe multiverse
-deb http://repo.huaweicloud.com/ubuntu/ ${UBUNTU_CODENAME}-updates main restricted universe multiverse
-deb http://repo.huaweicloud.com/ubuntu/ ${UBUNTU_CODENAME}-backports main restricted universe multiverse
-deb http://repo.huaweicloud.com/ubuntu/ ${UBUNTU_CODENAME}-security main restricted universe multiverse
-EOF
+    sed -i \
+      -e 's|http://archive.ubuntu.com/ubuntu/|http://repo.huaweicloud.com/ubuntu/|g' \
+      -e 's|http://security.ubuntu.com/ubuntu/|http://repo.huaweicloud.com/ubuntu/|g' \
+      -e 's|http://ports.ubuntu.com/ubuntu-ports/|http://repo.huaweicloud.com/ubuntu-ports/|g' \
+      /etc/apt/sources.list
     export PIP_INDEX_URL="https://repo.huaweicloud.com/repository/pypi/simple"
   fi
 
@@ -65,24 +64,16 @@ EOF
   echo -e 'Acquire::https::Verify-Peer "false";\nAcquire::https::Verify-Host "false";' >/etc/apt/apt.conf.d/99-trust-https
 
   # Since cmake 3.23.0 CMAKE_INSTALL_LIBDIR will force set to lib/<multiarch-tuple> on Debian
-  echo '/usr/local/lib/x86_64-linux-gnu' >/etc/ld.so.conf.d/x86_64-linux-gnu-local.conf
+  echo "/usr/local/lib/${ARCH}-linux-gnu" >/etc/ld.so.conf.d/${ARCH}-linux-gnu-local.conf
   echo '/usr/local/lib64' >/etc/ld.so.conf.d/lib64-local.conf
-
-  retry apt update
-  retry apt install -y software-properties-common apt-transport-https
-  # retry apt-add-repository -yn ppa:savoury1/backports
-  retry apt-add-repository -yn ppa:savoury1/gcc-11
-
-  if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
-    sed -i 's@http://ppa.launchpad.net@https://launchpad.proxy.ustclug.org@' /etc/apt/sources.list.d/*.list
-  fi
 
   retry apt update
   retry apt install -y \
     build-essential \
     curl \
+    make \
+    file \
     desktop-file-utils \
-    g++-11 \
     git \
     libbrotli-dev \
     libfontconfig1-dev \
@@ -120,16 +111,13 @@ EOF
     libzstd-dev \
     pkg-config \
     unzip \
+    xz-utils \
     zlib1g-dev \
     zsync
 
-  update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 100
-  update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-11 100
-
   apt autoremove --purge -y
   # strip all compiled files by default
-  export CFLAGS='-s'
-  export CXXFLAGS='-s'
+  export LDFLAGS='-Wl,-s'
   # Force refresh ld.so.cache
   ldconfig
 }
@@ -138,37 +126,42 @@ prepare_buildenv() {
   # install cmake and ninja-build
   if ! which cmake &>/dev/null; then
     cmake_latest_ver="$(retry curl -ksSL --compressed https://cmake.org/download/ \| grep "'Latest Release'" \| sed -r "'s/.*Latest Release\s*\((.+)\).*/\1/'" \| head -1)"
-    cmake_binary_url="https://github.com/Kitware/CMake/releases/download/v${cmake_latest_ver}/cmake-${cmake_latest_ver}-linux-x86_64.tar.gz"
+    cmake_binary_url="https://github.com/Kitware/CMake/releases/download/v${cmake_latest_ver}/cmake-${cmake_latest_ver}-linux-${ARCH}.tar.gz"
     cmake_sha256_url="https://github.com/Kitware/CMake/releases/download/v${cmake_latest_ver}/cmake-${cmake_latest_ver}-SHA-256.txt"
     if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
-      cmake_binary_url="https://ghp.ci/${cmake_binary_url}"
-      cmake_sha256_url="https://ghp.ci/${cmake_sha256_url}"
+      cmake_binary_url="https://gh-proxy.com/${cmake_binary_url}"
+      cmake_sha256_url="https://gh-proxy.com/${cmake_sha256_url}"
     fi
-    if [ -f "/usr/src/cmake-${cmake_latest_ver}-linux-x86_64.tar.gz" ]; then
+    if [ -f "/usr/src/cmake-${cmake_latest_ver}-linux-${ARCH}.tar.gz" ]; then
       cd /usr/src
-      cmake_sha256="$(retry curl -ksSL --compressed "${cmake_sha256_url}" \| grep "cmake-${cmake_latest_ver}-linux-x86_64.tar.gz")"
+      cmake_sha256="$(retry curl -ksSL --compressed "${cmake_sha256_url}" \| grep "cmake-${cmake_latest_ver}-linux-${ARCH}.tar.gz")"
       if ! echo "${cmake_sha256}" | sha256sum -c; then
-        rm -f "/usr/src/cmake-${cmake_latest_ver}-linux-x86_64.tar.gz"
+        rm -f "/usr/src/cmake-${cmake_latest_ver}-linux-${ARCH}.tar.gz"
       fi
     fi
-    if [ ! -f "/usr/src/cmake-${cmake_latest_ver}-linux-x86_64.tar.gz" ]; then
-      retry curl -kLo "/usr/src/cmake-${cmake_latest_ver}-linux-x86_64.tar.gz" "${cmake_binary_url}"
+    if [ ! -f "/usr/src/cmake-${cmake_latest_ver}-linux-${ARCH}.tar.gz" ]; then
+      retry curl -kLo "/usr/src/cmake-${cmake_latest_ver}-linux-${ARCH}.tar.gz" "${cmake_binary_url}"
     fi
-    tar -zxf "/usr/src/cmake-${cmake_latest_ver}-linux-x86_64.tar.gz" -C /usr/local --strip-components 1
+    tar -zxf "/usr/src/cmake-${cmake_latest_ver}-linux-${ARCH}.tar.gz" -C /usr/local --strip-components 1
   fi
   cmake --version
   if ! which ninja &>/dev/null; then
     ninja_ver="$(retry curl -ksSL --compressed https://ninja-build.org/ \| grep "'The last Ninja release is'" \| sed -r "'s@.*<b>(.+)</b>.*@\1@'" \| head -1)"
-    ninja_binary_url="https://github.com/ninja-build/ninja/releases/download/${ninja_ver}/ninja-linux.zip"
+    ninja_arch_suffix=""
+    if [ "${ARCH}" != "x86_64" ]; then
+      ninja_arch_suffix="-${ARCH}"
+    fi
+    ninja_local_name="ninja-${ninja_ver}-linux${ninja_arch_suffix}"
+    ninja_binary_url="https://github.com/ninja-build/ninja/releases/download/${ninja_ver}/ninja-linux${ninja_arch_suffix}.zip"
     if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
-      ninja_binary_url="https://ghp.ci/${ninja_binary_url}"
+      ninja_binary_url="https://gh-proxy.com/${ninja_binary_url}"
     fi
-    if [ ! -f "/usr/src/ninja-${ninja_ver}-linux.zip.download_ok" ]; then
-      rm -f "/usr/src/ninja-${ninja_ver}-linux.zip"
-      retry curl -kLC- -o "/usr/src/ninja-${ninja_ver}-linux.zip" "${ninja_binary_url}"
-      touch "/usr/src/ninja-${ninja_ver}-linux.zip.download_ok"
+    if [ ! -f "/usr/src/${ninja_local_name}.zip.download_ok" ]; then
+      rm -f "/usr/src/${ninja_local_name}.zip"
+      retry curl -kLC- -o "/usr/src/${ninja_local_name}.zip" "${ninja_binary_url}"
+      touch "/usr/src/${ninja_local_name}.zip.download_ok"
     fi
-    unzip -d /usr/local/bin "/usr/src/ninja-${ninja_ver}-linux.zip"
+    unzip -d /usr/local/bin "/usr/src/${ninja_local_name}.zip"
   fi
   echo "Ninja version $(ninja --version)"
 }
@@ -179,7 +172,7 @@ prepare_ssl() {
   echo "openssl version: ${openssl_ver}"
   openssl_latest_url="https://github.com/openssl/openssl/archive/refs/tags/${openssl_filename}"
   if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
-    openssl_latest_url="https://ghp.ci/${openssl_latest_url}"
+    openssl_latest_url="https://gh-proxy.com/${openssl_latest_url}"
   fi
   mkdir -p "/usr/src/openssl-${openssl_ver}/"
   if [ ! -f "/usr/src/openssl-${openssl_ver}/.unpack_ok" ]; then
@@ -195,15 +188,19 @@ prepare_ssl() {
 
 prepare_qt() {
   # install qt
-  qt_major_ver="$(retry curl -ksSL --compressed https://download.qt.io/official_releases/qt/ \| sed -nr "'s@.*href=\"([0-9]+(\.[0-9]+)*)/\".*@\1@p'" \| grep \"^${QT_VER_PREFIX}\" \| head -1)"
-  qt_ver="$(retry curl -ksSL --compressed https://download.qt.io/official_releases/qt/${qt_major_ver}/ \| sed -nr "'s@.*href=\"([0-9]+(\.[0-9]+)*)/\".*@\1@p'" \| grep \"^${QT_VER_PREFIX}\" \| head -1)"
+  QT_DOWNLOAD_URL_BASE="https://download.qt.io"
+  if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
+      QT_DOWNLOAD_URL_BASE="https://mirrors.sjtug.sjtu.edu.cn/qt"
+  fi
+  qt_major_ver="$(retry curl -ksSL --compressed "https://download.qt.io/official_releases/qt/" \| sed -nr "'s@.*href=\"([0-9]+(\.[0-9]+)*)/\".*@\1@p'" \| grep \"^${QT_VER_PREFIX}\" \| head -1)"
+  qt_ver="$(retry curl -ksSL --compressed "https://download.qt.io/official_releases/qt/${qt_major_ver}/" \| sed -nr "'s@.*href=\"([0-9]+(\.[0-9]+)*)/\".*@\1@p'" \| grep \"^${QT_VER_PREFIX}\" \| head -1)"
   echo "Using qt version: ${qt_ver}"
   mkdir -p "/usr/src/qtbase-${qt_ver}" \
     "/usr/src/qttools-${qt_ver}" \
     "/usr/src/qtsvg-${qt_ver}" \
     "/usr/src/qtwayland-${qt_ver}"
   if [ ! -f "/usr/src/qtbase-${qt_ver}/.unpack_ok" ]; then
-    qtbase_url="https://download.qt.io/official_releases/qt/${qt_major_ver}/${qt_ver}/submodules/qtbase-everywhere-src-${qt_ver}.tar.xz"
+    qtbase_url="${QT_DOWNLOAD_URL_BASE}/official_releases/qt/${qt_major_ver}/${qt_ver}/submodules/qtbase-everywhere-src-${qt_ver}.tar.xz"
     retry curl -kSL --compressed "${qtbase_url}" \| tar Jxf - -C "/usr/src/qtbase-${qt_ver}" --strip-components 1
     touch "/usr/src/qtbase-${qt_ver}/.unpack_ok"
   fi
@@ -232,7 +229,7 @@ prepare_qt() {
   export LD_LIBRARY_PATH="${QT_BASE_DIR}/lib:${LD_LIBRARY_PATH}"
   export PATH="${QT_BASE_DIR}/bin:${PATH}"
   if [ ! -f "/usr/src/qtsvg-${qt_ver}/.unpack_ok" ]; then
-    qtsvg_url="https://download.qt.io/official_releases/qt/${qt_major_ver}/${qt_ver}/submodules/qtsvg-everywhere-src-${qt_ver}.tar.xz"
+    qtsvg_url="${QT_DOWNLOAD_URL_BASE}/official_releases/qt/${qt_major_ver}/${qt_ver}/submodules/qtsvg-everywhere-src-${qt_ver}.tar.xz"
     retry curl -kSL --compressed "${qtsvg_url}" \| tar Jxf - -C "/usr/src/qtsvg-${qt_ver}" --strip-components 1
     touch "/usr/src/qtsvg-${qt_ver}/.unpack_ok"
   fi
@@ -242,7 +239,7 @@ prepare_qt() {
   cmake --build . --parallel
   cmake --install .
   if [ ! -f "/usr/src/qttools-${qt_ver}/.unpack_ok" ]; then
-    qttools_url="https://download.qt.io/official_releases/qt/${qt_major_ver}/${qt_ver}/submodules/qttools-everywhere-src-${qt_ver}.tar.xz"
+    qttools_url="${QT_DOWNLOAD_URL_BASE}/official_releases/qt/${qt_major_ver}/${qt_ver}/submodules/qttools-everywhere-src-${qt_ver}.tar.xz"
     retry curl -kSL --compressed "${qttools_url}" \| tar Jxf - -C "/usr/src/qttools-${qt_ver}" --strip-components 1
     touch "/usr/src/qttools-${qt_ver}/.unpack_ok"
   fi
@@ -253,10 +250,9 @@ prepare_qt() {
   cmake --build . --parallel
   cmake --install .
 
-  # Remove qt-wayland until next release: https://bugreports.qt.io/browse/QTBUG-104318
   # qt-wayland
   if [ ! -f "/usr/src/qtwayland-${qt_ver}/.unpack_ok" ]; then
-    qtwayland_url="https://download.qt.io/official_releases/qt/${qt_major_ver}/${qt_ver}/submodules/qtwayland-everywhere-src-${qt_ver}.tar.xz"
+    qtwayland_url="${QT_DOWNLOAD_URL_BASE}/official_releases/qt/${qt_major_ver}/${qt_ver}/submodules/qtwayland-everywhere-src-${qt_ver}.tar.xz"
     retry curl -kSL --compressed "${qtwayland_url}" \| tar Jxf - -C "/usr/src/qtwayland-${qt_ver}" --strip-components 1
     touch "/usr/src/qtwayland-${qt_ver}/.unpack_ok"
   fi
@@ -269,26 +265,17 @@ prepare_qt() {
 }
 
 preapare_libboost() {
-  # build latest boost
-  # boost_ver="$(retry curl -ksSfL --compressed https://www.boost.org/users/download/ \| grep "'>Version\s*'" \| sed -r "'s/.*Version\s*([^<]+).*/\1/'" \| head -1)"
+  # Boost >= 1.69: boost::system is header-only.
+  # libtorrent only links Boost::headers (see CMakeLists.txt).
   boost_ver="1.86.0"
   echo "boost version ${boost_ver}"
-  mkdir -p "/usr/src/boost-${boost_ver}"
   if [ ! -f "/usr/src/boost-${boost_ver}/.unpack_ok" ]; then
     boost_latest_url="https://sourceforge.net/projects/boost/files/boost/${boost_ver}/boost_${boost_ver//./_}.tar.bz2/download"
+    mkdir -p "/usr/src/boost-${boost_ver}"
     retry curl -kSL "${boost_latest_url}" \| tar -jxf - -C "/usr/src/boost-${boost_ver}" --strip-components 1
     touch "/usr/src/boost-${boost_ver}/.unpack_ok"
   fi
-  cd "/usr/src/boost-${boost_ver}"
-  if [ ! -f ./b2 ]; then
-    ./bootstrap.sh
-  fi
-  ./b2 -d0 -q install --with-system variant=release link=shared runtime-link=shared
-  cd "/usr/src/boost-${boost_ver}/tools/build"
-  if [ ! -f ./b2 ]; then
-    ./bootstrap.sh
-  fi
-  ./b2 -d0 -q install variant=release link=shared runtime-link=shared
+  cp -rf "/usr/src/boost-${boost_ver}/boost" /usr/local/include/
 }
 
 prepare_libtorrent() {
@@ -296,7 +283,7 @@ prepare_libtorrent() {
   echo "libtorrent-rasterbar branch: ${LIBTORRENT_BRANCH}"
   libtorrent_git_url="https://github.com/arvidn/libtorrent.git"
   if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
-    libtorrent_git_url="https://ghp.ci/${libtorrent_git_url}"
+    libtorrent_git_url="https://gh-proxy.com/${libtorrent_git_url}"
   fi
   if [ ! -d "/usr/src/libtorrent-rasterbar-${LIBTORRENT_BRANCH}/" ]; then
     retry git clone --depth 1 --recursive --shallow-submodules --branch "${LIBTORRENT_BRANCH}" \
@@ -317,8 +304,7 @@ prepare_libtorrent() {
   cmake \
     -B build \
     -G "Ninja" \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_CXX_STANDARD=17
+    -DCMAKE_BUILD_TYPE=Release
   cmake --build build
   cmake --install build
   # force refresh ld.so.cache
@@ -334,7 +320,6 @@ build_qbee() {
     -G "Ninja" \
     -DCMAKE_PREFIX_PATH="${QT_BASE_DIR}/lib/cmake/" \
     -DCMAKE_BUILD_TYPE="Release" \
-    -DCMAKE_CXX_STANDARD="17" \
     -DCMAKE_INSTALL_PREFIX="/tmp/qbee/AppDir/usr"
   cmake --build build
   rm -fr /tmp/qbee/
@@ -343,12 +328,12 @@ build_qbee() {
 
 build_appimage() {
   # build AppImage
-  linuxdeploy_qt_download_url="https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage"
+  linuxdeploy_qt_download_url="https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-${ARCH}.AppImage"
   if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
-    linuxdeploy_qt_download_url="https://ghp.ci/${linuxdeploy_qt_download_url}"
+    linuxdeploy_qt_download_url="https://gh-proxy.com/${linuxdeploy_qt_download_url}"
   fi
-  [ -x "/tmp/linuxdeployqt-continuous-x86_64.AppImage" ] || retry curl -kSLC- -o /tmp/linuxdeployqt-continuous-x86_64.AppImage "${linuxdeploy_qt_download_url}"
-  chmod -v +x '/tmp/linuxdeployqt-continuous-x86_64.AppImage'
+  [ -x "/tmp/linuxdeployqt-continuous-${ARCH}.AppImage" ] || retry curl -kSLC- -o /tmp/linuxdeployqt-continuous-${ARCH}.AppImage "${linuxdeploy_qt_download_url}"
+  chmod -v +x "/tmp/linuxdeployqt-continuous-${ARCH}.AppImage"
   cd "/tmp/qbee"
   ln -svf usr/share/icons/hicolor/scalable/apps/qbittorrent.svg /tmp/qbee/AppDir/
   ln -svf qbittorrent.svg /tmp/qbee/AppDir/.DirIcon
@@ -414,6 +399,7 @@ EOF
     libbsd.so.0
     libcairo-gobject.so.2
     libcairo.so.2
+    libcap.so.2
     libcapnp-0.5.3.so
     libcapnp-0.6.1.so
     libdatrie.so.1
@@ -439,6 +425,7 @@ EOF
     libmircommon.so.7
     libmircore.so.1
     libmirprotobuf.so.3
+    libmd.so.0
     libmount.so.1
     libpango-1.0.so.0
     libpangocairo-1.0.so.0
@@ -488,7 +475,7 @@ EOF
   sed -i 's/Name=qBittorrent.*/Name=qBittorrent-Enhanced-Edition/;/SingleMainWindow/d' /tmp/qbee/AppDir/usr/share/applications/*.desktop
 
   export APPIMAGE_EXTRACT_AND_RUN=1
-  /tmp/linuxdeployqt-continuous-x86_64.AppImage \
+  /tmp/linuxdeployqt-continuous-${ARCH}.AppImage \
     /tmp/qbee/AppDir/usr/share/applications/*.desktop \
     -always-overwrite \
     -bundle-non-qt-libs \
@@ -497,10 +484,9 @@ EOF
     -exclude-libs="$(join_by ',' "${exclude_libs[@]}")"
 
   # Workaround to use the static runtime with the appimage
-  ARCH="$(arch)"
   appimagetool_download_url="https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-${ARCH}.AppImage"
   if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
-    appimagetool_download_url="https://ghp.ci/${appimagetool_download_url}"
+    appimagetool_download_url="https://gh-proxy.com/${appimagetool_download_url}"
   fi
   [ -x "/tmp/appimagetool-${ARCH}.AppImage" ] || retry curl -kSLC- -o /tmp/appimagetool-"${ARCH}".AppImage "${appimagetool_download_url}"
   chmod -v +x "/tmp/appimagetool-${ARCH}.AppImage"

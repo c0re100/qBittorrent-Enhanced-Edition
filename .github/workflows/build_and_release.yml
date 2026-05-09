@@ -13,24 +13,32 @@ on:
 
 jobs:
   appimage:
-    runs-on: ubuntu-latest
-    container: "ubuntu:20.04"
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-latest
+            arch: x86_64
+          - runner: ubuntu-24.04-arm
+            arch: aarch64
+    runs-on: ${{ matrix.runner }}
+    container: "ubuntu:22.04"
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
-      - uses: actions/cache@v4
+        uses: actions/checkout@v6
+      - uses: actions/cache@v5
         with:
           path: |
             /usr/src/
             /var/cache/apt/
-          key: appimage-build-dependencies-cache-${{ github.sha }}
+          key: appimage-build-dependencies-cache-${{ matrix.arch }}-${{ github.sha }}
           restore-keys: |
-            appimage-build-dependencies-cache-
+            appimage-build-dependencies-cache-${{ matrix.arch }}-
       - name: Build AppImage
         run: .github/workflows/build_appimage.sh
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
-          name: qBittorrent-Enhanced-Edition-x86_64.AppImage
+          name: qBittorrent-Enhanced-Edition-${{ matrix.arch }}.AppImage
           path: ".github/workflows/qBittorrent-Enhanced-Edition*.AppImage*"
       - name: Upload Github Assets
         if: startsWith(github.ref, 'refs/tags/')
@@ -45,26 +53,27 @@ jobs:
   # cross compile for some other platforms, like arm, mips, etc.
   cross-compile:
     runs-on: ubuntu-latest
-    container: "abcfy2/muslcc-toolchain-ubuntu:${{ matrix.cross_host }}"
+    container: "ghcr.io/abcfy2/musl-cross-toolchain-ubuntu:${{ matrix.cross_host }}"
     strategy:
       fail-fast: false
       matrix:
         cross_host:
-          # cross toolchain downloads from: https://musl.cc/
-          # you need to find the name ${cross_host}-cross.tgz
-          - arm-linux-musleabi
-          - arm-linux-musleabihf
-          - aarch64-linux-musl
-          - mips-linux-musl
-          - mipsel-linux-musl
-          - mips64-linux-musl
-          - mips64el-linux-musl
-          - x86_64-linux-musl
-          - i686-linux-musl
+          # cross toolchain downloads from: https://github.com/cross-tools/musl-cross
+          # you need to find the name in **Supported targets**
+          - armv7-unknown-linux-musleabihf
+          - aarch64-unknown-linux-musl
+          # Remove mips32 series because qt 6.11.0 will build failed
+          # - mips-unknown-linux-musl
+          # - mipsel-unknown-linux-musl
+          - mips64-unknown-linux-musl
+          - mips64el-unknown-linux-musl
+          - x86_64-unknown-linux-musl
+          - i686-unknown-linux-musl
+          - loongarch64-unknown-linux-musl
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
-      - uses: actions/cache@v4
+        uses: actions/checkout@v6
+      - uses: actions/cache@v5
         with:
           path: |
             /usr/src/
@@ -72,13 +81,18 @@ jobs:
           key: cross-build-dependencies-cache-${{ matrix.cross_host }}-${{ github.sha }}
           restore-keys: |
             cross-build-dependencies-cache-${{ matrix.cross_host }}-
+      - name: Set archive host name
+        shell: bash
+        run: echo "ARCHIVE_HOST=${CROSS_HOST//-unknown/}" >> "$GITHUB_ENV"
+        env:
+          CROSS_HOST: "${{ matrix.cross_host }}"
       - name: cross compile nox-static
         env:
           CROSS_HOST: "${{ matrix.cross_host }}"
         run: .github/workflows/cross_build.sh
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
-          name: qbittorrent-enhanced-nox_${{ matrix.cross_host }}_static
+          name: qbittorrent-enhanced-nox_${{ env.ARCHIVE_HOST }}_static
           path: |
             /tmp/qbittorrent-nox*
       - name: Upload Github Assets
@@ -86,6 +100,6 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ".github/workflows/qbittorrent-enhanced-nox_${{ matrix.cross_host }}_static.zip"
+          file: ".github/workflows/qbittorrent-enhanced-nox_${{ env.ARCHIVE_HOST }}_static.zip"
           tag: ${{ github.ref }}
           overwrite: true
