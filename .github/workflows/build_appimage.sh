@@ -3,9 +3,7 @@
 # This script is for building AppImage
 # Please run this script in docker image: ubuntu:20.04
 # E.g: docker run --rm -v "$(git rev-parse --show-toplevel):/build" ubuntu:20.04 /build/.github/workflows/build_appimage.sh
-# If you need keep store build cache in docker volume, just like:
-#   $ docker volume create qbee-cache
-#   $ docker run --rm -v "$(git rev-parse --show-toplevel):/build" -v qbee-cache:/var/cache/apt -v qbee-cache:/usr/src ubuntu:20.04 /build/.github/workflows/build_appimage.sh
+# Downloaded source archives are cached in .github/workflows/downloads/ for reuse across targets.
 # Artifacts will copy to the same directory.
 
 set -o pipefail
@@ -18,6 +16,8 @@ export DEBIAN_FRONTEND=noninteractive
 export PKG_CONFIG_PATH=/usr/local/lib64/pkgconfig
 export ARCH="$(uname -m)"
 SELF_DIR="$(dirname "$(readlink -f "${0}")")"
+mkdir -p "${SELF_DIR}/downloads"
+export DOWNLOADS_DIR="${SELF_DIR}/downloads"
 
 retry() {
   # max retry 5 times
@@ -127,22 +127,14 @@ prepare_buildenv() {
   if ! which cmake &>/dev/null; then
     cmake_latest_ver="$(retry curl -ksSL --compressed https://cmake.org/download/ \| grep "'Latest Release'" \| sed -r "'s/.*Latest Release\s*\((.+)\).*/\1/'" \| head -1)"
     cmake_binary_url="https://github.com/Kitware/CMake/releases/download/v${cmake_latest_ver}/cmake-${cmake_latest_ver}-linux-${ARCH}.tar.gz"
-    cmake_sha256_url="https://github.com/Kitware/CMake/releases/download/v${cmake_latest_ver}/cmake-${cmake_latest_ver}-SHA-256.txt"
     if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
       cmake_binary_url="https://gh-proxy.com/${cmake_binary_url}"
-      cmake_sha256_url="https://gh-proxy.com/${cmake_sha256_url}"
     fi
-    if [ -f "/usr/src/cmake-${cmake_latest_ver}-linux-${ARCH}.tar.gz" ]; then
-      cd /usr/src
-      cmake_sha256="$(retry curl -ksSL --compressed "${cmake_sha256_url}" \| grep "cmake-${cmake_latest_ver}-linux-${ARCH}.tar.gz")"
-      if ! echo "${cmake_sha256}" | sha256sum -c; then
-        rm -f "/usr/src/cmake-${cmake_latest_ver}-linux-${ARCH}.tar.gz"
-      fi
+    if [ ! -f "${DOWNLOADS_DIR}/cmake-${cmake_latest_ver}-linux-${ARCH}.tar.gz" ]; then
+      retry curl -kLo "${DOWNLOADS_DIR}/cmake-${cmake_latest_ver}-linux-${ARCH}.tar.gz.part" "${cmake_binary_url}"
+      mv -fv "${DOWNLOADS_DIR}/cmake-${cmake_latest_ver}-linux-${ARCH}.tar.gz.part" "${DOWNLOADS_DIR}/cmake-${cmake_latest_ver}-linux-${ARCH}.tar.gz"
     fi
-    if [ ! -f "/usr/src/cmake-${cmake_latest_ver}-linux-${ARCH}.tar.gz" ]; then
-      retry curl -kLo "/usr/src/cmake-${cmake_latest_ver}-linux-${ARCH}.tar.gz" "${cmake_binary_url}"
-    fi
-    tar -zxf "/usr/src/cmake-${cmake_latest_ver}-linux-${ARCH}.tar.gz" -C /usr/local --strip-components 1
+    tar -zxf "${DOWNLOADS_DIR}/cmake-${cmake_latest_ver}-linux-${ARCH}.tar.gz" -C /usr/local --strip-components 1
   fi
   cmake --version
   if ! which ninja &>/dev/null; then
@@ -156,29 +148,29 @@ prepare_buildenv() {
     if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
       ninja_binary_url="https://gh-proxy.com/${ninja_binary_url}"
     fi
-    if [ ! -f "/usr/src/${ninja_local_name}.zip.download_ok" ]; then
-      rm -f "/usr/src/${ninja_local_name}.zip"
-      retry curl -kLC- -o "/usr/src/${ninja_local_name}.zip" "${ninja_binary_url}"
-      touch "/usr/src/${ninja_local_name}.zip.download_ok"
+    if [ ! -f "${DOWNLOADS_DIR}/ninja-${ninja_ver}-linux${ninja_arch_suffix}.zip" ]; then
+      retry curl -kLC- -o "${DOWNLOADS_DIR}/ninja-${ninja_ver}-linux${ninja_arch_suffix}.zip.part" "${ninja_binary_url}"
+      mv -fv "${DOWNLOADS_DIR}/ninja-${ninja_ver}-linux${ninja_arch_suffix}.zip.part" "${DOWNLOADS_DIR}/ninja-${ninja_ver}-linux${ninja_arch_suffix}.zip"
     fi
-    unzip -d /usr/local/bin "/usr/src/${ninja_local_name}.zip"
+    unzip -d /usr/local/bin "${DOWNLOADS_DIR}/ninja-${ninja_ver}-linux${ninja_arch_suffix}.zip"
   fi
   echo "Ninja version $(ninja --version)"
 }
 
 prepare_ssl() {
-  openssl_filename="$(retry curl -ksSL --compressed https://www.openssl.org/source/ \| grep -o "'>openssl-3\(\.[0-9]*\)*tar.gz<'" \| grep -o "'[^>]*.tar.gz'" \| head -1)"
+  openssl_filename="$(retry curl -ksSL --compressed https://openssl-library.org/source/ \| grep -o "'>openssl-3\(\.[0-9]*\)*tar.gz<'" \| grep -o "'[^>]*.tar.gz'" \| head -1)"
   openssl_ver="$(echo "${openssl_filename}" | sed -r 's/openssl-(.+)\.tar\.gz/\1/')"
   echo "openssl version: ${openssl_ver}"
   openssl_latest_url="https://github.com/openssl/openssl/archive/refs/tags/${openssl_filename}"
   if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
     openssl_latest_url="https://gh-proxy.com/${openssl_latest_url}"
   fi
-  mkdir -p "/usr/src/openssl-${openssl_ver}/"
-  if [ ! -f "/usr/src/openssl-${openssl_ver}/.unpack_ok" ]; then
-    retry curl -kSL "${openssl_latest_url}" \| tar zxf - -C "/usr/src/openssl-${openssl_ver}/" --strip-components 1
-    touch "/usr/src/openssl-${openssl_ver}/.unpack_ok"
+  if [ ! -f "${DOWNLOADS_DIR}/openssl-${openssl_ver}.tar.gz" ]; then
+    retry curl -kSL "${openssl_latest_url}" -o "${DOWNLOADS_DIR}/openssl-${openssl_ver}.tar.gz.part"
+    mv -fv "${DOWNLOADS_DIR}/openssl-${openssl_ver}.tar.gz.part" "${DOWNLOADS_DIR}/openssl-${openssl_ver}.tar.gz"
   fi
+  mkdir -p "/usr/src/openssl-${openssl_ver}/"
+  tar zxf "${DOWNLOADS_DIR}/openssl-${openssl_ver}.tar.gz" -C "/usr/src/openssl-${openssl_ver}/" --strip-components 1
   cd "/usr/src/openssl-${openssl_ver}"
   ./Configure no-tests --openssldir=/etc/ssl
   make -j$(nproc)
@@ -195,15 +187,13 @@ prepare_qt() {
   qt_major_ver="$(retry curl -ksSL --compressed "https://download.qt.io/official_releases/qt/" \| sed -nr "'s@.*href=\"([0-9]+(\.[0-9]+)*)/\".*@\1@p'" \| grep \"^${QT_VER_PREFIX}\" \| head -1)"
   qt_ver="$(retry curl -ksSL --compressed "https://download.qt.io/official_releases/qt/${qt_major_ver}/" \| sed -nr "'s@.*href=\"([0-9]+(\.[0-9]+)*)/\".*@\1@p'" \| grep \"^${QT_VER_PREFIX}\" \| head -1)"
   echo "Using qt version: ${qt_ver}"
-  mkdir -p "/usr/src/qtbase-${qt_ver}" \
-    "/usr/src/qttools-${qt_ver}" \
-    "/usr/src/qtsvg-${qt_ver}" \
-    "/usr/src/qtwayland-${qt_ver}"
-  if [ ! -f "/usr/src/qtbase-${qt_ver}/.unpack_ok" ]; then
+  if [ ! -f "${DOWNLOADS_DIR}/qtbase-everywhere-src-${qt_ver}.tar.xz" ]; then
     qtbase_url="${QT_DOWNLOAD_URL_BASE}/official_releases/qt/${qt_major_ver}/${qt_ver}/submodules/qtbase-everywhere-src-${qt_ver}.tar.xz"
-    retry curl -kSL --compressed "${qtbase_url}" \| tar Jxf - -C "/usr/src/qtbase-${qt_ver}" --strip-components 1
-    touch "/usr/src/qtbase-${qt_ver}/.unpack_ok"
+    retry curl -kSL --compressed "${qtbase_url}" -o "${DOWNLOADS_DIR}/qtbase-everywhere-src-${qt_ver}.tar.xz.part"
+    mv -fv "${DOWNLOADS_DIR}/qtbase-everywhere-src-${qt_ver}.tar.xz.part" "${DOWNLOADS_DIR}/qtbase-everywhere-src-${qt_ver}.tar.xz"
   fi
+  mkdir -p "/usr/src/qtbase-${qt_ver}"
+  tar Jxf "${DOWNLOADS_DIR}/qtbase-everywhere-src-${qt_ver}.tar.xz" -C "/usr/src/qtbase-${qt_ver}" --strip-components 1
   cd "/usr/src/qtbase-${qt_ver}"
   rm -fr CMakeCache.txt CMakeFiles
   ./configure \
@@ -228,21 +218,25 @@ prepare_qt() {
   export QT_BASE_DIR="$(ls -rd /usr/local/Qt-* | head -1)"
   export LD_LIBRARY_PATH="${QT_BASE_DIR}/lib:${LD_LIBRARY_PATH}"
   export PATH="${QT_BASE_DIR}/bin:${PATH}"
-  if [ ! -f "/usr/src/qtsvg-${qt_ver}/.unpack_ok" ]; then
+  if [ ! -f "${DOWNLOADS_DIR}/qtsvg-everywhere-src-${qt_ver}.tar.xz" ]; then
     qtsvg_url="${QT_DOWNLOAD_URL_BASE}/official_releases/qt/${qt_major_ver}/${qt_ver}/submodules/qtsvg-everywhere-src-${qt_ver}.tar.xz"
-    retry curl -kSL --compressed "${qtsvg_url}" \| tar Jxf - -C "/usr/src/qtsvg-${qt_ver}" --strip-components 1
-    touch "/usr/src/qtsvg-${qt_ver}/.unpack_ok"
+    retry curl -kSL --compressed "${qtsvg_url}" -o "${DOWNLOADS_DIR}/qtsvg-everywhere-src-${qt_ver}.tar.xz.part"
+    mv -fv "${DOWNLOADS_DIR}/qtsvg-everywhere-src-${qt_ver}.tar.xz.part" "${DOWNLOADS_DIR}/qtsvg-everywhere-src-${qt_ver}.tar.xz"
   fi
+  mkdir -p "/usr/src/qtsvg-${qt_ver}"
+  tar Jxf "${DOWNLOADS_DIR}/qtsvg-everywhere-src-${qt_ver}.tar.xz" -C "/usr/src/qtsvg-${qt_ver}" --strip-components 1
   cd "/usr/src/qtsvg-${qt_ver}"
   rm -fr CMakeCache.txt
   "${QT_BASE_DIR}/bin/qt-configure-module" .
   cmake --build . --parallel
   cmake --install .
-  if [ ! -f "/usr/src/qttools-${qt_ver}/.unpack_ok" ]; then
+  if [ ! -f "${DOWNLOADS_DIR}/qttools-everywhere-src-${qt_ver}.tar.xz" ]; then
     qttools_url="${QT_DOWNLOAD_URL_BASE}/official_releases/qt/${qt_major_ver}/${qt_ver}/submodules/qttools-everywhere-src-${qt_ver}.tar.xz"
-    retry curl -kSL --compressed "${qttools_url}" \| tar Jxf - -C "/usr/src/qttools-${qt_ver}" --strip-components 1
-    touch "/usr/src/qttools-${qt_ver}/.unpack_ok"
+    retry curl -kSL --compressed "${qttools_url}" -o "${DOWNLOADS_DIR}/qttools-everywhere-src-${qt_ver}.tar.xz.part"
+    mv -fv "${DOWNLOADS_DIR}/qttools-everywhere-src-${qt_ver}.tar.xz.part" "${DOWNLOADS_DIR}/qttools-everywhere-src-${qt_ver}.tar.xz"
   fi
+  mkdir -p "/usr/src/qttools-${qt_ver}"
+  tar Jxf "${DOWNLOADS_DIR}/qttools-everywhere-src-${qt_ver}.tar.xz" -C "/usr/src/qttools-${qt_ver}" --strip-components 1
   cd "/usr/src/qttools-${qt_ver}"
   rm -fr CMakeCache.txt
   "${QT_BASE_DIR}/bin/qt-configure-module" .
@@ -251,11 +245,13 @@ prepare_qt() {
   cmake --install .
 
   # qt-wayland
-  if [ ! -f "/usr/src/qtwayland-${qt_ver}/.unpack_ok" ]; then
+  if [ ! -f "${DOWNLOADS_DIR}/qtwayland-everywhere-src-${qt_ver}.tar.xz" ]; then
     qtwayland_url="${QT_DOWNLOAD_URL_BASE}/official_releases/qt/${qt_major_ver}/${qt_ver}/submodules/qtwayland-everywhere-src-${qt_ver}.tar.xz"
-    retry curl -kSL --compressed "${qtwayland_url}" \| tar Jxf - -C "/usr/src/qtwayland-${qt_ver}" --strip-components 1
-    touch "/usr/src/qtwayland-${qt_ver}/.unpack_ok"
+    retry curl -kSL --compressed "${qtwayland_url}" -o "${DOWNLOADS_DIR}/qtwayland-everywhere-src-${qt_ver}.tar.xz.part"
+    mv -fv "${DOWNLOADS_DIR}/qtwayland-everywhere-src-${qt_ver}.tar.xz.part" "${DOWNLOADS_DIR}/qtwayland-everywhere-src-${qt_ver}.tar.xz"
   fi
+  mkdir -p "/usr/src/qtwayland-${qt_ver}"
+  tar Jxf "${DOWNLOADS_DIR}/qtwayland-everywhere-src-${qt_ver}.tar.xz" -C "/usr/src/qtwayland-${qt_ver}" --strip-components 1
   cd "/usr/src/qtwayland-${qt_ver}"
   rm -fr CMakeCache.txt
   "${QT_BASE_DIR}/bin/qt-configure-module" .
@@ -269,12 +265,13 @@ preapare_libboost() {
   # libtorrent only links Boost::headers (see CMakeLists.txt).
   boost_ver="1.86.0"
   echo "boost version ${boost_ver}"
-  if [ ! -f "/usr/src/boost-${boost_ver}/.unpack_ok" ]; then
+  if [ ! -f "${DOWNLOADS_DIR}/boost-${boost_ver}.tar.bz2" ]; then
     boost_latest_url="https://sourceforge.net/projects/boost/files/boost/${boost_ver}/boost_${boost_ver//./_}.tar.bz2/download"
-    mkdir -p "/usr/src/boost-${boost_ver}"
-    retry curl -kSL "${boost_latest_url}" \| tar -jxf - -C "/usr/src/boost-${boost_ver}" --strip-components 1
-    touch "/usr/src/boost-${boost_ver}/.unpack_ok"
+    retry curl -kSL "${boost_latest_url}" -o "${DOWNLOADS_DIR}/boost-${boost_ver}.tar.bz2.part"
+    mv -fv "${DOWNLOADS_DIR}/boost-${boost_ver}.tar.bz2.part" "${DOWNLOADS_DIR}/boost-${boost_ver}.tar.bz2"
   fi
+  mkdir -p "/usr/src/boost-${boost_ver}"
+  tar -jxf "${DOWNLOADS_DIR}/boost-${boost_ver}.tar.bz2" --strip-components=1 -C "/usr/src/boost-${boost_ver}"
   cp -rf "/usr/src/boost-${boost_ver}/boost" /usr/local/include/
 }
 
@@ -332,8 +329,11 @@ build_appimage() {
   if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
     linuxdeploy_qt_download_url="https://gh-proxy.com/${linuxdeploy_qt_download_url}"
   fi
-  [ -x "/tmp/linuxdeployqt-continuous-${ARCH}.AppImage" ] || retry curl -kSLC- -o /tmp/linuxdeployqt-continuous-${ARCH}.AppImage "${linuxdeploy_qt_download_url}"
-  chmod -v +x "/tmp/linuxdeployqt-continuous-${ARCH}.AppImage"
+  [ -x "${DOWNLOADS_DIR}/linuxdeployqt-continuous-${ARCH}.AppImage" ] || retry curl -kSLC- -o "${DOWNLOADS_DIR}/linuxdeployqt-continuous-${ARCH}.AppImage.part" "${linuxdeploy_qt_download_url}"
+  if [ ! -x "${DOWNLOADS_DIR}/linuxdeployqt-continuous-${ARCH}.AppImage" ]; then
+    mv -fv "${DOWNLOADS_DIR}/linuxdeployqt-continuous-${ARCH}.AppImage.part" "${DOWNLOADS_DIR}/linuxdeployqt-continuous-${ARCH}.AppImage"
+  fi
+  chmod -v +x "${DOWNLOADS_DIR}/linuxdeployqt-continuous-${ARCH}.AppImage"
   cd "/tmp/qbee"
   ln -svf usr/share/icons/hicolor/scalable/apps/qbittorrent.svg /tmp/qbee/AppDir/
   ln -svf qbittorrent.svg /tmp/qbee/AppDir/.DirIcon
@@ -475,7 +475,7 @@ EOF
   sed -i 's/Name=qBittorrent.*/Name=qBittorrent-Enhanced-Edition/;/SingleMainWindow/d' /tmp/qbee/AppDir/usr/share/applications/*.desktop
 
   export APPIMAGE_EXTRACT_AND_RUN=1
-  /tmp/linuxdeployqt-continuous-${ARCH}.AppImage \
+  "${DOWNLOADS_DIR}/linuxdeployqt-continuous-${ARCH}.AppImage" \
     /tmp/qbee/AppDir/usr/share/applications/*.desktop \
     -always-overwrite \
     -bundle-non-qt-libs \
@@ -488,9 +488,12 @@ EOF
   if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
     appimagetool_download_url="https://gh-proxy.com/${appimagetool_download_url}"
   fi
-  [ -x "/tmp/appimagetool-${ARCH}.AppImage" ] || retry curl -kSLC- -o /tmp/appimagetool-"${ARCH}".AppImage "${appimagetool_download_url}"
-  chmod -v +x "/tmp/appimagetool-${ARCH}.AppImage"
-  /tmp/appimagetool-"${ARCH}".AppImage --comp zstd --mksquashfs-opt -Xcompression-level --mksquashfs-opt 20 \
+  if [ ! -x "${DOWNLOADS_DIR}/appimagetool-${ARCH}.AppImage" ]; then
+    retry curl -kSLC- -o "${DOWNLOADS_DIR}/appimagetool-${ARCH}.AppImage.part" "${appimagetool_download_url}"
+    mv -fv "${DOWNLOADS_DIR}/appimagetool-${ARCH}.AppImage.part" "${DOWNLOADS_DIR}/appimagetool-${ARCH}.AppImage"
+  fi
+  chmod -v +x "${DOWNLOADS_DIR}/appimagetool-${ARCH}.AppImage"
+  "${DOWNLOADS_DIR}/appimagetool-${ARCH}.AppImage" --comp zstd --mksquashfs-opt -Xcompression-level --mksquashfs-opt 20 \
     -u "zsync|https://github.com/${GITHUB_REPOSITORY}/releases/latest/download/qBittorrent-Enhanced-Edition-${ARCH}.AppImage.zsync" \
     /tmp/qbee/AppDir /tmp/qbee/qBittorrent-Enhanced-Edition-"${ARCH}".AppImage
 }

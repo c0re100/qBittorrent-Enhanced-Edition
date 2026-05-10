@@ -29,11 +29,11 @@ jobs:
       - uses: actions/cache@v5
         with:
           path: |
-            /usr/src/
+            .github/workflows/downloads/
             /var/cache/apt/
-          key: appimage-build-dependencies-cache-${{ matrix.arch }}-${{ github.sha }}
+          key: appimage-downloads-cache-${{ github.sha }}
           restore-keys: |
-            appimage-build-dependencies-cache-${{ matrix.arch }}-
+            appimage-downloads-cache-
       - name: Build AppImage
         run: .github/workflows/build_appimage.sh
       - uses: actions/upload-artifact@v7
@@ -76,11 +76,11 @@ jobs:
       - uses: actions/cache@v5
         with:
           path: |
-            /usr/src/
+            .github/workflows/downloads/
             /var/cache/apt/
-          key: cross-build-dependencies-cache-${{ matrix.cross_host }}-${{ github.sha }}
+          key: cross-downloads-cache-${{ github.sha }}
           restore-keys: |
-            cross-build-dependencies-cache-${{ matrix.cross_host }}-
+            cross-downloads-cache-
       - name: Set archive host name
         shell: bash
         run: echo "ARCHIVE_HOST=${CROSS_HOST//-unknown/}" >> "$GITHUB_ENV"
