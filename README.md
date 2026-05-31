@@ -46,8 +46,10 @@ Latest AppImage download: [qBittorrent-Enhanced-Edition-x86_64.AppImage](https:/
 The one [repository](https://build.opensuse.org/project/show/home:nikoneko:test) contains all variants, links to specific packages are provided for convenience.
 
 #### openSUSE (Maintainer: [openSUSE Chinese Community](https://github.com/openSUSE-zh))
-
 [openSUSE repo](https://build.opensuse.org/package/show/home:opensuse_zh/qBittorrent-Enhanced-Edition)
+
+#### openSUSE Tumbleweed - Global (Maintainer: [itachi-re](https://github.com/itachi-re))
+[OBS repo](https://build.opensuse.org/package/show/home:itachi_re/qBittorrent-Enhanced-Edition)
 
 #### Ubuntu (Maintainer: [poplite](https://github.com/poplite))
 
