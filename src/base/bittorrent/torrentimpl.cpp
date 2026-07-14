@@ -30,6 +30,8 @@
 #include "torrentimpl.h"
 
 #include <algorithm>
+#include <libtorrent/file_storage.hpp>
+#include <libtorrent/torrent_handle.hpp>
 #include <memory>
 
 #ifdef Q_OS_WIN
@@ -40,6 +42,7 @@
 #include <libtorrent/session.hpp>
 #include <libtorrent/storage_defs.hpp>
 #include <libtorrent/time.hpp>
+#include <libtorrent/version.hpp>
 #include <libtorrent/write_resume_data.hpp>
 
 #ifdef QBT_USES_LIBTORRENT2
@@ -330,10 +333,17 @@ TorrentImpl::TorrentImpl(SessionImpl *session, const lt::torrent_handle &nativeH
 {
     if (m_ltAddTorrentParams.ti)
     {
+#if LIBTORRENT_VERSION_NUM >= 20100
+        if (const std::time_t creationDate = m_ltAddTorrentParams.creation_date; creationDate > 0)
+            m_creationDate = QDateTime::fromSecsSinceEpoch(creationDate);
+        m_creator = QString::fromStdString(m_ltAddTorrentParams.created_by);
+        m_comment = QString::fromStdString(m_ltAddTorrentParams.comment);
+#else
         if (const std::time_t creationDate = m_ltAddTorrentParams.ti->creation_date(); creationDate > 0)
             m_creationDate = QDateTime::fromSecsSinceEpoch(creationDate);
         m_creator = QString::fromStdString(m_ltAddTorrentParams.ti->creator());
         m_comment = QString::fromStdString(m_ltAddTorrentParams.ti->comment());
+#endif
 
         // Initialize it only if torrent is added with metadata.
         // Otherwise it should be initialized in "Metadata received" handler.
@@ -861,7 +871,17 @@ bool TorrentImpl::connectPeer(const PeerAddress &peerAddress)
 
 bool TorrentImpl::needSaveResumeData() const
 {
+#if LIBTORRENT_VERSION_NUM >= 20100
+    return static_cast<bool>(m_nativeStatus.need_save_resume_data & (
+        lt::torrent_handle:: if_download_progress |
+        lt::torrent_handle::if_config_changed |
+        lt::torrent_handle::if_state_changed |
+        lt::torrent_handle::if_metadata_changed |
+        lt::torrent_handle::if_counters_changed
+    ));
+#else
     return m_nativeStatus.need_save_resume;
+#endif
 }
 
 void TorrentImpl::requestResumeData(const lt::resume_data_flags_t flags)
@@ -1066,7 +1086,13 @@ Path TorrentImpl::actualFilePath(const int index) const
     if ((index < 0) || (index >= nativeIndexes.size()))
         return {};
 
-    return Path(nativeTorrentInfo()->files().file_path(nativeIndexes[index]));
+#if LIBTORRENT_VERSION_NUM >= 20100
+    const lt::file_storage &fs = nativeTorrentInfo()->files();
+    const lt::filenames files {fs, m_nativeStatus.renamed_files};
+#else
+    const lt::file_storage &files = nativeTorrentInfo()->files();
+#endif
+    return Path(files.file_path(nativeIndexes[index]));
 }
 
 qlonglong TorrentImpl::fileSize(const int index) const
@@ -1087,7 +1113,12 @@ PathList TorrentImpl::actualFilePaths() const
     PathList paths;
     paths.reserve(filesCount());
 
-    const lt::file_storage files = nativeTorrentInfo()->files();
+#if LIBTORRENT_VERSION_NUM >= 20100
+    const lt::file_storage &fs = nativeTorrentInfo()->files();
+    const lt::filenames files {fs, m_nativeStatus.renamed_files};
+#else
+    const lt::file_storage &files = nativeTorrentInfo()->files();
+#endif
     for (const lt::file_index_t &nativeIndex : asConst(m_torrentInfo.nativeIndexes()))
         paths.emplaceBack(files.file_path(nativeIndex));
 
@@ -2105,7 +2136,7 @@ void TorrentImpl::handleTorrentChecked()
             }
         }
 
-        if (m_nativeStatus.need_save_resume)
+        if (needSaveResumeData())
             deferredRequestResumeData();
 
         m_session->handleTorrentChecked(this);
@@ -2432,15 +2463,10 @@ void TorrentImpl::handleUnwantedFolderToggled()
 
 void TorrentImpl::manageActualFilePaths()
 {
-    const std::shared_ptr<const lt::torrent_info> nativeInfo = nativeTorrentInfo();
-    const lt::file_storage &nativeFiles = nativeInfo->files();
-
     for (int i = 0; i < filesCount(); ++i)
     {
         const Path path = filePath(i);
-
-        const auto nativeIndex = m_torrentInfo.nativeIndexes().at(i);
-        const Path actualPath {nativeFiles.file_path(nativeIndex)};
+        const Path actualPath = actualFilePath(i);
         const Path targetActualPath = makeActualPath(i, path);
         if (actualPath != targetActualPath)
         {

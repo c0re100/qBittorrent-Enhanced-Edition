@@ -33,6 +33,7 @@
 #include <concepts>
 #include <cstdint>
 #include <ctime>
+#include <libtorrent/socket_type.hpp>
 #include <ranges>
 #include <string>
 
@@ -57,6 +58,7 @@
 #include <libtorrent/session_stats.hpp>
 #include <libtorrent/session_status.hpp>
 #include <libtorrent/torrent_info.hpp>
+#include <libtorrent/version.hpp>
 
 #include <QDateTime>
 #include <QDeadlineTimer>
@@ -227,6 +229,10 @@ namespace
 #endif
         case lt::socket_type_t::utp_ssl:
             return u"UTP_SSL"_s;
+#if LIBTORRENT_VERSION_NUM >= 20100
+        case lt::socket_type_t::rtc:
+            return u"WebRTC"_s;
+#endif
         }
         return u"INVALID"_s;
     }
@@ -1774,6 +1780,10 @@ void SessionImpl::initializeNativeSession()
     case DiskIOType::SimplePreadPwrite:
         sessionParams.disk_io_constructor = customMMapDiskIOConstructor;
         break;
+#if LIBTORRENT_VERSION_NUM >= 20100
+    case DiskIOType::PreadPwrite:
+        sessionParams.disk_io_constructor = customPreadDiskIOConstructor;
+#endif
     default:
         sessionParams.disk_io_constructor = customDiskIOConstructor;
         break;
