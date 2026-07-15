@@ -61,9 +61,9 @@ std::unique_ptr<lt::disk_interface> customMMapDiskIOConstructor(
 
 #if LIBTORRENT_VERSION_NUM >= 20100
 std::unique_ptr<lt::disk_interface> customPreadDiskIOConstructor(
-        lt::io_context &ioConetxt, const lt::settings_interface &settings, lt::counters &counters)
+        lt::io_context &ioContext, const lt::settings_interface &settings, lt::counters &counters)
 {
-    return std::make_unique<CustomDiskIOThread>(lt::pread_disk_io_constructor(ioConetxt, settings, counters));
+    return std::make_unique<CustomDiskIOThread>(lt::pread_disk_io_constructor(ioContext, settings, counters));
 }
 #endif
 
