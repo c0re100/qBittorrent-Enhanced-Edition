@@ -30,8 +30,6 @@
 #include "torrentimpl.h"
 
 #include <algorithm>
-#include <libtorrent/file_storage.hpp>
-#include <libtorrent/torrent_handle.hpp>
 #include <memory>
 
 #ifdef Q_OS_WIN

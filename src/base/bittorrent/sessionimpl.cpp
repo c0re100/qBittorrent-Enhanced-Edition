@@ -33,7 +33,6 @@
 #include <concepts>
 #include <cstdint>
 #include <ctime>
-#include <libtorrent/socket_type.hpp>
 #include <ranges>
 #include <string>
 

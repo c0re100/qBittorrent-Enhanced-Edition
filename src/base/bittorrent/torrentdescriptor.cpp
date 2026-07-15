@@ -37,7 +37,6 @@
 #include <QByteArray>
 #include <QRegularExpression>
 #include <QUrl>
-#include <qhashfunctions.h>
 
 #include "base/global.h"
 #include "base/preferences.h"

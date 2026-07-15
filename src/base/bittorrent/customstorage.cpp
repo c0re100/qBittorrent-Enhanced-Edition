@@ -28,13 +28,7 @@
 
 #include "customstorage.h"
 
-#include <libtorrent/disk_interface.hpp>
 #include <libtorrent/download_priority.hpp>
-#include <libtorrent/file_storage.hpp>
-#include <libtorrent/performance_counters.hpp>
-#include <libtorrent/settings_pack.hpp>
-#include <memory>
-#include <string>
 
 #include "base/utils/fs.h"
 #include "common.h"

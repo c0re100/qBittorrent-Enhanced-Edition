@@ -37,7 +37,6 @@
 #include <QNetworkInterface>
 
 #include <libtorrent/version.hpp>
-#include <qvariant.h>
 
 #include "base/bittorrent/session.h"
 #include "base/global.h"
