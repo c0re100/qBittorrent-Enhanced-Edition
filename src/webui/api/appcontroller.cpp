@@ -792,6 +792,8 @@ void AppController::setPreferencesAction()
         session->setAutoBanBTPlayerPeer(it.value().toBool());
     if (hasKey(u"shadow_ban"_s))
         session->setShadowBan(it.value().toBool());
+    else if (hasKey(u"shadow_ban_enabled"_s))
+        session->setShadowBan(it.value().toBool());
     if (hasKey(u"shadow_banned_IPs"_s))
         session->setShadowBannedIPs(it.value().toString().split(u'\n', Qt::SkipEmptyParts));
 
