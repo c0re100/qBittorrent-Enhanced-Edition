@@ -40,6 +40,7 @@
 #include "base/bittorrent/infohash.h"
 #include "base/bittorrent/session.h"
 #include "base/bittorrent/torrent.h"
+#include "dialoggeometry.h"
 #include "base/global.h"
 #include "base/unicodestrings.h"
 #include "base/utils/fs.h"
@@ -61,7 +62,6 @@ namespace
 TorrentOptionsDialog::TorrentOptionsDialog(QWidget *parent, const QList<BitTorrent::Torrent *> &torrents)
     : QDialog {parent}
     , m_ui {new Ui::TorrentOptionsDialog}
-    , m_storeDialogSize {SETTINGS_KEY(u"Size"_s)}
     , m_currentCategoriesString {u"--%1--"_s.arg(tr("Currently used categories"))}
 {
     Q_ASSERT(!torrents.empty());
@@ -382,13 +382,12 @@ TorrentOptionsDialog::TorrentOptionsDialog(QWidget *parent, const QList<BitTorre
     connect(m_ui->spinDownloadLimit, qOverload<int>(&QSpinBox::valueChanged)
             , this, [this](const int value) { updateSliderValue(m_ui->sliderDownloadLimit, value); });
 
-    if (const QSize dialogSize = m_storeDialogSize; dialogSize.isValid())
-        resize(dialogSize);
+    DialogGeometry::restore(this, SETTINGS_KEY(u"Geometry"_s), SETTINGS_KEY(u"Size"_s));
 }
 
 TorrentOptionsDialog::~TorrentOptionsDialog()
 {
-    m_storeDialogSize = size();
+    DialogGeometry::save(this, SETTINGS_KEY(u"Geometry"_s));
     delete m_ui;
 }
 

@@ -30,8 +30,6 @@
 
 #include <QDialog>
 
-#include "base/settingvalue.h"
-
 class QSortFilterProxyModel;
 class QStringListModel;
 
@@ -57,7 +55,6 @@ private slots:
 
 private:
     Ui::IPSubnetWhitelistOptionsDialog *m_ui = nullptr;
-    SettingValue<QSize> m_storeDialogSize;
 
     QStringListModel *m_model = nullptr;
     QSortFilterProxyModel *m_sortFilter = nullptr;

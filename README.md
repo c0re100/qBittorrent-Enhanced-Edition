@@ -11,6 +11,39 @@ qBittorrent Enhanced Edition
 
 4. Peer whitelist/blacklist
 ********************************
+
+#### Extra features in this fork
+
+Beyond the upstream feature list above, this working fork adds:
+
+* **Remember the "Torrent stop condition" per add-torrent dialog.** The stop
+  condition you actively select (e.g. "Metadata received") is remembered and
+  re-applied to the next add-torrent dialog, instead of always falling back to
+  the global default. The automated handling (a "Metadata received" condition
+  flips to "None" once metadata actually arrives) deliberately does **not**
+  overwrite your remembered choice for the next dialog.
+
+* **Optional "Start torrent" state persistence** — *Tools → Options → Downloads →
+  "When adding a torrent"* → **"Remember the 'Start torrent' checkbox state
+  between add-torrent dialogs"** (**off** by default). When enabled, the
+  "Start torrent" checkbox keeps its last-used value between dialogs rather
+  than resetting from the global *Do not start the download automatically*
+  preference each time. An explicit per-torrent start/stop decision still wins,
+  and automated metadata/stop-condition handling never overrides a kept state.
+  When left off, behavior is unchanged.
+
+* **Dialogs now remember their position as well as their size.** Every dialog
+  that previously only persisted its size (About, Options, Speed Limit, Preview,
+  the option/search dialogs, ...) now stores and restores its full geometry
+  (position **and** size). A previously saved size is honored once after the
+  upgrade.
+
+* **The "Add New Torrent" dialog no longer drifts.** The dialog used to be
+  nudged down/right on every open (its `Qt::Window` frame was applied *after*
+  restoring the saved position, and the shifted position was re-saved, so the
+  drift compounded). The window type is now set before restoring, and the dialog
+  is only centered over the main window when no geometry is saved yet.
+
 ### Description:
 qBittorrent is a bittorrent client programmed in C++ / Qt that uses
 libtorrent (sometimes called libtorrent-rasterbar) by Arvid Norberg.

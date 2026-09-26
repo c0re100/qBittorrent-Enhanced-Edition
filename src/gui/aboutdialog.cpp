@@ -37,6 +37,7 @@
 #include "base/utils/misc.h"
 #include "base/version.h"
 #include "ui_aboutdialog.h"
+#include "dialoggeometry.h"
 #include "uithememanager.h"
 #include "utils.h"
 
@@ -45,7 +46,6 @@
 AboutDialog::AboutDialog(QWidget *parent)
     : QDialog(parent)
     , m_ui(new Ui::AboutDialog)
-    , m_storeDialogSize(SETTINGS_KEY(u"Size"_s))
 {
     m_ui->setupUi(this);
 
@@ -113,15 +113,13 @@ AboutDialog::AboutDialog(QWidget *parent)
                                      "The database is licensed under the Creative Commons Attribution 4.0 International License"));
     m_ui->labelDBIP->setText(DBIPText);
 
-    if (const QSize dialogSize = m_storeDialogSize; dialogSize.isValid())
-        resize(dialogSize);
-    else
+    if (!DialogGeometry::restore(this, SETTINGS_KEY(u"Geometry"_s), SETTINGS_KEY(u"Size"_s)))
         adjustSize();
 }
 
 AboutDialog::~AboutDialog()
 {
-    m_storeDialogSize = size();
+    DialogGeometry::save(this, SETTINGS_KEY(u"Geometry"_s));
     delete m_ui;
 }
 

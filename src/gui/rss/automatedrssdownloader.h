@@ -109,7 +109,6 @@ private:
     QHash<QString, QListWidgetItem *> m_itemsByRuleName;
     QRegularExpression *m_episodeRegex = nullptr;
 
-    SettingValue<QSize> m_storeDialogSize;
     SettingValue<QByteArray> m_storeMainSplitterState;
     SettingValue<QByteArray> m_storeRuleDefSplitterState;
 };

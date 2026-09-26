@@ -33,6 +33,7 @@
 #include <QtVersionChecks>
 #include <QDateTime>
 
+#include "base/global.h"
 #include "base/bittorrent/infohash.h"
 #include "base/bittorrent/torrent.h"
 #include "transferlistmodel.h"

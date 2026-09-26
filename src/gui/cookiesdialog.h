@@ -59,6 +59,5 @@ private:
     Ui::CookiesDialog *m_ui = nullptr;
     CookiesModel *m_cookiesModel = nullptr;
 
-    SettingValue<QSize> m_storeDialogSize;
     SettingValue<QByteArray> m_storeViewState;
 };

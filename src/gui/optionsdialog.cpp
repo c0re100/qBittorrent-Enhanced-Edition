@@ -73,6 +73,7 @@
 #include "advancedsettings.h"
 #include "banlistoptionsdialog.h"
 #include "shadowbanlistoptionsdialog.h"
+#include "dialoggeometry.h"
 #include "interfaces/iguiapplication.h"
 #include "ipsubnetwhitelistoptionsdialog.h"
 #include "rss/automatedrssdownloader.h"
@@ -157,7 +158,6 @@ namespace
 OptionsDialog::OptionsDialog(IGUIApplication *app, QWidget *parent)
     : GUIApplicationComponent(app, parent)
     , m_ui {new Ui::OptionsDialog}
-    , m_storeDialogSize {SETTINGS_KEY(u"Size"_s)}
     , m_storeHSplitterSize {SETTINGS_KEY(u"HorizontalSplitterSizes"_s)}
     , m_storeLastViewedPage {SETTINGS_KEY(u"LastViewedPage"_s)}
 {
@@ -232,14 +232,13 @@ OptionsDialog::OptionsDialog(IGUIApplication *app, QWidget *parent)
 
     m_ui->tabSelection->setCurrentRow(m_storeLastViewedPage);
 
-    if (const QSize dialogSize = m_storeDialogSize; dialogSize.isValid())
-        resize(dialogSize);
+    DialogGeometry::restore(this, SETTINGS_KEY(u"Geometry"_s), SETTINGS_KEY(u"Size"_s));
 }
 
 OptionsDialog::~OptionsDialog()
 {
     // save dialog states
-    m_storeDialogSize = size();
+    DialogGeometry::save(this, SETTINGS_KEY(u"Geometry"_s));
 
     QStringList hSplitterSizes;
     for (const int size : asConst(m_ui->hsplitter->sizes()))
@@ -579,6 +578,7 @@ void OptionsDialog::loadDownloadsTabOptions()
     m_ui->contentLayoutComboBox->setCurrentIndex(static_cast<int>(session->torrentContentLayout()));
     m_ui->checkAddToQueueTop->setChecked(session->isAddTorrentToQueueTop());
     m_ui->checkAddStopped->setChecked(session->isAddTorrentStopped());
+    m_ui->checkPersistStartTorrent->setChecked(pref->isAddNewTorrentDialogStartTorrentPersistent());
 
     m_ui->stopConditionComboBox->setToolTip(
                 u"<html><body><p><b>" + tr("None") + u"</b> - " + tr("No stop condition is set.") + u"</p><p><b>" +
@@ -712,6 +712,7 @@ void OptionsDialog::loadDownloadsTabOptions()
 
     connect(m_ui->checkAddToQueueTop, &QAbstractButton::toggled, this, &ThisType::enableApplyButton);
     connect(m_ui->checkAddStopped, &QAbstractButton::toggled, this, &ThisType::enableApplyButton);
+    connect(m_ui->checkPersistStartTorrent, &QAbstractButton::toggled, this, &ThisType::enableApplyButton);
     connect(m_ui->checkAddStopped, &QAbstractButton::toggled, this, [this](const bool checked)
     {
         m_ui->stopConditionLabel->setEnabled(!checked);
@@ -788,6 +789,7 @@ void OptionsDialog::saveDownloadsTabOptions() const
 
     session->setAddTorrentToQueueTop(m_ui->checkAddToQueueTop->isChecked());
     session->setAddTorrentStopped(addTorrentsStopped());
+    pref->setAddNewTorrentDialogStartTorrentPersistent(m_ui->checkPersistStartTorrent->isChecked());
     session->setTorrentStopCondition(m_ui->stopConditionComboBox->currentData().value<BitTorrent::Torrent::StopCondition>());
     TorrentFileGuard::setAutoDeleteMode(!m_ui->deleteTorrentBox->isChecked() ? TorrentFileGuard::Never
                              : !m_ui->deleteCancelledTorrentBox->isChecked() ? TorrentFileGuard::IfAdded

@@ -30,7 +30,6 @@
 
 #include <QDialog>
 
-#include "base/settingvalue.h"
 #include "base/torrentfileswatcher.h"
 
 namespace Ui
@@ -60,5 +59,4 @@ private:
 
     Ui::WatchedFolderOptionsDialog *m_ui = nullptr;
     AddTorrentParamsWidget *m_addTorrentParamsWidget = nullptr;
-    SettingValue<QSize> m_storeDialogSize;
 };

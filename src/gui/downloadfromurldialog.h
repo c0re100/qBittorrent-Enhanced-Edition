@@ -30,8 +30,6 @@
 
 #include <QDialog>
 
-#include "base/settingvalue.h"
-
 namespace Ui
 {
     class DownloadFromURLDialog;
@@ -56,5 +54,4 @@ private:
     void keyPressEvent(QKeyEvent *event) override;
 
     Ui::DownloadFromURLDialog *m_ui = nullptr;
-    SettingValue<QSize> m_storeDialogSize;
 };

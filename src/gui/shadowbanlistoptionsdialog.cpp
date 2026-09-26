@@ -33,8 +33,10 @@
 #include <QSortFilterProxyModel>
 #include <QStringListModel>
 
+#include "base/global.h"
 #include "base/bittorrent/session.h"
 #include "base/utils/net.h"
+#include "dialoggeometry.h"
 #include "ui_shadowbanlistoptionsdialog.h"
 #include "utils.h"
 
@@ -43,7 +45,6 @@
 ShadowBanListOptionsDialog::ShadowBanListOptionsDialog(QWidget *parent)
     : QDialog(parent)
     , m_ui(new Ui::ShadowBanListOptionsDialog)
-    , m_storeDialogSize(SETTINGS_KEY(u"Size"_s))
     , m_model(new QStringListModel(BitTorrent::Session::instance()->shadowBannedIPs(), this))
 {
     m_ui->setupUi(this);
@@ -58,13 +59,12 @@ ShadowBanListOptionsDialog::ShadowBanListOptionsDialog(QWidget *parent)
     m_ui->bannedIPList->sortByColumn(0, Qt::AscendingOrder);
     m_ui->buttonBanIP->setEnabled(false);
 
-    if (const QSize dialogSize = m_storeDialogSize; dialogSize.isValid())
-        resize(dialogSize);
+    DialogGeometry::restore(this, SETTINGS_KEY(u"Geometry"_s), SETTINGS_KEY(u"Size"_s));
 }
 
 ShadowBanListOptionsDialog::~ShadowBanListOptionsDialog()
 {
-    m_storeDialogSize = size();
+    DialogGeometry::save(this, SETTINGS_KEY(u"Geometry"_s));
     delete m_ui;
 }
 

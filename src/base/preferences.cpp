@@ -2192,6 +2192,19 @@ void Preferences::setAddNewTorrentDialogAttached(const bool attached)
     setValue(u"AddNewTorrentDialog/Attached"_s, attached);
 }
 
+bool Preferences::isAddNewTorrentDialogStartTorrentPersistent() const
+{
+    return value(u"AddNewTorrentDialog/RememberStartTorrentState"_s, false);
+}
+
+void Preferences::setAddNewTorrentDialogStartTorrentPersistent(const bool persistent)
+{
+    if (persistent == isAddNewTorrentDialogStartTorrentPersistent())
+        return;
+
+    setValue(u"AddNewTorrentDialog/RememberStartTorrentState"_s, persistent);
+}
+
 bool Preferences::getAutoBanUnknownPeer() const
 {
     return value(u"Preferences/Advanced/AutoBanUnknownPeer"_s, false);

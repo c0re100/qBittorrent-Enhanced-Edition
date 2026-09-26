@@ -30,8 +30,6 @@
 
 #include <QDialog>
 
-#include "base/settingvalue.h"
-
 namespace Ui
 {
     class StatsDialog;
@@ -51,5 +49,4 @@ private slots:
 
 private:
     Ui::StatsDialog *m_ui = nullptr;
-    SettingValue<QSize> m_storeDialogSize;
 };

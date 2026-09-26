@@ -52,6 +52,7 @@ add_library(qbt_gui STATIC
     cookiesdialog.h
     cookiesmodel.h
     deletionconfirmationdialog.h
+    dialoggeometry.h
     desktopintegration.h
     downloadfromurldialog.h
     executionlogwidget.h
@@ -160,6 +161,7 @@ add_library(qbt_gui STATIC
     cookiesmodel.cpp
     deletionconfirmationdialog.cpp
     desktopintegration.cpp
+    dialoggeometry.cpp
     downloadfromurldialog.cpp
     executionlogwidget.cpp
     filterpatternformatmenu.cpp

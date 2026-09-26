@@ -38,10 +38,12 @@
 #include <QShowEvent>
 #include <QStandardItemModel>
 
+#include "base/global.h"
 #include "base/bittorrent/torrent.h"
 #include "base/preferences.h"
 #include "base/utils/fs.h"
 #include "base/utils/misc.h"
+#include "dialoggeometry.h"
 #include "previewlistdelegate.h"
 #include "ui_previewselectdialog.h"
 #include "utils.h"
@@ -57,7 +59,6 @@ PreviewSelectDialog::PreviewSelectDialog(QWidget *parent, const BitTorrent::Torr
     : QDialog(parent)
     , m_ui {new Ui::PreviewSelectDialog}
     , m_torrent {torrent}
-    , m_storeDialogSize {SETTINGS_KEY(u"Size"_s)}
     , m_storeTreeHeaderState {u"GUI/Qt6/" SETTINGS_KEY(u"HeaderState"_s)}
 {
     m_ui->setupUi(this);
@@ -174,17 +175,16 @@ void PreviewSelectDialog::displayColumnHeaderMenu()
 
 void PreviewSelectDialog::saveWindowState()
 {
-    // Persist dialog size
-    m_storeDialogSize = size();
+    // Persist dialog geometry
+    DialogGeometry::save(this, SETTINGS_KEY(u"Geometry"_s));
     // Persist TreeView Header state
     m_storeTreeHeaderState = m_ui->previewList->header()->saveState();
 }
 
 void PreviewSelectDialog::loadWindowState()
 {
-    // Restore dialog size
-    if (const QSize dialogSize = m_storeDialogSize; dialogSize.isValid())
-        resize(dialogSize);
+    // Restore dialog geometry
+    DialogGeometry::restore(this, SETTINGS_KEY(u"Geometry"_s), SETTINGS_KEY(u"Size"_s));
 
     // Restore TreeView Header state
     if (const QByteArray treeHeaderState = m_storeTreeHeaderState; !treeHeaderState.isEmpty())

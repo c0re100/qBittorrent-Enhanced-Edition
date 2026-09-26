@@ -28,6 +28,8 @@
 
 #include "pluginsourcedialog.h"
 
+#include "base/global.h"
+#include "gui/dialoggeometry.h"
 #include "gui/utils.h"
 #include "ui_pluginsourcedialog.h"
 
@@ -36,17 +38,15 @@
 PluginSourceDialog::PluginSourceDialog(QWidget *parent)
     : QDialog(parent)
     , m_ui(new Ui::PluginSourceDialog)
-    , m_storeDialogSize(SETTINGS_KEY(u"Size"_s))
 {
     m_ui->setupUi(this);
 
-    if (const QSize dialogSize = m_storeDialogSize; dialogSize.isValid())
-        resize(dialogSize);
+    DialogGeometry::restore(this, SETTINGS_KEY(u"Geometry"_s), SETTINGS_KEY(u"Size"_s));
 }
 
 PluginSourceDialog::~PluginSourceDialog()
 {
-    m_storeDialogSize = size();
+    DialogGeometry::save(this, SETTINGS_KEY(u"Geometry"_s));
     delete m_ui;
 }
 

@@ -247,8 +247,11 @@ bool GUIAddTorrentManager::processTorrent(const QString &source
     auto *dlg = new AddNewTorrentDialog(torrentDescr, params, (attached ? app()->mainWindow() : nullptr));
     // Qt::Window is required to avoid showing only two dialog on top (see #12852).
     // Also improves the general convenience of adding multiple torrents.
-    if (!attached)
-        dlg->setWindowFlags(Qt::Window);
+    // NOTE: The `Qt::Window` flag is now set inside the dialog's constructor, before
+    // its geometry is restored. Applying it here (after construction) would make the
+    // OS window frame get re-applied on top of the restored position, causing the
+    // dialog to drift down/right on every open (unlike the About dialog which never
+    // changes its window flags).
 
     dlg->setAttribute(Qt::WA_DeleteOnClose);
     m_dialogs[infoHash] = dlg;
@@ -272,7 +275,8 @@ bool GUIAddTorrentManager::processTorrent(const QString &source
         m_dialogs.remove(infoHash);
     });
 
-    adjustDialogGeometry(dlg, app()->mainWindow());
+    if (!dlg->hasRestoredGeometry())
+        adjustDialogGeometry(dlg, app()->mainWindow());
     dlg->show();
 
     return true;

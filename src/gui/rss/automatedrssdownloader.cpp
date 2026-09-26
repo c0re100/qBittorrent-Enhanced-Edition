@@ -52,6 +52,7 @@
 #include "base/utils/string.h"
 #include "gui/addtorrentparamswidget.h"
 #include "gui/autoexpandabledialog.h"
+#include "gui/dialoggeometry.h"
 #include "gui/torrentcategorydialog.h"
 #include "gui/uithememanager.h"
 #include "gui/utils.h"
@@ -67,7 +68,6 @@ AutomatedRssDownloader::AutomatedRssDownloader(QWidget *parent)
     , m_formatFilterLegacy {u"%1 (*%2)"_s.arg(tr("Rules (legacy)"), EXT_LEGACY)}
     , m_ui {new Ui::AutomatedRssDownloader}
     , m_addTorrentParamsWidget {new AddTorrentParamsWidget}
-    , m_storeDialogSize {u"RssFeedDownloader/geometrySize"_s}
     , m_storeMainSplitterState {u"GUI/Qt6/RSSFeedDownloader/HSplitterSizes"_s}
     , m_storeRuleDefSplitterState {u"GUI/Qt6/RSSFeedDownloader/RuleDefSplitterState"_s}
 {
@@ -185,8 +185,7 @@ AutomatedRssDownloader::~AutomatedRssDownloader()
 
 void AutomatedRssDownloader::loadSettings()
 {
-    if (const QSize dialogSize = m_storeDialogSize; dialogSize.isValid())
-        resize(dialogSize);
+    DialogGeometry::restore(this, u"RssFeedDownloader/geometry"_s, u"RssFeedDownloader/geometrySize"_s);
 
     if (const QByteArray mainSplitterSize = m_storeMainSplitterState; !mainSplitterSize.isEmpty())
         m_ui->mainSplitter->restoreState(mainSplitterSize);
@@ -197,7 +196,7 @@ void AutomatedRssDownloader::loadSettings()
 
 void AutomatedRssDownloader::saveSettings()
 {
-    m_storeDialogSize = size();
+    DialogGeometry::save(this, u"RssFeedDownloader/geometry"_s);
     m_storeMainSplitterState = m_ui->mainSplitter->saveState();
     m_storeRuleDefSplitterState = m_ui->ruleDefSplitter->saveState();
 }

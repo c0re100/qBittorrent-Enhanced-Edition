@@ -85,7 +85,6 @@ private:
     QThreadPool m_threadPool;
 
     // settings
-    SettingValue<QSize> m_storeDialogSize;
     SettingValue<int> m_storePieceSize;
     SettingValue<bool> m_storePrivateTorrent;
     SettingValue<bool> m_storeStartSeeding;

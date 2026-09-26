@@ -37,6 +37,7 @@
 #include "base/global.h"
 #include "base/utils/misc.h"
 #include "base/utils/string.h"
+#include "dialoggeometry.h"
 #include "ui_statsdialog.h"
 #include "utils.h"
 
@@ -45,7 +46,6 @@
 StatsDialog::StatsDialog(QWidget *parent)
     : QDialog(parent)
     , m_ui(new Ui::StatsDialog)
-    , m_storeDialogSize(SETTINGS_KEY(u"Size"_s))
 {
     m_ui->setupUi(this);
 
@@ -60,13 +60,12 @@ StatsDialog::StatsDialog(QWidget *parent)
     m_ui->labelCacheHits->hide();
 #endif
 
-    if (const QSize dialogSize = m_storeDialogSize; dialogSize.isValid())
-        resize(dialogSize);
+    DialogGeometry::restore(this, SETTINGS_KEY(u"Geometry"_s), SETTINGS_KEY(u"Size"_s));
 }
 
 StatsDialog::~StatsDialog()
 {
-    m_storeDialogSize = size();
+    DialogGeometry::save(this, SETTINGS_KEY(u"Geometry"_s));
     delete m_ui;
 }
 

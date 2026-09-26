@@ -33,6 +33,7 @@
 #include "base/global.h"
 #include "base/net/downloadmanager.h"
 #include "cookiesmodel.h"
+#include "dialoggeometry.h"
 #include "ui_cookiesdialog.h"
 #include "uithememanager.h"
 #include "utils.h"
@@ -43,7 +44,6 @@ CookiesDialog::CookiesDialog(QWidget *parent)
     : QDialog(parent)
     , m_ui(new Ui::CookiesDialog)
     , m_cookiesModel(new CookiesModel(Net::DownloadManager::instance()->allCookies(), this))
-    , m_storeDialogSize(SETTINGS_KEY(u"Size"_s))
     , m_storeViewState("GUI/Qt6/" SETTINGS_KEY(u"ViewState"_s))
 {
     m_ui->setupUi(this);
@@ -67,15 +67,14 @@ CookiesDialog::CookiesDialog(QWidget *parent)
                     m_cookiesModel->index(0, 0),
                     QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
 
-    if (const QSize dialogSize = m_storeDialogSize; dialogSize.isValid())
-        resize(dialogSize);
+    DialogGeometry::restore(this, SETTINGS_KEY(u"Geometry"_s), SETTINGS_KEY(u"Size"_s));
 
     m_ui->treeView->header()->restoreState(m_storeViewState);
 }
 
 CookiesDialog::~CookiesDialog()
 {
-    m_storeDialogSize = size();
+    DialogGeometry::save(this, SETTINGS_KEY(u"Geometry"_s));
     m_storeViewState = m_ui->treeView->header()->saveState();
     delete m_ui;
 }

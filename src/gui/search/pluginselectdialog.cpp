@@ -43,6 +43,7 @@
 #include "base/preferences.h"
 #include "base/utils/fs.h"
 #include "gui/autoexpandabledialog.h"
+#include "gui/dialoggeometry.h"
 #include "gui/uithememanager.h"
 #include "gui/utils.h"
 #include "pluginsourcedialog.h"
@@ -63,7 +64,6 @@ enum PluginColumns
 PluginSelectDialog::PluginSelectDialog(SearchPluginManager *pluginManager, QWidget *parent)
     : QDialog(parent)
     , m_ui(new Ui::PluginSelectDialog)
-    , m_storeDialogSize(SETTINGS_KEY(u"Size"_s))
     , m_pluginManager(pluginManager)
 {
     m_ui->setupUi(this);
@@ -88,13 +88,12 @@ PluginSelectDialog::PluginSelectDialog(SearchPluginManager *pluginManager, QWidg
     connect(m_pluginManager, &SearchPluginManager::checkForUpdatesFinished, this, &PluginSelectDialog::checkForUpdatesFinished);
     connect(m_pluginManager, &SearchPluginManager::checkForUpdatesFailed, this, &PluginSelectDialog::checkForUpdatesFailed);
 
-    if (const QSize dialogSize = m_storeDialogSize; dialogSize.isValid())
-        resize(dialogSize);
+    DialogGeometry::restore(this, SETTINGS_KEY(u"Geometry"_s), SETTINGS_KEY(u"Size"_s));
 }
 
 PluginSelectDialog::~PluginSelectDialog()
 {
-    m_storeDialogSize = size();
+    DialogGeometry::save(this, SETTINGS_KEY(u"Geometry"_s));
     delete m_ui;
 }
 

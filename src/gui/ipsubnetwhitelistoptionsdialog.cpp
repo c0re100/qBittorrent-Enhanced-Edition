@@ -35,6 +35,7 @@
 #include "base/global.h"
 #include "base/preferences.h"
 #include "base/utils/net.h"
+#include "dialoggeometry.h"
 #include "ui_ipsubnetwhitelistoptionsdialog.h"
 #include "utils.h"
 
@@ -43,7 +44,6 @@
 IPSubnetWhitelistOptionsDialog::IPSubnetWhitelistOptionsDialog(QWidget *parent)
     : QDialog(parent)
     , m_ui(new Ui::IPSubnetWhitelistOptionsDialog)
-    , m_storeDialogSize(SETTINGS_KEY(u"Size"_s))
 {
     m_ui->setupUi(this);
 
@@ -62,13 +62,12 @@ IPSubnetWhitelistOptionsDialog::IPSubnetWhitelistOptionsDialog(QWidget *parent)
     m_ui->whitelistedIPSubnetList->sortByColumn(0, Qt::AscendingOrder);
     m_ui->buttonWhitelistIPSubnet->setEnabled(false);
 
-    if (const QSize dialogSize = m_storeDialogSize; dialogSize.isValid())
-        resize(dialogSize);
+    DialogGeometry::restore(this, SETTINGS_KEY(u"Geometry"_s), SETTINGS_KEY(u"Size"_s));
 }
 
 IPSubnetWhitelistOptionsDialog::~IPSubnetWhitelistOptionsDialog()
 {
-    m_storeDialogSize = size();
+    DialogGeometry::save(this, SETTINGS_KEY(u"Geometry"_s));
     delete m_ui;
 }
 

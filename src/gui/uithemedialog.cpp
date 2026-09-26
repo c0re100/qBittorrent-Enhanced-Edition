@@ -40,6 +40,7 @@
 
 #include "base/3rdparty/expected.hpp"
 #include "base/global.h"
+#include "dialoggeometry.h"
 #include "base/logger.h"
 #include "base/path.h"
 #include "base/profile.h"
@@ -230,7 +231,6 @@ private:
 UIThemeDialog::UIThemeDialog(QWidget *parent)
     : QDialog(parent)
     , m_ui {new Ui::UIThemeDialog}
-    , m_storeDialogSize {SETTINGS_KEY(u"Size"_s)}
 {
     m_ui->setupUi(this);
 
@@ -244,13 +244,12 @@ UIThemeDialog::UIThemeDialog(QWidget *parent)
     loadColors();
     loadIcons();
 
-    if (const QSize dialogSize = m_storeDialogSize; dialogSize.isValid())
-        resize(dialogSize);
+    DialogGeometry::restore(this, SETTINGS_KEY(u"Geometry"_s), SETTINGS_KEY(u"Size"_s));
 }
 
 UIThemeDialog::~UIThemeDialog()
 {
-    m_storeDialogSize = size();
+    DialogGeometry::save(this, SETTINGS_KEY(u"Geometry"_s));
     delete m_ui;
 }
 
