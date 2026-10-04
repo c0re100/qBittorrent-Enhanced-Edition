@@ -18,20 +18,20 @@ if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
   if [ -f /etc/apt/sources.list.d/ubuntu.sources ]; then
     cat >/etc/apt/sources.list.d/ubuntu.sources <<EOF
 Types: deb
-URIs: http://repo.huaweicloud.com/ubuntu/
+URIs: http://mirrors.nju.edu.cn/ubuntu/
 Suites: ${UBUNTU_CODENAME} ${UBUNTU_CODENAME}-updates ${UBUNTU_CODENAME}-backports ${UBUNTU_CODENAME}-security
 Components: main universe restricted multiverse
 Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg
 EOF
   else
     cat >/etc/apt/sources.list <<EOF
-deb http://repo.huaweicloud.com/ubuntu/ ${UBUNTU_CODENAME} main restricted universe multiverse
-deb http://repo.huaweicloud.com/ubuntu/ ${UBUNTU_CODENAME}-updates main restricted universe multiverse
-deb http://repo.huaweicloud.com/ubuntu/ ${UBUNTU_CODENAME}-backports main restricted universe multiverse
-deb http://repo.huaweicloud.com/ubuntu/ ${UBUNTU_CODENAME}-security main restricted universe multiverse
+deb http://mirrors.nju.edu.cn/ubuntu/ ${UBUNTU_CODENAME} main restricted universe multiverse
+deb http://mirrors.nju.edu.cn/ubuntu/ ${UBUNTU_CODENAME}-updates main restricted universe multiverse
+deb http://mirrors.nju.edu.cn/ubuntu/ ${UBUNTU_CODENAME}-backports main restricted universe multiverse
+deb http://mirrors.nju.edu.cn/ubuntu/ ${UBUNTU_CODENAME}-security main restricted universe multiverse
 EOF
   fi
-  export PIP_INDEX_URL="https://repo.huaweicloud.com/repository/pypi/simple"
+  export PIP_INDEX_URL="https://mirrors.nju.edu.cn/pypi/web/simple"
 fi
 
 export DEBIAN_FRONTEND=noninteractive
@@ -45,6 +45,8 @@ apt update
 apt install -y \
   jq \
   curl \
+  bzip2 \
+  xz-utils \
   git \
   make \
   g++ \
@@ -117,7 +119,7 @@ case "${CROSS_HOST}" in
   ;;
 esac
 
-export PKG_CONFIG_PATH="${CROSS_PREFIX}/opt/qt/lib/pkgconfig:${CROSS_PREFIX}/lib/pkgconfig:${CROSS_PREFIX}/share/pkgconfig:${PKG_CONFIG_PATH}"
+export PKG_CONFIG_LIBDIR="${CROSS_PREFIX}/opt/qt/lib/pkgconfig:${CROSS_PREFIX}/lib/pkgconfig:${CROSS_PREFIX}/share/pkgconfig"
 
 SELF_DIR="$(dirname "$(readlink -f "${0}")")"
 mkdir -p "${SELF_DIR}/downloads"
@@ -151,7 +153,7 @@ prepare_cmake() {
     cmake_latest_ver="$(retry curl -ksSL --compressed https://cmake.org/download/ \| grep "'Latest Release'" \| sed -r "'s/.*Latest Release\s*\((.+)\).*/\1/'" \| head -1)"
     cmake_binary_url="https://github.com/Kitware/CMake/releases/download/v${cmake_latest_ver}/cmake-${cmake_latest_ver}-linux-x86_64.tar.gz"
     if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
-      cmake_binary_url="https://gh-proxy.com/${cmake_binary_url}"
+      cmake_binary_url="https://gh-proxy.org/${cmake_binary_url}"
     fi
     if [ ! -f "${DOWNLOADS_DIR}/cmake-${cmake_latest_ver}-linux-x86_64.tar.gz" ]; then
       retry curl -kLo "${DOWNLOADS_DIR}/cmake-${cmake_latest_ver}-linux-x86_64.tar.gz.part" "${cmake_binary_url}"
@@ -167,7 +169,7 @@ prepare_ninja() {
     ninja_ver="$(retry curl -ksSL --compressed https://ninja-build.org/ \| grep "'The last Ninja release is'" \| sed -r "'s@.*<b>(.+)</b>.*@\1@'" \| head -1)"
     ninja_binary_url="https://github.com/ninja-build/ninja/releases/download/${ninja_ver}/ninja-linux.zip"
     if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
-      ninja_binary_url="https://gh-proxy.com/${ninja_binary_url}"
+      ninja_binary_url="https://gh-proxy.org/${ninja_binary_url}"
     fi
     if [ ! -f "${DOWNLOADS_DIR}/ninja-${ninja_ver}-linux.zip" ]; then
       retry curl -kLC- -o "${DOWNLOADS_DIR}/ninja-${ninja_ver}-linux.zip.part" "${ninja_binary_url}"
@@ -184,7 +186,7 @@ prepare_zlib() {
     zlib_ng_latest_url="https://github.com/zlib-ng/zlib-ng/archive/refs/tags/${zlib_ng_latest_tag}.tar.gz"
     echo "zlib-ng version ${zlib_ng_latest_tag}"
     if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
-      zlib_ng_latest_url="https://gh-proxy.com/${zlib_ng_latest_url}"
+      zlib_ng_latest_url="https://gh-proxy.org/${zlib_ng_latest_url}"
     fi
     if [ ! -f "${DOWNLOADS_DIR}/zlib-ng-${zlib_ng_latest_tag}.tar.gz" ]; then
       retry curl -ksSL "${zlib_ng_latest_url}" -o "${DOWNLOADS_DIR}/zlib-ng-${zlib_ng_latest_tag}.tar.gz.part"
@@ -204,7 +206,7 @@ prepare_zlib() {
       -DCMAKE_CXX_COMPILER="${CROSS_HOST}-c++" \
       -DCMAKE_SYSTEM_PROCESSOR="${TARGET_ARCH}" \
       -DCMAKE_C_FLAGS="-fPIC" \
-      -DWITH_GTEST=OFF
+      -DBUILD_TESTING=OFF
     cmake --build build
     cmake --install build
     # Fix mingw build sharedlibdir lost issue
@@ -238,7 +240,7 @@ prepare_ssl() {
   if [ ! -f "${DOWNLOADS_DIR}/openssl-${openssl_ver}.tar.gz" ]; then
     openssl_download_url="https://github.com/openssl/openssl/releases/download/openssl-${openssl_ver}/${openssl_filename}"
     if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
-      openssl_download_url="https://gh-proxy.com/${openssl_download_url}"
+      openssl_download_url="https://gh-proxy.org/${openssl_download_url}"
     fi
     retry curl -kL "${openssl_download_url}" -o "${DOWNLOADS_DIR}/openssl-${openssl_ver}.tar.gz.part"
     mv -fv "${DOWNLOADS_DIR}/openssl-${openssl_ver}.tar.gz.part" "${DOWNLOADS_DIR}/openssl-${openssl_ver}.tar.gz"
@@ -246,7 +248,7 @@ prepare_ssl() {
   mkdir -p "/usr/src/openssl-${openssl_ver}/"
   tar -zxf "${DOWNLOADS_DIR}/openssl-${openssl_ver}.tar.gz" --strip-components=1 -C "/usr/src/openssl-${openssl_ver}/"
   cd "/usr/src/openssl-${openssl_ver}/"
-  CC=cc ./Configure -static no-tests -fPIC --openssldir=/etc/ssl --cross-compile-prefix="${CROSS_HOST}-" --prefix="${CROSS_PREFIX}" "${OPENSSL_COMPILER}"
+  CC=cc ./Configure -static no-apps no-tests -fPIC --openssldir=/etc/ssl --cross-compile-prefix="${CROSS_HOST}-" --prefix="${CROSS_PREFIX}" "${OPENSSL_COMPILER}"
   make -j$(nproc)
   make install_sw
   if [ -f "${CROSS_PREFIX}/lib64/libssl.a" ]; then
@@ -275,7 +277,7 @@ prepare_boost() {
 prepare_qt() {
   QT_DOWNLOAD_URL_BASE="https://download.qt.io"
   if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
-    QT_DOWNLOAD_URL_BASE="https://mirrors.sjtug.sjtu.edu.cn/qt"
+    QT_DOWNLOAD_URL_BASE="https://mirrors.nju.edu.cn/qt"
   fi
   qt_major_ver="$(retry curl -ksSL --compressed "https://download.qt.io/official_releases/qt/" \| sed -nr "'s@.*href=\"([0-9]+(\.[0-9]+)*)/\".*@\1@p'" \| grep \"^${QT_VER_PREFIX}\" \| head -1)"
   qt_ver="$(retry curl -ksSL --compressed "https://download.qt.io/official_releases/qt/${qt_major_ver}/" \| sed -nr "'s@.*href=\"([0-9]+(\.[0-9]+)*)/\".*@\1@p'" \| grep \"^${QT_VER_PREFIX}\" \| head -1)"
@@ -346,7 +348,7 @@ prepare_libtorrent() {
   echo "libtorrent-rasterbar branch: ${LIBTORRENT_BRANCH}"
   libtorrent_git_url="https://github.com/arvidn/libtorrent.git"
   if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
-    libtorrent_git_url="https://gh-proxy.com/${libtorrent_git_url}"
+    libtorrent_git_url="https://gh-proxy.org/${libtorrent_git_url}"
   fi
   if [ ! -d "/usr/src/libtorrent-rasterbar-${LIBTORRENT_BRANCH}/" ]; then
     retry git clone --depth 1 --recursive --shallow-submodules --branch "${LIBTORRENT_BRANCH}" \

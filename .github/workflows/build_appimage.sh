@@ -50,12 +50,16 @@ prepare_baseenv() {
   rm -f /etc/apt/sources.list.d/*.list*
   # Ubuntu mirror for local building
   if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
+    REPO_FILE=/etc/apt/sources.list
+    if [ -f /etc/apt/sources.list.d/ubuntu.sources ]; then
+      REPO_FILE=/etc/apt/sources.list.d/ubuntu.sources
+    fi
     sed -i \
-      -e 's|http://archive.ubuntu.com/ubuntu/|http://repo.huaweicloud.com/ubuntu/|g' \
-      -e 's|http://security.ubuntu.com/ubuntu/|http://repo.huaweicloud.com/ubuntu/|g' \
-      -e 's|http://ports.ubuntu.com/ubuntu-ports/|http://repo.huaweicloud.com/ubuntu-ports/|g' \
-      /etc/apt/sources.list
-    export PIP_INDEX_URL="https://repo.huaweicloud.com/repository/pypi/simple"
+      -e 's|http://archive.ubuntu.com/ubuntu/|http://mirrors.nju.edu.cn/ubuntu/|g' \
+      -e 's|http://security.ubuntu.com/ubuntu/|http://mirrors.nju.edu.cn/ubuntu/|g' \
+      -e 's|http://ports.ubuntu.com/ubuntu-ports/|http://mirrors.nju.edu.cn/ubuntu-ports/|g' \
+      "${REPO_FILE}"
+    export PIP_INDEX_URL="https://mirrors.nju.edu.cn/pypi/web/simple"
   fi
 
   # keep debs in container for store cache in docker volume
@@ -110,6 +114,7 @@ prepare_baseenv() {
     libxrender-dev \
     libzstd-dev \
     pkg-config \
+    bzip2 \
     unzip \
     xz-utils \
     zlib1g-dev \
@@ -128,7 +133,7 @@ prepare_buildenv() {
     cmake_latest_ver="$(retry curl -ksSL --compressed https://cmake.org/download/ \| grep "'Latest Release'" \| sed -r "'s/.*Latest Release\s*\((.+)\).*/\1/'" \| head -1)"
     cmake_binary_url="https://github.com/Kitware/CMake/releases/download/v${cmake_latest_ver}/cmake-${cmake_latest_ver}-linux-${ARCH}.tar.gz"
     if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
-      cmake_binary_url="https://gh-proxy.com/${cmake_binary_url}"
+      cmake_binary_url="https://gh-proxy.org/${cmake_binary_url}"
     fi
     if [ ! -f "${DOWNLOADS_DIR}/cmake-${cmake_latest_ver}-linux-${ARCH}.tar.gz" ]; then
       retry curl -kLo "${DOWNLOADS_DIR}/cmake-${cmake_latest_ver}-linux-${ARCH}.tar.gz.part" "${cmake_binary_url}"
@@ -146,7 +151,7 @@ prepare_buildenv() {
     ninja_local_name="ninja-${ninja_ver}-linux${ninja_arch_suffix}"
     ninja_binary_url="https://github.com/ninja-build/ninja/releases/download/${ninja_ver}/ninja-linux${ninja_arch_suffix}.zip"
     if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
-      ninja_binary_url="https://gh-proxy.com/${ninja_binary_url}"
+      ninja_binary_url="https://gh-proxy.org/${ninja_binary_url}"
     fi
     if [ ! -f "${DOWNLOADS_DIR}/ninja-${ninja_ver}-linux${ninja_arch_suffix}.zip" ]; then
       retry curl -kLC- -o "${DOWNLOADS_DIR}/ninja-${ninja_ver}-linux${ninja_arch_suffix}.zip.part" "${ninja_binary_url}"
@@ -163,7 +168,7 @@ prepare_ssl() {
   echo "openssl version: ${openssl_ver}"
   openssl_latest_url="https://github.com/openssl/openssl/archive/refs/tags/${openssl_filename}"
   if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
-    openssl_latest_url="https://gh-proxy.com/${openssl_latest_url}"
+    openssl_latest_url="https://gh-proxy.org/${openssl_latest_url}"
   fi
   if [ ! -f "${DOWNLOADS_DIR}/openssl-${openssl_ver}.tar.gz" ]; then
     retry curl -kSL "${openssl_latest_url}" -o "${DOWNLOADS_DIR}/openssl-${openssl_ver}.tar.gz.part"
@@ -172,7 +177,7 @@ prepare_ssl() {
   mkdir -p "/usr/src/openssl-${openssl_ver}/"
   tar zxf "${DOWNLOADS_DIR}/openssl-${openssl_ver}.tar.gz" -C "/usr/src/openssl-${openssl_ver}/" --strip-components 1
   cd "/usr/src/openssl-${openssl_ver}"
-  ./Configure no-tests --openssldir=/etc/ssl
+  ./Configure no-apps no-tests --openssldir=/etc/ssl
   make -j$(nproc)
   make install_sw
   ldconfig
@@ -182,7 +187,7 @@ prepare_qt() {
   # install qt
   QT_DOWNLOAD_URL_BASE="https://download.qt.io"
   if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
-      QT_DOWNLOAD_URL_BASE="https://mirrors.sjtug.sjtu.edu.cn/qt"
+      QT_DOWNLOAD_URL_BASE="https://mirrors.nju.edu.cn/qt"
   fi
   qt_major_ver="$(retry curl -ksSL --compressed "https://download.qt.io/official_releases/qt/" \| sed -nr "'s@.*href=\"([0-9]+(\.[0-9]+)*)/\".*@\1@p'" \| grep \"^${QT_VER_PREFIX}\" \| head -1)"
   qt_ver="$(retry curl -ksSL --compressed "https://download.qt.io/official_releases/qt/${qt_major_ver}/" \| sed -nr "'s@.*href=\"([0-9]+(\.[0-9]+)*)/\".*@\1@p'" \| grep \"^${QT_VER_PREFIX}\" \| head -1)"
@@ -280,7 +285,7 @@ prepare_libtorrent() {
   echo "libtorrent-rasterbar branch: ${LIBTORRENT_BRANCH}"
   libtorrent_git_url="https://github.com/arvidn/libtorrent.git"
   if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
-    libtorrent_git_url="https://gh-proxy.com/${libtorrent_git_url}"
+    libtorrent_git_url="https://gh-proxy.org/${libtorrent_git_url}"
   fi
   if [ ! -d "/usr/src/libtorrent-rasterbar-${LIBTORRENT_BRANCH}/" ]; then
     retry git clone --depth 1 --recursive --shallow-submodules --branch "${LIBTORRENT_BRANCH}" \
@@ -327,7 +332,7 @@ build_appimage() {
   # build AppImage
   linuxdeploy_qt_download_url="https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-${ARCH}.AppImage"
   if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
-    linuxdeploy_qt_download_url="https://gh-proxy.com/${linuxdeploy_qt_download_url}"
+    linuxdeploy_qt_download_url="https://gh-proxy.org/${linuxdeploy_qt_download_url}"
   fi
   [ -x "${DOWNLOADS_DIR}/linuxdeployqt-continuous-${ARCH}.AppImage" ] || retry curl -kSLC- -o "${DOWNLOADS_DIR}/linuxdeployqt-continuous-${ARCH}.AppImage.part" "${linuxdeploy_qt_download_url}"
   if [ ! -x "${DOWNLOADS_DIR}/linuxdeployqt-continuous-${ARCH}.AppImage" ]; then
@@ -486,7 +491,7 @@ EOF
   # Workaround to use the static runtime with the appimage
   appimagetool_download_url="https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-${ARCH}.AppImage"
   if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
-    appimagetool_download_url="https://gh-proxy.com/${appimagetool_download_url}"
+    appimagetool_download_url="https://gh-proxy.org/${appimagetool_download_url}"
   fi
   if [ ! -x "${DOWNLOADS_DIR}/appimagetool-${ARCH}.AppImage" ]; then
     retry curl -kSLC- -o "${DOWNLOADS_DIR}/appimagetool-${ARCH}.AppImage.part" "${appimagetool_download_url}"
