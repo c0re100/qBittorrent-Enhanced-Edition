@@ -330,15 +330,25 @@ build_qbee() {
 
 build_appimage() {
   # build AppImage
-  linuxdeploy_qt_download_url="https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-${ARCH}.AppImage"
-  if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
-    linuxdeploy_qt_download_url="https://gh-proxy.org/${linuxdeploy_qt_download_url}"
-  fi
-  [ -x "${DOWNLOADS_DIR}/linuxdeployqt-continuous-${ARCH}.AppImage" ] || retry curl -kSLC- -o "${DOWNLOADS_DIR}/linuxdeployqt-continuous-${ARCH}.AppImage.part" "${linuxdeploy_qt_download_url}"
-  if [ ! -x "${DOWNLOADS_DIR}/linuxdeployqt-continuous-${ARCH}.AppImage" ]; then
-    mv -fv "${DOWNLOADS_DIR}/linuxdeployqt-continuous-${ARCH}.AppImage.part" "${DOWNLOADS_DIR}/linuxdeployqt-continuous-${ARCH}.AppImage"
-  fi
-  chmod -v +x "${DOWNLOADS_DIR}/linuxdeployqt-continuous-${ARCH}.AppImage"
+  linuxdeploy_tool_urls=(
+    "https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-${ARCH}.AppImage"
+    "https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-${ARCH}.AppImage"
+    "https://github.com/linuxdeploy/linuxdeploy-plugin-appimage/releases/download/continuous/linuxdeploy-plugin-appimage-${ARCH}.AppImage"
+    # fetched into memory by the appimagetool bundled in linuxdeploy-plugin-appimage on every run;
+    # passed to it via LDAI_RUNTIME_FILE below to skip the download
+    "https://github.com/AppImage/type2-runtime/releases/download/continuous/runtime-${ARCH}"
+  )
+  for tool_url in "${linuxdeploy_tool_urls[@]}"; do
+    if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
+      tool_url="https://gh-proxy.org/${tool_url}"
+    fi
+    tool_file="${DOWNLOADS_DIR}/$(basename "${tool_url}")"
+    if [ ! -s "${tool_file}" ]; then
+      retry curl -kSLC- -o "${tool_file}.part" "${tool_url}"
+      mv -fv "${tool_file}.part" "${tool_file}"
+    fi
+    chmod -v +x "${tool_file}"
+  done
   cd "/tmp/qbee"
   ln -svf usr/share/icons/hicolor/scalable/apps/qbittorrent.svg /tmp/qbee/AppDir/
   ln -svf qbittorrent.svg /tmp/qbee/AppDir/.DirIcon
@@ -380,127 +390,45 @@ exec "\${this_dir}/usr/bin/qbittorrent" "\$@"
 EOF
   chmod 755 -v /tmp/qbee/AppDir/AppRun
 
-  extra_plugins=(
-    iconengines
-    imageformats
-    platforminputcontexts
-    platforms
-    platformthemes
-    sqldrivers
-    styles
-    tls
-    wayland-decoration-client
-    wayland-graphics-integration-client
-    wayland-shell-integration
-  )
   exclude_libs=(
-    libatk-1.0.so.0
-    libatk-bridge-2.0.so.0
-    libatspi.so.0
-    libblkid.so.1
-    libboost_filesystem.so.1.58.0
-    libboost_system.so.1.58.0
-    libboost_system.so.1.65.1
-    libbsd.so.0
-    libcairo-gobject.so.2
-    libcairo.so.2
-    libcap.so.2
-    libcapnp-0.5.3.so
-    libcapnp-0.6.1.so
-    libdatrie.so.1
-    libdbus-1.so.3
-    libepoxy.so.0
-    libffi.so.6
-    libgcrypt.so.20
-    libgdk-3.so.0
-    libgdk_pixbuf-2.0.so.0
-    libgdk-x11-2.0.so.0
-    libgio-2.0.so.0
-    libglib-2.0.so.0
-    libgmodule-2.0.so.0
-    libgobject-2.0.so.0
-    libgraphite2.so.3
-    libgtk-3.so.0
-    libgtk-x11-2.0.so.0
-    libkj-0.5.3.so
-    libkj-0.6.1.so
-    liblz4.so.1
-    liblzma.so.5
-    libmirclient.so.9
-    libmircommon.so.7
-    libmircore.so.1
-    libmirprotobuf.so.3
-    libmd.so.0
-    libmount.so.1
-    libpango-1.0.so.0
-    libpangocairo-1.0.so.0
-    libpangoft2-1.0.so.0
-    libpcre2-8.so.0
-    libpcre.so.3
-    libpixman-1.so.0
-    libprotobuf-lite.so.9
-    libselinux.so.1
-    libsystemd.so.0
-    libthai.so.0
-    libwayland-client.so.0
-    libwayland-cursor.so.0
-    libwayland-egl.so.1
-    libwayland-server.so.0
-    libX11-xcb.so.1
-    libXau.so.6
-    libxcb-cursor.so.0
-    libxcb-glx.so.0
-    libxcb-icccm.so.4
-    libxcb-image.so.0
-    libxcb-keysyms.so.1
-    libxcb-randr.so.0
-    libxcb-render.so.0
-    libxcb-render-util.so.0
-    libxcb-shape.so.0
-    libxcb-shm.so.0
-    libxcb-sync.so.1
-    libxcb-util.so.1
-    libxcb-xfixes.so.0
-    libxcb-xkb.so.1
-    libXcomposite.so.1
-    libXcursor.so.1
-    libXdamage.so.1
-    libXdmcp.so.6
-    libXext.so.6
-    libXfixes.so.3
-    libXinerama.so.1
-    libXi.so.6
-    libxkbcommon.so.0
-    libxkbcommon-x11.so.0
-    libXrandr.so.2
-    libXrender.so.1
+    # host desktop/system stacks: never bundle, resolve from the system at runtime.
+    # entries are basename globs (fnmatch) applied by linuxdeploy util::isInExcludelist,
+    # also honored for missing-dependency errors during ldd closure scanning.
+    # quoted: array is defined while cwd=/tmp/qbee, bare globs would pathname-expand
+    'libatk-*.so*' 'libatspi.so*'
+    'libgtk*.so*' 'libgdk*.so*'
+    'libpango*.so*' 'libcairo*.so*' 'libpixman-1.so.*' 'libgraphite2.so.*' 'libdatrie.so.*' 'libthai.so.*'
+    'libglib*.so*' 'libgio*.so*' 'libgobject*.so*' 'libgmodule*.so*'
+    'libX*.so*' 'libxcb*.so*' 'libxkbcommon*.so*'
+    'libwayland-*.so*'
+    'libdbus-1.so.*' 'libepoxy.so.*'
+    'libbsd.so.*' 'libmd.so.*' 'libffi.so.*' 'libcap.so.*'
+    'libblkid.so.*' 'libmount.so.*' 'libselinux.so.*'
+    'libsystemd.so.*' 'libgcrypt.so.*' 'liblz4.so.*' 'liblzma.so.*'
+    'libpcre.so.*' 'libpcre2-8.so.*'
+    # fossils from old build hosts (ubuntu 16.04 boost / mir / capnp), kept as safety net
+    'libboost_*.so*' 'libmir*.so*' 'libcapnp-*.so*' 'libkj-*.so*' 'libprotobuf-lite.so.*'
   )
 
   # fix AppImage output file name, maybe not needed anymore since appimagetool lets you set output file name?
   sed -i 's/Name=qBittorrent.*/Name=qBittorrent-Enhanced-Edition/;/SingleMainWindow/d' /tmp/qbee/AppDir/usr/share/applications/*.desktop
 
   export APPIMAGE_EXTRACT_AND_RUN=1
-  "${DOWNLOADS_DIR}/linuxdeployqt-continuous-${ARCH}.AppImage" \
-    /tmp/qbee/AppDir/usr/share/applications/*.desktop \
-    -always-overwrite \
-    -bundle-non-qt-libs \
-    -no-copy-copyright-files \
-    -extra-plugins="$(join_by ',' "${extra_plugins[@]}")" \
-    -exclude-libs="$(join_by ',' "${exclude_libs[@]}")"
 
-  # Workaround to use the static runtime with the appimage
-  appimagetool_download_url="https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-${ARCH}.AppImage"
-  if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
-    appimagetool_download_url="https://gh-proxy.org/${appimagetool_download_url}"
-  fi
-  if [ ! -x "${DOWNLOADS_DIR}/appimagetool-${ARCH}.AppImage" ]; then
-    retry curl -kSLC- -o "${DOWNLOADS_DIR}/appimagetool-${ARCH}.AppImage.part" "${appimagetool_download_url}"
-    mv -fv "${DOWNLOADS_DIR}/appimagetool-${ARCH}.AppImage.part" "${DOWNLOADS_DIR}/appimagetool-${ARCH}.AppImage"
-  fi
-  chmod -v +x "${DOWNLOADS_DIR}/appimagetool-${ARCH}.AppImage"
-  "${DOWNLOADS_DIR}/appimagetool-${ARCH}.AppImage" --comp zstd --mksquashfs-opt -Xcompression-level --mksquashfs-opt 20 \
-    -u "zsync|https://github.com/${GITHUB_REPOSITORY}/releases/latest/download/qBittorrent-Enhanced-Edition-${ARCH}.AppImage.zsync" \
-    /tmp/qbee/AppDir /tmp/qbee/qBittorrent-Enhanced-Edition-"${ARCH}".AppImage
+  # package as AppImage, embed update information and generate the .zsync file
+  LDAI_UPDATE_INFORMATION="zsync|https://github.com/${GITHUB_REPOSITORY}/releases/latest/download/qBittorrent-Enhanced-Edition-${ARCH}.AppImage.zsync" \
+  LDAI_RUNTIME_FILE="${DOWNLOADS_DIR}/runtime-${ARCH}" \
+  LDAI_OUTPUT="/tmp/qbee/qBittorrent-Enhanced-Edition-${ARCH}.AppImage" \
+  LDAI_NO_APPSTREAM=1 \
+  LINUXDEPLOY_EXCLUDED_LIBRARIES="$(join_by ';' "${exclude_libs[@]}")" \
+  EXTRA_QT_MODULES="svg;waylandcompositor" \
+  DEPLOY_PLATFORM_THEMES=1 \
+  EXTRA_PLATFORM_PLUGINS="libqwayland.so" \
+  DISABLE_COPYRIGHT_FILES_DEPLOYMENT=1 \
+  "${DOWNLOADS_DIR}/linuxdeploy-${ARCH}.AppImage" \
+    --appdir=/tmp/qbee/AppDir \
+    --plugin qt \
+    --output appimage
 }
 
 move_artifacts() {
