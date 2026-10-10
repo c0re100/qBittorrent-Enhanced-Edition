@@ -25,8 +25,8 @@ jobs:
     container: "ubuntu:22.04"
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
-      - uses: actions/cache@v5
+        uses: actions/checkout@v7
+      - uses: actions/cache@v6
         with:
           path: |
             .github/workflows/downloads/
@@ -60,11 +60,11 @@ jobs:
         cross_host:
           # cross toolchain downloads from: https://github.com/cross-tools/musl-cross
           # you need to find the name in **Supported targets**
+          - arm-unknown-linux-musleabi
           - armv7-unknown-linux-musleabihf
           - aarch64-unknown-linux-musl
-          # Remove mips32 series because qt 6.11.0 will build failed
-          # - mips-unknown-linux-musl
-          # - mipsel-unknown-linux-musl
+          - mips-unknown-linux-musl
+          - mipsel-unknown-linux-musl
           - mips64-unknown-linux-musl
           - mips64el-unknown-linux-musl
           - x86_64-unknown-linux-musl
@@ -72,8 +72,8 @@ jobs:
           - loongarch64-unknown-linux-musl
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
-      - uses: actions/cache@v5
+        uses: actions/checkout@v7
+      - uses: actions/cache@v6
         with:
           path: |
             .github/workflows/downloads/
