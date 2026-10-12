@@ -4,29 +4,82 @@
 
 #include <libtorrent/torrent_info.hpp>
 
+#include <QCoreApplication>
 #include <QHostAddress>
+#include <QStringList>
 
+#include "base/logger.h"
 #include "base/net/geoipmanager.h"
 
 #include "peer_filter_plugin.hpp"
 
-// Resolve the peer's country code via GeoIP.
+#if !defined(NDEBUG)
+// Ascertaining a call stack is only useful (and cheap enough to be free) in
+// debug builds, where it is written to the log as raw return addresses. Resolve
+// them against the matching PDB with a symbolizer (cdb, or a DIA-based tool)
+// when reproducing a problem. Release builds compile this out entirely.
+#  if defined(Q_OS_WIN)
+#    include <windows.h> // ::CaptureStackBackTrace
+#  elif defined(Q_OS_UNIX)
+#    include <execinfo.h> // ::backtrace
+#  endif
+
+inline QString callStackToString()
+{
+    constexpr int maxFrames = 32;
+    void *frames[maxFrames] = {};
+    int firstFrame = 0;
+    int count = 0;
+#  if defined(Q_OS_WIN)
+    count = ::CaptureStackBackTrace(1, maxFrames, frames, nullptr);
+#  elif defined(Q_OS_UNIX)
+    count = ::backtrace(frames, maxFrames);
+    firstFrame = 1; // drop backtrace()'s own frame
+#  endif
+
+    QStringList addresses;
+    addresses.reserve(count - firstFrame);
+    for (int i = firstFrame; i < count; ++i)
+        addresses.append(QStringLiteral("0x%1").arg(reinterpret_cast<quintptr>(frames[i]), 16, 16, QLatin1Char('0')));
+    return addresses.join(QStringLiteral(", "));
+}
+#endif
+
+// Resolve a peer's country code via GeoIP.
 //
-// The GeoIPManager singleton is only initialized on the main thread *after*
-// the torrent session finishes restoring (see Application::restored handler,
-// Net::GeoIPManager::initInstance()), while these filters run on libtorrent's
-// thread and can therefore fire before the singleton exists. Guard against a
-// null instance (a null-this dereference in GeoIPManager::lookup crashed the
-// client at startup) and treat the peer as "no country" until it's available,
-// which matches lookup()'s behaviour when geo lookups are disabled.
+// The GeoIPManager singleton is created by the application on the main thread
+// only *after* the torrent session has finished restoring (see the
+// Session::restored handler in Application), while these filters run on
+// libtorrent's thread and can be invoked during that restore. instance() may
+// therefore return nullptr here; dereferencing it used to crash
+// (GeoIPManager::lookup with a null `this`). Report the condition once and
+// treat the peer as having no country, exactly as when geolocation lookups are
+// disabled.
 inline QString lookup_peer_country(const lt::peer_info &info)
 {
-    const Net::GeoIPManager *geoIPManager = Net::GeoIPManager::instance();
-    return geoIPManager ? geoIPManager->lookup(QHostAddress(info.ip.data())) : QString{};
+    if (const Net::GeoIPManager *const geoIPManager = Net::GeoIPManager::instance())
+        return geoIPManager->lookup(QHostAddress(info.ip.data()));
+
+    static bool reported = false;
+    if (!reported)
+    {
+        reported = true;
+        LogMsg(QCoreApplication::translate("peer_blacklist",
+                   "Peer filter ran before the IP geolocation database was "
+                   "initialized; skipping the country check for this peer."),
+               Log::WARNING);
+#if !defined(NDEBUG)
+        LogMsg(QCoreApplication::translate("peer_blacklist", "GeoIP guard call stack: %1")
+                   .arg(callStackToString()),
+               Log::WARNING);
+#endif
+    }
+    return {};
 }
 
+
 // bad peer filter
-bool is_bad_peer(const lt::peer_info& info)
+inline bool is_bad_peer(const lt::peer_info& info)
 {
   static const std::regex id_filter("-(XL|SD|XF|QD|BN|DL|TS|DT|HP)(\\d+)-");
   static const std::regex ua_filter(R"((\d+.\d+.\d+.\d+|cacao_torrent))");
@@ -43,14 +96,14 @@ bool is_bad_peer(const lt::peer_info& info)
 }
 
 // Unknown Peer filter
-bool is_unknown_peer(const lt::peer_info& info)
+inline bool is_unknown_peer(const lt::peer_info& info)
 {
   QString country = lookup_peer_country(info);
   return info.client.find("Unknown") != std::string::npos && country == QLatin1String("CN");
 }
 
 // Offline Downloader filter
-bool is_offline_downloader(const lt::peer_info& info)
+inline bool is_offline_downloader(const lt::peer_info& info)
 {
   static const std::regex id_filter("-LT(1220|2070)-");
   unsigned short port = info.ip.port();
@@ -64,7 +117,7 @@ bool is_offline_downloader(const lt::peer_info& info)
 }
 
 // BitTorrent Media Player Peer filter
-bool is_bittorrent_media_player(const lt::peer_info& info)
+inline bool is_bittorrent_media_player(const lt::peer_info& info)
 {
   if (info.client.find("StellarPlayer") != std::string::npos || info.client.find("Elementum") != std::string::npos) {
     return true;
@@ -75,7 +128,7 @@ bool is_bittorrent_media_player(const lt::peer_info& info)
 
 
 // drop connection action
-void drop_connection(lt::peer_connection_handle ph)
+inline void drop_connection(lt::peer_connection_handle ph)
 {
   ph.disconnect(boost::asio::error::connection_refused, lt::operation_t::bittorrent, lt::disconnect_severity_t{0});
 }
@@ -92,7 +145,7 @@ auto wrap_filter(F filter)
 }
 
 
-std::shared_ptr<lt::torrent_plugin> create_peer_action_plugin(
+inline std::shared_ptr<lt::torrent_plugin> create_peer_action_plugin(
     const lt::torrent_handle& th,
     filter_function filter,
     action_function action)
@@ -107,22 +160,22 @@ std::shared_ptr<lt::torrent_plugin> create_peer_action_plugin(
 
 // plugins factory functions
 
-std::shared_ptr<lt::torrent_plugin> create_drop_bad_peers_plugin(lt::torrent_handle const& th, client_data)
+inline std::shared_ptr<lt::torrent_plugin> create_drop_bad_peers_plugin(lt::torrent_handle const& th, client_data)
 {
   return create_peer_action_plugin(th, wrap_filter(is_bad_peer), drop_connection);
 }
 
-std::shared_ptr<lt::torrent_plugin> create_drop_unknown_peers_plugin(lt::torrent_handle const& th, client_data)
+inline std::shared_ptr<lt::torrent_plugin> create_drop_unknown_peers_plugin(lt::torrent_handle const& th, client_data)
 {
   return create_peer_action_plugin(th, wrap_filter(is_unknown_peer), drop_connection);
 }
 
-std::shared_ptr<lt::torrent_plugin> create_drop_offline_downloader_plugin(lt::torrent_handle const& th, client_data)
+inline std::shared_ptr<lt::torrent_plugin> create_drop_offline_downloader_plugin(lt::torrent_handle const& th, client_data)
 {
   return create_peer_action_plugin(th, wrap_filter(is_offline_downloader), drop_connection);
 }
 
-std::shared_ptr<lt::torrent_plugin> create_drop_bittorrent_media_player_plugin(lt::torrent_handle const& th, client_data)
+inline std::shared_ptr<lt::torrent_plugin> create_drop_bittorrent_media_player_plugin(lt::torrent_handle const& th, client_data)
 {
   return create_peer_action_plugin(th, wrap_filter(is_bittorrent_media_player), drop_connection);
 }

@@ -14,6 +14,7 @@ set(testFiles
     testglobal.cpp
     testorderedset.cpp
     testpath.cpp
+    testpeerfilter.cpp
     testutilsbytearray.cpp
     testutilscompare.cpp
     testutilsdatetime.cpp
