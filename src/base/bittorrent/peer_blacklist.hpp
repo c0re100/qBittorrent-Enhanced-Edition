@@ -10,6 +10,21 @@
 
 #include "peer_filter_plugin.hpp"
 
+// Resolve the peer's country code via GeoIP.
+//
+// The GeoIPManager singleton is only initialized on the main thread *after*
+// the torrent session finishes restoring (see Application::restored handler,
+// Net::GeoIPManager::initInstance()), while these filters run on libtorrent's
+// thread and can therefore fire before the singleton exists. Guard against a
+// null instance (a null-this dereference in GeoIPManager::lookup crashed the
+// client at startup) and treat the peer as "no country" until it's available,
+// which matches lookup()'s behaviour when geo lookups are disabled.
+inline QString lookup_peer_country(const lt::peer_info &info)
+{
+    const Net::GeoIPManager *geoIPManager = Net::GeoIPManager::instance();
+    return geoIPManager ? geoIPManager->lookup(QHostAddress(info.ip.data())) : QString{};
+}
+
 // bad peer filter
 bool is_bad_peer(const lt::peer_info& info)
 {
@@ -19,7 +34,7 @@ bool is_bad_peer(const lt::peer_info& info)
 
   // TODO: trafficConsume by thank243(senis) but it's hard to determine GT0003 is legitimate client or not...
   // Anyway, block dt/torrent and Taipei-torrent with specific case first.
-  QString country = Net::GeoIPManager::instance()->lookup(QHostAddress(info.ip.data()));
+  QString country = lookup_peer_country(info);
   if (country == QLatin1String("CN") && std::regex_match(info.client, consume_filter)) {
       return true;
   }
@@ -30,7 +45,7 @@ bool is_bad_peer(const lt::peer_info& info)
 // Unknown Peer filter
 bool is_unknown_peer(const lt::peer_info& info)
 {
-  QString country = Net::GeoIPManager::instance()->lookup(QHostAddress(info.ip.data()));
+  QString country = lookup_peer_country(info);
   return info.client.find("Unknown") != std::string::npos && country == QLatin1String("CN");
 }
 
@@ -39,7 +54,7 @@ bool is_offline_downloader(const lt::peer_info& info)
 {
   static const std::regex id_filter("-LT(1220|2070)-");
   unsigned short port = info.ip.port();
-  QString country = Net::GeoIPManager::instance()->lookup(QHostAddress(info.ip.data()));
+  QString country = lookup_peer_country(info);
   // 115: Old data, may out of date.
   bool fake_transmission = port >= 65000 && country == QLatin1String("CN") && info.client.find("Transmission") != std::string::npos;
   // PikPak: PikPak is renting Worldstream server and announce as LT1220/LT2070, the best way is block the ip range via ip filter(?)
