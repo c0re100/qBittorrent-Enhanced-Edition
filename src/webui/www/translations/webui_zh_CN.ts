@@ -5289,5 +5289,25 @@ Supports the formats: S01E01, 1x1, 2017.12.31 and 31.12.2017 (Date formats also 
       <source>Group…</source>
       <translation>分组…</translation>
     </message>
+    <message>
+      <source>A group cannot be placed inside itself or its descendants.</source>
+      <translation>不能将分组移入自身或其子组。</translation>
+    </message>
+    <message>
+      <source>A group can have at most 32 levels.</source>
+      <translation>分组最多支持 32 层。</translation>
+    </message>
+    <message>
+      <source>Parent group</source>
+      <translation>上级分组</translation>
+    </message>
+    <message>
+      <source>Top level</source>
+      <translation>顶层（无上级分组）</translation>
+    </message>
+    <message>
+      <source>Dissolving a group moves its torrents and subgroups up one level.</source>
+      <translation>解散本组会将任务和子组移至上一级。</translation>
+    </message>
   </context>
 </TS>

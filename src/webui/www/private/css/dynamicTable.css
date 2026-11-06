@@ -220,7 +220,8 @@ div:has(> div.dynamicTableFixedHeaderDiv):not(.invisible) {
     width: 420px;
 }
 
-.manualGroupsDialog input {
+.manualGroupsDialog input,
+.manualGroupsDialog select {
     display: block;
     margin-top: 8px;
     width: 100%;
@@ -247,4 +248,22 @@ div:has(> div.dynamicTableFixedHeaderDiv):not(.invisible) {
 
 .manualGroupControls button:last-child {
     flex: none;
+}
+
+
+#manualGroupButton {
+    align-items: center;
+    box-sizing: border-box;
+    display: inline-flex;
+    height: 24px;
+    justify-content: center;
+    line-height: normal;
+    margin: 0 10px 0 0;
+    padding: 0 8px;
+    vertical-align: top;
+}
+
+.manualGroupsDialog label {
+    display: block;
+    margin-top: 12px;
 }

@@ -1834,6 +1834,7 @@ window.qBittorrent.DynamicTable ??= (() => {
             });
             const layout = window.qBittorrent.ManualGroups.layout(filteredRows);
             this.groupDisplayRows = layout.display;
+            this.groupRowDepths = layout.depths;
             return layout.selectable;
         }
 
@@ -1859,6 +1860,9 @@ window.qBittorrent.DynamicTable ??= (() => {
                 fullUpdate = true;
             }
             super.updateRow(tr, fullUpdate);
+            const nameIndex = this.columns.findIndex(column => column.name === "name");
+            if (nameIndex !== -1)
+                tr.children[nameIndex].style.paddingInlineStart = `${2 + ((this.groupRowDepths?.get(tr.rowId) ?? 0) * 16)}px`;
         }
 
         setupCommonEvents() {
