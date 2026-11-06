@@ -170,6 +170,8 @@ window.qBittorrent.ManualGroups = (() => {
     };
 
     const edit = async (groupPath = null) => {
+        if (document.getElementById("manualGroupsPage"))
+            return;
         try {
             await refresh();
         }
@@ -183,26 +185,42 @@ window.qBittorrent.ManualGroups = (() => {
             alert("QBT_TR(Select torrents with Ctrl/Shift first.)QBT_TR[CONTEXT=ManualGroups]");
             return;
         }
-        const dialog = document.createElement("dialog");
+        if (document.getElementById("manualGroupsPage"))
+            return;
+        const dialog = document.createElement("div");
         dialog.className = "manualGroupsDialog";
-        const title = document.createElement("h3");
-        title.textContent = groupPath === null ? "QBT_TR(Group selected torrents)QBT_TR[CONTEXT=ManualGroups]" : "QBT_TR(Manage group)QBT_TR[CONTEXT=ManualGroups]";
         const count = document.createElement("p");
-        count.textContent = `${hashes.length} ${"QBT_TR(torrents; files and download states stay unchanged)QBT_TR[CONTEXT=ManualGroups]"}`;
+        count.textContent = "QBT_TR(Selected torrents: %1)QBT_TR[CONTEXT=ManualGroups]".replace("%1", hashes.length);
+        const paths = allPaths();
+        const existingLabel = document.createElement("label");
+        existingLabel.textContent = groupPath === null ? "QBT_TR(Destination group)QBT_TR[CONTEXT=ManualGroups]" : "QBT_TR(Merge into an existing group)QBT_TR[CONTEXT=ManualGroups]";
+        const existingSelect = document.createElement("select");
+        existingSelect.id = "manualGroupDestination";
+        const create = document.createElement("option");
+        create.value = "";
+        create.textContent = groupPath === null ? "QBT_TR(Create new group…)QBT_TR[CONTEXT=ManualGroups]" : "QBT_TR(Do not merge (rename or move))QBT_TR[CONTEXT=ManualGroups]";
+        existingSelect.append(create);
+        for (const path of paths) {
+            const option = document.createElement("option");
+            option.value = keyOf(path);
+            option.textContent = path.join(" / ");
+            option.disabled = (groupPath !== null) && within(path, groupPath);
+            existingSelect.append(option);
+        }
+        if ((groupPath === null) && paths.length) {
+            const current = memberships.get(hashes[0]);
+            existingSelect.value = keyOf(current ?? paths[0]);
+        }
+        existingLabel.append(existingSelect);
+        const fields = document.createElement("div");
+        fields.id = "manualGroupFields";
         const label = document.createElement("label");
-        label.textContent = "QBT_TR(Group name (enter an existing name to join))QBT_TR[CONTEXT=ManualGroups]";
+        label.textContent = "QBT_TR(Group name)QBT_TR[CONTEXT=ManualGroups]";
         const input = document.createElement("input");
+        input.type = "text";
         input.maxLength = 100;
         input.value = groupPath?.at(-1) ?? "";
-        input.setAttribute("list", "manualGroupNames");
         label.append(input);
-        const names = document.createElement("datalist");
-        names.id = "manualGroupNames";
-        for (const name of new Set(allPaths().map(path => path.at(-1)))) {
-            const option = document.createElement("option");
-            option.value = name;
-            names.append(option);
-        }
         const parentLabel = document.createElement("label");
         parentLabel.textContent = "QBT_TR(Parent group)QBT_TR[CONTEXT=ManualGroups]";
         const parentSelect = document.createElement("select");
@@ -211,7 +229,7 @@ window.qBittorrent.ManualGroups = (() => {
         top.value = "[]";
         top.textContent = "QBT_TR(Top level)QBT_TR[CONTEXT=ManualGroups]";
         parentSelect.append(top);
-        for (const path of allPaths()) {
+        for (const path of paths) {
             const option = document.createElement("option");
             option.value = keyOf(path);
             option.textContent = path.join(" / ");
@@ -220,20 +238,43 @@ window.qBittorrent.ManualGroups = (() => {
         }
         parentSelect.value = keyOf(groupPath?.slice(0, -1) ?? []);
         parentLabel.append(parentSelect);
+        fields.append(label, parentLabel);
+        const resizeDialog = () => {
+            const element = document.getElementById("manualGroupsPage");
+            if (!element)
+                return;
+            MochaUI.resizeWindow(element, {
+                width: element.querySelector(".mochaContentWrapper")?.clientWidth,
+                height: window.qBittorrent.Dialog.limitHeightToViewport(dialog.scrollHeight + 30),
+                centered: false
+            });
+            MochaUI.centerWindow(element);
+        };
+        const updateFields = () => {
+            fields.hidden = existingSelect.value !== "";
+            resizeDialog();
+        };
+        existingSelect.addEventListener("change", updateFields);
+        updateFields();
         const hint = document.createElement("p");
         hint.textContent = "QBT_TR(Dissolving a group moves its torrents and subgroups up one level.)QBT_TR[CONTEXT=ManualGroups]";
         const errorText = document.createElement("p");
         errorText.setAttribute("role", "alert");
         const actions = document.createElement("div");
+        actions.className = "manualGroupActions";
         const commit = async (name) => {
+            if (busy)
+                return;
             for (const control of dialog.querySelectorAll("button, input, select"))
                 control.disabled = true;
             try {
-                await save(hashes, name, JSON.parse(parentSelect.value), groupPath);
-                dialog.close();
+                const destination = ((name !== null) && existingSelect.value) ? JSON.parse(existingSelect.value) : null;
+                await save(hashes, destination?.at(-1) ?? name, destination?.slice(0, -1) ?? JSON.parse(parentSelect.value), groupPath);
+                modal.close();
             }
             catch (error) {
                 errorText.textContent = error.message;
+                resizeDialog();
             }
             finally {
                 for (const control of dialog.querySelectorAll("button, input, select"))
@@ -242,21 +283,36 @@ window.qBittorrent.ManualGroups = (() => {
         };
         actions.append(button("QBT_TR(Save group)QBT_TR[CONTEXT=ManualGroups]", () => commit(input.value)),
             button(groupPath === null ? "QBT_TR(Remove from group)QBT_TR[CONTEXT=ManualGroups]" : "QBT_TR(Dissolve group)QBT_TR[CONTEXT=ManualGroups]", () => commit(null)),
-            button("QBT_TR(Cancel)QBT_TR[CONTEXT=ManualGroups]", () => dialog.close()));
-        input.addEventListener("keydown", (event) => {
-            if (event.key === "Enter") {
+            button("QBT_TR(Cancel)QBT_TR[CONTEXT=ManualGroups]", () => modal.close()));
+        dialog.addEventListener("keydown", (event) => {
+            // Form shortcuts must not reach transfer-list actions (e.g. Delete).
+            event.stopPropagation();
+            if ((event.key === "Enter") && (event.target === input)) {
                 event.preventDefault();
                 commit(input.value);
             }
+            else if (event.key === "Escape") {
+                event.preventDefault();
+                modal.close();
+            }
         });
-        dialog.append(title, count, label, names, parentLabel);
+        dialog.append(count, existingLabel, fields);
         if (groupPath)
             dialog.append(hint);
         dialog.append(errorText, actions);
-        dialog.addEventListener("close", () => dialog.remove(), { once: true });
-        document.body.append(dialog);
-        dialog.showModal();
-        input.focus();
+        const modal = new MochaUI.Modal({
+            ...window.qBittorrent.Dialog.baseModalOptions,
+            addClass: "manualGroupsWindow",
+            id: "manualGroupsPage",
+            title: groupPath === null ? "QBT_TR(Group selected torrents)QBT_TR[CONTEXT=ManualGroups]" : "QBT_TR(Manage group)QBT_TR[CONTEXT=ManualGroups]",
+            loadMethod: "html",
+            content: dialog,
+            height: window.qBittorrent.Dialog.limitHeightToViewport(350),
+            onContentLoaded: () => {
+                resizeDialog();
+                (fields.hidden ? existingSelect : input).focus();
+            }
+        });
     };
 
     const render = (tr, row, columns, virtual) => {
@@ -301,7 +357,7 @@ window.qBittorrent.ManualGroups = (() => {
             }
             else if (column.name === "size") { td.textContent = window.qBittorrent.Misc.friendlyUnit(size); }
             else if (column.name === "progress") { td.textContent = size ? `${((completed / size) * 100).toFixed(1)}%` : "—"; }
-            else if (column.name === "status") { td.textContent = `${row.members.length} ${"QBT_TR(matching torrents)QBT_TR[CONTEXT=ManualGroups]"}`; }
+            else if (column.name === "status") { td.textContent = "QBT_TR(Matching torrents: %1)QBT_TR[CONTEXT=ManualGroups]".replace("%1", row.members.length); }
             else if (["dlspeed", "upspeed"].includes(column.name)) { td.textContent = window.qBittorrent.Misc.friendlyUnit(row.members.reduce((sum, member) => sum + (member.full_data[column.name] || 0), 0), true); }
         }
     };

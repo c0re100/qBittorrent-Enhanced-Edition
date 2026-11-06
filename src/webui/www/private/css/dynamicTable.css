@@ -210,25 +210,24 @@ div:has(> div.dynamicTableFixedHeaderDiv):not(.invisible) {
 }
 
 .manualGroupsDialog {
-    background: var(--color-background-default);
-    border: 1px solid var(--color-border-default);
-    border-radius: 6px;
-    color: var(--color-text-default);
-    margin: auto;
-    max-width: 90vw;
-    padding: 20px;
-    width: 420px;
+    box-sizing: border-box;
+    width: 100%;
 }
 
 .manualGroupsDialog input,
 .manualGroupsDialog select {
+    box-sizing: border-box;
     display: block;
     margin-top: 8px;
     width: 100%;
 }
 
-.manualGroupsDialog button {
-    margin-inline-end: 8px;
+.manualGroupActions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-top: 16px;
 }
 
 

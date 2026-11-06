@@ -1,13 +1,13 @@
 # Manual transfer groups
 
-Select torrents with Ctrl/Cmd or Shift, choose **Group…**, and enter a name.
-Choose a parent group to create or join a subgroup; the same name under a
-different parent is a separate group. Entering an existing name under the same
-parent adds the selected torrents to that group. Membership
-does not depend on save paths. **Remove from group** affects the selection;
+Select torrents with Ctrl/Cmd or Shift, choose **Group…**, and select an existing
+destination from the list. Full paths distinguish subgroups with the same name.
+Choose **Create new group…** to enter a new name and select its parent.
+Membership does not depend on save paths. **Remove from group** affects the selection;
 **Manage** on a group header changes its name or parent, moving the whole
 subtree. Choose **Top level** to move it out. A group cannot be moved into itself
-or its descendants. Dissolving removes only that level: direct torrents and
+or its descendants. **Merge into an existing group** selects a merge destination
+without typing its name. Dissolving removes only that level: direct torrents and
 child groups move up to the parent, and deeper structure is retained.
 
 Groups start collapsed and expand independently at each level. Expand a group
@@ -31,19 +31,30 @@ wins. Expansion is local to the page, not shared. Removed torrent keys are not
 automatically pruned, so readding the same torrent restores membership. The
 existing clientdata size limit applies.
 
+The form uses the shared MochaUI modal with its standard title bar, close control,
+theme and viewport limits. It resizes when switching between an existing group
+and a new name. Escape cancels; form shortcuts cannot trigger torrent actions.
+
+All messages use the existing WebUI translation pipeline. Catalogs are included
+for English (including AU/GB), Simplified Chinese, Traditional Chinese (TW/HK),
+Japanese, Korean, German, French, Spanish, Brazilian Portuguese and Russian.
+Missing translations use the normal English fallback. Counts use complete
+messages with `%1`, allowing translations to place the number appropriately.
+
 ## Validation
 
 Run `npm test` in `src/webui/www`. The added tests cover cross-path grouping,
 filtering, sorted expansion, selected-key persistence, failed writes, legacy
 names, multilevel moves, merges, promotion on dissolve, cycle rejection and depth
-limits.
+limits, direct destination selection, modal keyboard handling and translation
+coverage/placeholders.
 
 Browser regression checklist (test with virtual lists both off and on):
 
 1. Select two torrents in different folders, create a named group, expand it.
 2. Select a member, collapse the group, then select all. Hidden members and
    headers must not be selected. Right-clicking a header must not select it.
-3. Add another torrent by entering the same group name. Reload, then open an
+3. Add another torrent by selecting an existing subgroup without typing. Reload, then open an
    independent browser context; membership should remain present.
 4. Filter to a single member, then clear the filter. Counts should follow it.
 5. Rename a group to text containing HTML markup. Render it as plain text.
@@ -57,8 +68,12 @@ Browser regression checklist (test with virtual lists both off and on):
    Verify torrent count, paths, categories and tags remain unchanged.
 10. Confirm the Group button is 24px high and vertically aligned with the
     neighboring toolbar icon (tested center-line difference: 0px).
+11. Switch between existing/new destinations and merge/rename modes. Confirm
+    the native window fits the form, including on narrow screens. Escape and
+    the title-bar close button should cancel without writing memberships.
+12. Check every included locale, plus an untranslated locale's English fallback.
 
-Validated with the 5.2.4.10 backend and a 1,094-torrent session. All 15 unit tests
+Validated with the 5.2.4.10 backend and a 1,094-torrent session. All 18 unit tests
 pass. Chromium automation covers nested groups in normal and virtual lists; the
 initial single-level version also received a Windows 360ChromeX manual UI check.
 The deployed nested WebUI was exercised with real clientdata writes, reload and
@@ -67,8 +82,18 @@ torrent paths, categories and tags. This is functional regression coverage and
 short live observation, not a long-duration soak test. No C++ rebuild is required
 for alternative-WebUI validation.
 
+Browser localization checks cover all 13 included locales and an untranslated
+locale, using each locale's preferences and catalog. The current unrecompiled
+backend predates these messages, so the local deployment adapter supplies only
+this module's translations from the TS catalogs. Standard WebUI messages remain
+under the backend translator; the PR uses QBT_TR and the normal build pipeline.
+
 The screenshots below use synthetic fixture torrents, not a user's library.
 
 ![Collapsed group](collapsed.png)
 
 ![Expanded group](expanded.png)
+
+![Select an existing group](choose-group.png)
+
+![Manage or merge a group](manage.png)

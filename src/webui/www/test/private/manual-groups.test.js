@@ -16,7 +16,28 @@ beforeEach(async () => {
     data = {
         [`qbt_manual_group_${hashA}`]: "Series", [`qbt_manual_group_${hashB}`]: "Series", qbt_unrelated: "keep" };
     failSave = false;
-    window.qBittorrent = { Misc: { friendlyUnit: String } };
+    window.qBittorrent = {
+        Misc: { friendlyUnit: String },
+        Dialog: { baseModalOptions: { addClass: "modalDialog" }, limitHeightToViewport: height => height }
+    };
+    vi.stubGlobal("MochaUI", {
+        resizeWindow: vi.fn(),
+        centerWindow: vi.fn(),
+        Modal: class {
+            constructor(options) {
+                this.element = document.createElement("div");
+                this.element.id = options.id;
+                this.element.className = options.addClass;
+                this.element.append(options.content);
+                document.body.append(this.element);
+                options.onContentLoaded();
+            }
+
+            close() {
+                this.element.remove();
+            }
+        }
+    });
     vi.stubGlobal("fetch", vi.fn((url, options) => {
         if (url.endsWith("load"))
             return Promise.resolve({ ok: true, json: () => Promise.resolve({ ...data }) });
@@ -70,9 +91,11 @@ test("header toggle expands members in their sorted order", () => {
 
 test("saving only changes selected membership keys and preserves unrelated client data", async () => {
     document.getElementById("manualGroupButton").click();
-    await vi.waitFor(() => expect(document.querySelector("dialog")).not.toBeNull());
-    document.querySelector("dialog input").value = "New series";
-    document.querySelector("dialog button").click();
+    await vi.waitFor(() => expect(document.querySelector(".manualGroupsDialog")).not.toBeNull());
+    document.getElementById("manualGroupDestination").value = "";
+    document.getElementById("manualGroupDestination").dispatchEvent(new Event("change"));
+    document.querySelector(".manualGroupsDialog input").value = "New series";
+    document.querySelector(".manualGroupsDialog button").click();
     await vi.waitFor(() => expect(data[`qbt_manual_group_${hashA}`]).toBe("New series"));
     expect(data[`qbt_manual_group_${hashB}`]).toBe("Series");
     expect(data.qbt_unrelated).toBe("keep");
@@ -80,10 +103,12 @@ test("saving only changes selected membership keys and preserves unrelated clien
 
 test("failed writes keep membership and dialog intact", async () => {
     document.getElementById("manualGroupButton").click();
-    await vi.waitFor(() => expect(document.querySelector("dialog")).not.toBeNull());
+    await vi.waitFor(() => expect(document.querySelector(".manualGroupsDialog")).not.toBeNull());
     failSave = true;
-    document.querySelector("dialog input").value = "New series";
-    document.querySelector("dialog button").click();
+    document.getElementById("manualGroupDestination").value = "";
+    document.getElementById("manualGroupDestination").dispatchEvent(new Event("change"));
+    document.querySelector(".manualGroupsDialog input").value = "New series";
+    document.querySelector(".manualGroupsDialog button").click();
     await vi.waitFor(() => expect(document.querySelector('[role="alert"]').textContent).toContain("409"));
     expect(data[`qbt_manual_group_${hashA}`]).toBe("Series");
     expect(groups.layout([row(hashA, "/one")]).display[0].groupName).toBe("Series");
@@ -91,9 +116,9 @@ test("failed writes keep membership and dialog intact", async () => {
 
 const refreshFixture = async () => {
     document.getElementById("manualGroupButton").click();
-    await vi.waitFor(() => expect(document.querySelector("dialog")).not.toBeNull());
-    document.querySelector("dialog").close();
-    await vi.waitFor(() => expect(document.querySelector("dialog")).toBeNull());
+    await vi.waitFor(() => expect(document.querySelector(".manualGroupsDialog")).not.toBeNull());
+    document.querySelectorAll(".manualGroupsDialog button")[2].click();
+    await vi.waitFor(() => expect(document.querySelector(".manualGroupsDialog")).toBeNull());
 };
 
 const renderHeader = (header) => {
@@ -107,19 +132,19 @@ const renderHeader = (header) => {
 const manageRoot = async (rows) => {
     const header = groups.layout(rows).display[0];
     renderHeader(header).querySelectorAll("button")[1].click();
-    await vi.waitFor(() => expect(document.querySelector("dialog")).not.toBeNull());
+    await vi.waitFor(() => expect(document.querySelector(".manualGroupsDialog")).not.toBeNull());
 };
 
 test("moves an existing group under another without changing other memberships", async () => {
     data[`qbt_manual_group_${"c".repeat(40)}`] = "Library";
     await refreshFixture();
     await manageRoot([row(hashA, "/one"), row(hashB, "/two")]);
-    document.querySelector("dialog select").value = JSON.stringify(["Library"]);
-    document.querySelector("dialog button").click();
+    document.querySelector("#manualGroupParent").value = JSON.stringify(["Library"]);
+    document.querySelector(".manualGroupsDialog button").click();
     await vi.waitFor(() => expect(data[`qbt_manual_group_${hashA}`]).toEqual(["Library", "Series"]));
     expect(data[`qbt_manual_group_${hashB}`]).toEqual(["Library", "Series"]);
     expect(data[`qbt_manual_group_${"c".repeat(40)}`]).toBe("Library");
-    await vi.waitFor(() => expect(document.querySelector("dialog")).toBeNull());
+    await vi.waitFor(() => expect(document.querySelector(".manualGroupsDialog")).toBeNull());
     expect(groups.layout([row(hashA, "/one")]).display[0].groupName).toBe("Library");
 });
 
@@ -147,11 +172,11 @@ test("rejects moving a group into itself or a descendant, even if the form is ta
     data[`qbt_manual_group_${hashA}`] = ["Series", "Season"];
     await refreshFixture();
     await manageRoot([row(hashA, "/one"), row(hashB, "/two")]);
-    const option = [...document.querySelector("dialog select").options].find(item => item.value === JSON.stringify(["Series", "Season"]));
+    const option = [...document.querySelector("#manualGroupParent").options].find(item => item.value === JSON.stringify(["Series", "Season"]));
     expect(option.disabled).toBe(true);
     option.disabled = false;
     option.selected = true;
-    document.querySelector("dialog button").click();
+    document.querySelector(".manualGroupsDialog button").click();
     await vi.waitFor(() => expect(document.querySelector('[role="alert"]').textContent).toContain("descendants"));
     expect(data[`qbt_manual_group_${hashA}`]).toEqual(["Series", "Season"]);
     expect(fetch.mock.calls.filter(([url]) => url.endsWith("store"))).toHaveLength(0);
@@ -163,13 +188,13 @@ test("moving a subtree preserves its descendants and dissolving promotes one lev
     await refreshFixture();
     const rows = [row(hashA, "/one"), row(hashB, "/two")];
     await manageRoot(rows);
-    document.querySelector("dialog select").value = JSON.stringify(["Library"]);
-    document.querySelector("dialog button").click();
-    await vi.waitFor(() => expect(document.querySelector("dialog")).toBeNull());
+    document.querySelector("#manualGroupParent").value = JSON.stringify(["Library"]);
+    document.querySelector(".manualGroupsDialog button").click();
+    await vi.waitFor(() => expect(document.querySelector(".manualGroupsDialog")).toBeNull());
     expect(data[`qbt_manual_group_${hashA}`]).toEqual(["Library", "Series", "Season"]);
     await manageRoot(rows);
-    document.querySelectorAll("dialog button")[1].click();
-    await vi.waitFor(() => expect(document.querySelector("dialog")).toBeNull());
+    document.querySelectorAll(".manualGroupsDialog button")[1].click();
+    await vi.waitFor(() => expect(document.querySelector(".manualGroupsDialog")).toBeNull());
     expect(data[`qbt_manual_group_${hashA}`]).toEqual(["Series", "Season"]);
     expect(data[`qbt_manual_group_${hashB}`]).toBe("Series");
     expect(data[`qbt_manual_group_${"c".repeat(40)}`]).toBeUndefined();
@@ -189,11 +214,12 @@ test("moving back to top level and merging preserves descendant groups", async (
     renderHeader(groups.layout(rows).display[0]).querySelector("button").click();
     const child = groups.layout(rows).display.find(item => item.groupName === "Series");
     renderHeader(child).querySelectorAll("button")[1].click();
-    await vi.waitFor(() => expect(document.querySelector("dialog")).not.toBeNull());
-    document.querySelector("dialog select").value = "[]";
-    document.querySelector("dialog input").value = "Target";
-    document.querySelector("dialog button").click();
-    await vi.waitFor(() => expect(document.querySelector("dialog")).toBeNull());
+    await vi.waitFor(() => expect(document.querySelector(".manualGroupsDialog")).not.toBeNull());
+    document.getElementById("manualGroupDestination").value = JSON.stringify(["Target"]);
+    document.getElementById("manualGroupDestination").dispatchEvent(new Event("change"));
+    expect(document.getElementById("manualGroupFields").hidden).toBe(true);
+    document.querySelector(".manualGroupsDialog button").click();
+    await vi.waitFor(() => expect(document.querySelector(".manualGroupsDialog")).toBeNull());
     expect(data[`qbt_manual_group_${hashA}`]).toEqual(["Target", "Season"]);
     expect(data[`qbt_manual_group_${hashB}`]).toBe("Target");
     const filtered = groups.layout([row(hashA, "/one")]);
@@ -205,9 +231,43 @@ test("rejects depth overflow without persisting a partial subtree", async () => 
     data[`qbt_manual_group_${hashB}`] = "Target";
     await refreshFixture();
     await manageRoot([row(hashA, "/one"), row(hashB, "/two")]);
-    document.querySelector("dialog select").value = JSON.stringify(["Target"]);
-    document.querySelector("dialog button").click();
+    document.querySelector("#manualGroupParent").value = JSON.stringify(["Target"]);
+    document.querySelector(".manualGroupsDialog button").click();
     await vi.waitFor(() => expect(document.querySelector('[role="alert"]').textContent).toContain("32"));
     expect(data[`qbt_manual_group_${hashA}`]).toHaveLength(32);
     expect(fetch.mock.calls.filter(([url]) => url.endsWith("store"))).toHaveLength(0);
+});
+
+test("chooses an existing nested destination without typing, distinguishing equal leaf names", async () => {
+    data[`qbt_manual_group_${hashB}`] = ["Library", "Series"];
+    document.getElementById("manualGroupButton").click();
+    await vi.waitFor(() => expect(document.querySelector(".manualGroupsDialog")).not.toBeNull());
+    const select = document.getElementById("manualGroupDestination");
+    expect([...select.options].map(option => option.textContent)).toContain("Library / Series");
+    select.value = JSON.stringify(["Library", "Series"]);
+    select.dispatchEvent(new Event("change"));
+    expect(document.getElementById("manualGroupFields").hidden).toBe(true);
+    document.querySelector(".manualGroupsDialog button").click();
+    await vi.waitFor(() => expect(document.querySelector(".manualGroupsDialog")).toBeNull());
+    expect(data[`qbt_manual_group_${hashA}`]).toEqual(["Library", "Series"]);
+    expect(data[`qbt_manual_group_${hashB}`]).toEqual(["Library", "Series"]);
+});
+
+test("uses the shared modal, contains keyboard shortcuts and closes without saving on Escape", async () => {
+    document.getElementById("manualGroupButton").click();
+    await vi.waitFor(() => expect(document.querySelector(".manualGroupsDialog")).not.toBeNull());
+    expect(document.getElementById("manualGroupsPage").classList.contains("manualGroupsWindow")).toBe(true);
+    const shortcut = vi.fn();
+    document.body.addEventListener("keydown", shortcut);
+    try {
+        const select = document.getElementById("manualGroupDestination");
+        select.dispatchEvent(new KeyboardEvent("keydown", { key: "Delete", bubbles: true }));
+        expect(shortcut).not.toHaveBeenCalled();
+        select.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+        expect(document.querySelector(".manualGroupsDialog")).toBeNull();
+        expect(fetch.mock.calls.filter(([url]) => url.endsWith("store"))).toHaveLength(0);
+    }
+    finally {
+        document.body.removeEventListener("keydown", shortcut);
+    }
 });
