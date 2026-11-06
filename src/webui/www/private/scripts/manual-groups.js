@@ -144,21 +144,24 @@ window.qBittorrent.ManualGroups = (() => {
         const display = [];
         const selectable = [];
         const depths = new Map();
-        const visit = (node, depth) => {
+        const ranges = new Map();
+        const visit = (node, depth, visible) => {
             for (const entry of node.entries) {
-                display.push(entry);
+                const start = selectable.length;
+                if (visible)
+                    display.push(entry);
                 if (entry.groupPath) {
-                    if (expanded.has(entry.groupKey))
-                        visit(entry, depth + 1);
+                    visit(entry, depth + 1, visible && expanded.has(entry.groupKey));
                 }
                 else {
                     selectable.push(entry);
                     depths.set(entry.rowId, depth);
                 }
+                ranges.set(entry.rowId, { start: start, end: selectable.length });
             }
         };
-        visit(root, 0);
-        return { display, selectable, depths };
+        visit(root, 0, true);
+        return { display, selectable, depths, ranges };
     };
 
     const button = (label, fn) => {
@@ -315,6 +318,19 @@ window.qBittorrent.ManualGroups = (() => {
         });
     };
 
+    const updateSelection = (tr, row, selected) => {
+        const count = row.members.filter(member => selected.has(member.rowId)).length;
+        tr.classList.toggle("selected", count === row.members.length);
+        tr.classList.toggle("manualGroupPartialSelection", (count > 0) && (count < row.members.length));
+        tr.setAttribute("aria-selected", String(count > 0));
+        const badge = tr.querySelector(".manualGroupSelectionCount");
+        if (badge) {
+            badge.hidden = count === 0;
+            badge.textContent = `${count}/${row.members.length}`;
+            badge.title = "QBT_TR(Selected torrents: %1)QBT_TR[CONTEXT=ManualGroups]".replace("%1", count);
+        }
+    };
+
     const render = (tr, row, columns, virtual) => {
         tr.dataset.displayOnly = "true";
         tr.classList.add("manualGroupHeader");
@@ -336,7 +352,9 @@ window.qBittorrent.ManualGroups = (() => {
                 if (!controls) {
                     controls = document.createElement("div");
                     controls.className = "manualGroupControls";
-                    controls.append(button("", () => {}), button("", () => {}));
+                    const badge = document.createElement("span");
+                    badge.className = "manualGroupSelectionCount";
+                    controls.append(button("", () => {}), badge, button("", () => {}));
                     td.replaceChildren(controls);
                 }
                 const toggle = controls.children[0];
@@ -352,14 +370,15 @@ window.qBittorrent.ManualGroups = (() => {
                 toggle.setAttribute("aria-expanded", String(expanded.has(row.groupKey)));
                 toggle.title = row.groupPath.join(" / ");
                 controls.style.marginInlineStart = `${row.depth * 16}px`;
-                controls.children[1].textContent = "QBT_TR(Manage)QBT_TR[CONTEXT=ManualGroups]";
-                controls.children[1].onclick = () => edit(row.groupPath);
+                controls.lastElementChild.textContent = "QBT_TR(Manage)QBT_TR[CONTEXT=ManualGroups]";
+                controls.lastElementChild.onclick = () => edit(row.groupPath);
             }
             else if (column.name === "size") { td.textContent = window.qBittorrent.Misc.friendlyUnit(size); }
             else if (column.name === "progress") { td.textContent = size ? `${((completed / size) * 100).toFixed(1)}%` : "—"; }
             else if (column.name === "status") { td.textContent = "QBT_TR(Matching torrents: %1)QBT_TR[CONTEXT=ManualGroups]".replace("%1", row.members.length); }
             else if (["dlspeed", "upspeed"].includes(column.name)) { td.textContent = window.qBittorrent.Misc.friendlyUnit(row.members.reduce((sum, member) => sum + (member.full_data[column.name] || 0), 0), true); }
         }
+        updateSelection(tr, row, new Set(table.selectedRowsIds()));
     };
 
     const init = (torrentTable) => {
@@ -367,14 +386,22 @@ window.qBittorrent.ManualGroups = (() => {
         const control = button("QBT_TR(Group…)QBT_TR[CONTEXT=ManualGroups]", () => edit());
         control.id = "manualGroupButton";
         document.getElementById("preferencesButton").after(control);
-        // Display-only headers must never reach torrent actions or native selection handlers.
+        // Resolve header selections to member hashes before any torrent action.
         for (const type of ["click", "dblclick", "contextmenu", "touchstart", "keydown"]) {
             table.dynamicTableDiv.addEventListener(type, (event) => {
-                if (event.target.closest("tr")?.dataset.displayOnly !== "true")
+                const tr = event.target.closest("tr");
+                if (tr?.dataset.displayOnly !== "true")
                     return;
-                if ((type === "click") && event.target.closest("button")) {
+                const control = event.target.closest("button");
+                const selectGroup = !control || (control.hasAttribute("aria-expanded") && (event.ctrlKey || event.metaKey || event.shiftKey));
+                if ((type === "click") && selectGroup) {
+                    event.preventDefault();
                     event.stopPropagation();
-                    event.target.closest("button").onclick(event);
+                    table.selectRowFromEvent(tr.rowId, event);
+                }
+                else if ((type === "click") && control) {
+                    event.stopPropagation();
+                    control.onclick(event);
                 }
                 else if ((type === "keydown") && ["Enter", " "].includes(event.key) && event.target.closest("button")) {
                     event.preventDefault();
@@ -396,5 +423,5 @@ window.qBittorrent.ManualGroups = (() => {
                 sync();
         }, 10000);
     };
-    return { init, layout, render };
+    return { init, layout, render, updateSelection };
 })();

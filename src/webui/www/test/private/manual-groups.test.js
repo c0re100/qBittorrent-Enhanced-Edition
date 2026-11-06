@@ -69,7 +69,8 @@ test("groups manually selected torrents across paths without adding selectable h
     const layout = groups.layout([row(hashA, "/one"), row(hashB, "/two"), row("c".repeat(40), "/one")]);
     expect(layout.display).toHaveLength(2);
     expect(layout.display[0].members).toHaveLength(2);
-    expect(layout.selectable.map(item => item.rowId)).toEqual(["c".repeat(40)]);
+    expect(layout.selectable.map(item => item.rowId)).toEqual([hashA, hashB, "c".repeat(40)]);
+    expect(layout.ranges.get(layout.display[0].rowId)).toEqual({ start: 0, end: 2 });
 });
 
 test("filtering excludes unmatched members from totals and display", () => {
@@ -159,10 +160,10 @@ test("expands every level separately and counts descendants once", async () => {
     renderHeader(result.display[0]).querySelector("button").click();
     result = groups.layout(rows);
     expect(result.display).toHaveLength(2);
-    expect(result.selectable).toHaveLength(0);
+    expect(result.selectable.map(item => item.rowId)).toEqual([hashA, hashB]);
     renderHeader(result.display[1]).querySelector("button").click();
     result = groups.layout(rows);
-    expect(result.selectable.map(item => item.rowId)).toEqual([hashB]);
+    expect(result.selectable.map(item => item.rowId)).toEqual([hashA, hashB]);
     expect(result.depths.get(hashB)).toBe(2);
     renderHeader(result.display[2]).querySelector("button").click();
     expect(groups.layout(rows).depths.get(hashA)).toBe(3);

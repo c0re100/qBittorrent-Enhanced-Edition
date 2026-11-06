@@ -249,6 +249,19 @@ div:has(> div.dynamicTableFixedHeaderDiv):not(.invisible) {
     flex: none;
 }
 
+.manualGroupSelectionCount {
+    align-self: center;
+    border: 1px solid currentcolor;
+    border-radius: 3px;
+    font-size: 0.85em;
+    margin-inline: 4px;
+    padding-inline: 4px;
+}
+
+.manualGroupPartialSelection {
+    box-shadow: inset 3px 0 currentcolor;
+}
+
 
 #manualGroupButton {
     align-items: center;
