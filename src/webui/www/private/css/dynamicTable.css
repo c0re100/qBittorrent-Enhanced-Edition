@@ -193,3 +193,58 @@ div:has(> div.dynamicTableFixedHeaderDiv):not(.invisible) {
         color: var(--color-tracker-not-working);
     }
 }
+
+
+.manualGroupHeader {
+    background: var(--color-background-default);
+    font-weight: bold;
+}
+
+.manualGroupHeader button {
+    background: transparent;
+    border: 0;
+    color: inherit;
+    cursor: pointer;
+    font: inherit;
+    padding: 0 4px;
+}
+
+.manualGroupsDialog {
+    background: var(--color-background-default);
+    border: 1px solid var(--color-border-default);
+    border-radius: 6px;
+    color: var(--color-text-default);
+    margin: auto;
+    max-width: 90vw;
+    padding: 20px;
+    width: 420px;
+}
+
+.manualGroupsDialog input {
+    display: block;
+    margin-top: 8px;
+    width: 100%;
+}
+
+.manualGroupsDialog button {
+    margin-inline-end: 8px;
+}
+
+
+.manualGroupControls {
+    display: flex;
+    max-width: 100%;
+}
+
+.manualGroupControls button:first-child {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-align: start;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.manualGroupControls button:last-child {
+    flex: none;
+}

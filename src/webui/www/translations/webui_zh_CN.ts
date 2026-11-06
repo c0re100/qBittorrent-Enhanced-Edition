@@ -5223,4 +5223,71 @@ Supports the formats: S01E01, 1x1, 2017.12.31 and 31.12.2017 (Date formats also 
         <translation>重置该 API key 吗？当前 key 会立即停止工作，会生成新 key。</translation>
     </message>
 </context>
+  <context>
+    <name>ManualGroups</name>
+    <message>
+      <source>Unable to save/load groups</source>
+      <translation>无法保存或读取分组</translation>
+    </message>
+    <message>
+      <source>Groups are not ready. Please retry.</source>
+      <translation>分组尚未就绪，请重试。</translation>
+    </message>
+    <message>
+      <source>Use a group name of 1–100 characters.</source>
+      <translation>分组名须为 1–100 个字符。</translation>
+    </message>
+    <message>
+      <source>Select torrents first.</source>
+      <translation>请先选择任务。</translation>
+    </message>
+    <message>
+      <source>Select torrents with Ctrl/Shift first.</source>
+      <translation>请先用 Ctrl / Shift 选择需要分组的任务。</translation>
+    </message>
+    <message>
+      <source>Group selected torrents</source>
+      <translation>将所选任务分组</translation>
+    </message>
+    <message>
+      <source>Manage group</source>
+      <translation>管理分组</translation>
+    </message>
+    <message>
+      <source>torrents; files and download states stay unchanged</source>
+      <translation>个任务；分组不改变文件位置和下载状态</translation>
+    </message>
+    <message>
+      <source>Group name (enter an existing name to join)</source>
+      <translation>分组名称（输入已有名称可加入该组）</translation>
+    </message>
+    <message>
+      <source>Save group</source>
+      <translation>保存分组</translation>
+    </message>
+    <message>
+      <source>Remove from group</source>
+      <translation>移出分组</translation>
+    </message>
+    <message>
+      <source>Dissolve group</source>
+      <translation>解散分组</translation>
+    </message>
+    <message>
+      <source>Cancel</source>
+      <translation>取消</translation>
+    </message>
+    <message>
+      <source>Manage</source>
+      <translation>管理</translation>
+    </message>
+    <message>
+      <source>matching torrents</source>
+      <translation>个匹配任务</translation>
+    </message>
+    <message>
+      <source>Group…</source>
+      <translation>分组…</translation>
+    </message>
+  </context>
 </TS>

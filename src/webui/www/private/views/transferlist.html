@@ -109,6 +109,7 @@
 
         const setup = () => {
             torrentsTable.setup("torrentsTableDiv", "torrentsTableFixedHeaderDiv", contextMenu, true);
+            window.qBittorrent.ManualGroups.init(torrentsTable);
         };
 
         return exports();
