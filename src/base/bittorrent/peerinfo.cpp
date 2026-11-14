@@ -65,7 +65,13 @@ bool PeerInfo::fromLSD() const
 QString PeerInfo::country() const
 {
     if (m_country.isEmpty())
-        m_country = Net::GeoIPManager::instance()->lookup(address().ip);
+    {
+        // The GeoIPManager is instantiated late, on the main thread and only
+        // after the session has been restored. Leave the country unset in that
+        // window (it will be retried) instead of dereferencing a null pointer.
+        if (const Net::GeoIPManager *const geoIPManager = Net::GeoIPManager::instance())
+            m_country = geoIPManager->lookup(address().ip);
+    }
     return m_country;
 }
 
