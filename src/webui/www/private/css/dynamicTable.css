@@ -193,3 +193,89 @@ div:has(> div.dynamicTableFixedHeaderDiv):not(.invisible) {
         color: var(--color-tracker-not-working);
     }
 }
+
+
+.manualGroupHeader {
+    background: var(--color-background-default);
+    font-weight: bold;
+}
+
+.manualGroupHeader button {
+    background: transparent;
+    border: 0;
+    color: inherit;
+    cursor: pointer;
+    font: inherit;
+    padding: 0 4px;
+}
+
+.manualGroupsDialog {
+    box-sizing: border-box;
+    width: 100%;
+}
+
+.manualGroupsDialog input,
+.manualGroupsDialog select {
+    box-sizing: border-box;
+    display: block;
+    margin-top: 8px;
+    width: 100%;
+}
+
+.manualGroupActions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-top: 16px;
+}
+
+
+.manualGroupControls {
+    display: flex;
+    max-width: 100%;
+}
+
+.manualGroupControls button:first-child {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-align: start;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.manualGroupControls button:last-child {
+    flex: none;
+}
+
+.manualGroupSelectionCount {
+    align-self: center;
+    border: 1px solid currentcolor;
+    border-radius: 3px;
+    font-size: 0.85em;
+    margin-inline: 4px;
+    padding-inline: 4px;
+}
+
+.manualGroupPartialSelection {
+    box-shadow: inset 3px 0 currentcolor;
+}
+
+
+#manualGroupButton {
+    align-items: center;
+    box-sizing: border-box;
+    display: inline-flex;
+    height: 24px;
+    justify-content: center;
+    line-height: normal;
+    margin: 0 10px 0 0;
+    padding: 0 8px;
+    vertical-align: top;
+}
+
+.manualGroupsDialog label {
+    display: block;
+    margin-top: 12px;
+}

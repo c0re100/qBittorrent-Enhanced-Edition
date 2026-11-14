@@ -5228,4 +5228,107 @@ Supports the formats: S01E01, 1x1, 2017.12.31 and 31.12.2017 (Date formats also 
         <translation>要輪替此 API 金鑰嗎？目前的金鑰會立刻停止運作，並會產生新的金鑰。</translation>
     </message>
 </context>
+<context>
+    <name>ManualGroups</name>
+    <message>
+        <source>Unable to save/load groups</source>
+        <translation>無法儲存或讀取群組</translation>
+    </message>
+    <message>
+        <source>Groups are not ready. Please retry.</source>
+        <translation>群組尚未就緒，請重試。</translation>
+    </message>
+    <message>
+        <source>Use a group name of 1–100 characters.</source>
+        <translation>群組名稱須為 1–100 個字元。</translation>
+    </message>
+    <message>
+        <source>A group cannot be placed inside itself or its descendants.</source>
+        <translation>無法將群組移入自身或其子群組。</translation>
+    </message>
+    <message>
+        <source>Select torrents first.</source>
+        <translation>請先選取種子。</translation>
+    </message>
+    <message>
+        <source>A group can have at most 32 levels.</source>
+        <translation>群組最多支援 32 層。</translation>
+    </message>
+    <message>
+        <source>Select torrents with Ctrl/Shift first.</source>
+        <translation>請先用 Ctrl / Shift 選取種子。</translation>
+    </message>
+    <message>
+        <source>Selected torrents: %1</source>
+        <translation>已選種子：%1</translation>
+    </message>
+    <message>
+        <source>Destination group</source>
+        <translation>目標群組</translation>
+    </message>
+    <message>
+        <source>Merge into an existing group</source>
+        <translation>合併至現有群組</translation>
+    </message>
+    <message>
+        <source>Create new group…</source>
+        <translation>建立群組…</translation>
+    </message>
+    <message>
+        <source>Do not merge (rename or move)</source>
+        <translation>不合併（重新命名或移動）</translation>
+    </message>
+    <message>
+        <source>Group name</source>
+        <translation>群組名稱</translation>
+    </message>
+    <message>
+        <source>Parent group</source>
+        <translation>上層群組</translation>
+    </message>
+    <message>
+        <source>Top level</source>
+        <translation>最上層（無上層群組）</translation>
+    </message>
+    <message>
+        <source>Dissolving a group moves its torrents and subgroups up one level.</source>
+        <translation>解散群組會將種子和子群組移至上一層。</translation>
+    </message>
+    <message>
+        <source>Save group</source>
+        <translation>儲存群組</translation>
+    </message>
+    <message>
+        <source>Remove from group</source>
+        <translation>移出群組</translation>
+    </message>
+    <message>
+        <source>Dissolve group</source>
+        <translation>解散群組</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+    <message>
+        <source>Group selected torrents</source>
+        <translation>將所選種子分組</translation>
+    </message>
+    <message>
+        <source>Manage group</source>
+        <translation>管理群組</translation>
+    </message>
+    <message>
+        <source>Manage</source>
+        <translation>管理</translation>
+    </message>
+    <message>
+        <source>Matching torrents: %1</source>
+        <translation>符合條件的種子：%1</translation>
+    </message>
+    <message>
+        <source>Group…</source>
+        <translation>分組…</translation>
+    </message>
+</context>
 </TS>

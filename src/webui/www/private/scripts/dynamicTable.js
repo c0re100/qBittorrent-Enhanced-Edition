@@ -131,34 +131,19 @@ window.qBittorrent.DynamicTable ??= (() => {
 
             this.dynamicTableDiv.addEventListener("click", (e) => {
                 const tr = e.target.closest("tr");
-                if (!tr) {
+                if (!tr || (tr.dataset.displayOnly === "true")) {
                     // clicking on the table body deselects all rows
                     this.deselectAll();
                     this.setRowClass();
                     return;
                 }
 
-                if (e.ctrlKey || e.metaKey) {
-                    // CTRL/CMD ⌘ key was pressed
-                    if (this.isRowSelected(tr.rowId))
-                        this.deselectRow(tr.rowId);
-                    else
-                        this.selectRow(tr.rowId);
-                }
-                else if (e.shiftKey && (this.selectedRows.length === 1)) {
-                    // Shift key was pressed
-                    this.selectRows(this.getSelectedRowId(), tr.rowId);
-                }
-                else {
-                    // Simple selection
-                    this.deselectAll();
-                    this.selectRow(tr.rowId);
-                }
+                this.selectRowFromEvent(tr.rowId, e);
             });
 
             this.dynamicTableDiv.addEventListener("contextmenu", (e) => {
                 const tr = e.target.closest("tr");
-                if (!tr)
+                if (!tr || (tr.dataset.displayOnly === "true"))
                     return;
 
                 if (!this.isRowSelected(tr.rowId)) {
@@ -169,7 +154,7 @@ window.qBittorrent.DynamicTable ??= (() => {
 
             this.dynamicTableDiv.addEventListener("touchstart", (e) => {
                 const tr = e.target.closest("tr");
-                if (!tr)
+                if (!tr || (tr.dataset.displayOnly === "true"))
                     return;
 
                 if (!this.isRowSelected(tr.rowId)) {
@@ -180,20 +165,20 @@ window.qBittorrent.DynamicTable ??= (() => {
 
             this.dynamicTableDiv.addEventListener("keydown", (e) => {
                 const tr = e.target.closest("tr");
-                if (!tr)
+                if (!tr || (tr.dataset.displayOnly === "true"))
                     return;
 
                 switch (e.key) {
                     case "ArrowUp":
                         e.preventDefault();
                         this.selectPreviousRow();
-                        this.dynamicTableDiv.querySelector(".selected").scrollIntoView({ block: "nearest" });
+                        this.dynamicTableDiv.querySelector(".selected")?.scrollIntoView({ block: "nearest" });
                         break;
 
                     case "ArrowDown":
                         e.preventDefault();
                         this.selectNextRow();
-                        this.dynamicTableDiv.querySelector(".selected").scrollIntoView({ block: "nearest" });
+                        this.dynamicTableDiv.querySelector(".selected")?.scrollIntoView({ block: "nearest" });
                         break;
                 }
             });
@@ -321,7 +306,7 @@ window.qBittorrent.DynamicTable ??= (() => {
                     this.loadColumnsOrder();
                     this.updateTableHeaders();
                     for (const tr of this.cachedElements) {
-                        if (!tr)
+                        if (!tr || (tr.dataset.displayOnly === "true"))
                             continue;
                         const tds = [...tr.children];
                         tr.replaceChildren(...this.columns.map(col => tds[oldIndexByName.get(col.name)]));
@@ -749,6 +734,22 @@ window.qBittorrent.DynamicTable ??= (() => {
             return this.selectedRows.contains(rowId);
         }
 
+        selectRowFromEvent(rowId, event) {
+            if (event.ctrlKey || event.metaKey) {
+                if (this.isRowSelected(rowId))
+                    this.deselectRow(rowId);
+                else
+                    this.selectRow(rowId);
+            }
+            else if (event.shiftKey && (this.selectedRows.length === 1)) {
+                this.selectRows(this.getSelectedRowId(), rowId);
+            }
+            else {
+                this.deselectAll();
+                this.selectRow(rowId);
+            }
+        }
+
         setupAltRow() {
             const useAltRowColors = (clientData.get("use_alt_row_colors") ?? true) === true;
             if (useAltRowColors)
@@ -894,9 +895,13 @@ window.qBittorrent.DynamicTable ??= (() => {
             return Array.prototype.find.call(this.getTrs(), (tr => tr.rowId === rowId));
         }
 
+        getDisplayRows() {
+            return this.getFilteredAndSortedRows();
+        }
+
         updateTable(fullUpdate = false) {
-            const rows = this.getFilteredAndSortedRows();
-            const rowIds = new Set(rows.map(row => row.rowId));
+            const rows = this.getDisplayRows();
+            const rowIds = new Set(this.getFilteredAndSortedRows().map(row => row.rowId));
             for (let i = 0; i < this.selectedRows.length; ++i) {
                 if (!rowIds.has(this.selectedRows[i])) {
                     this.selectedRows.splice(i, 1);
@@ -958,7 +963,7 @@ window.qBittorrent.DynamicTable ??= (() => {
             }
         }
 
-        rerender(rows = this.getFilteredAndSortedRows()) {
+        rerender(rows = this.getDisplayRows()) {
             // set the scrollable height
             const tableHeight = rows.length * this.rowHeight;
             if (tableHeight !== this.previousTableHeight) {
@@ -995,7 +1000,10 @@ window.qBittorrent.DynamicTable ??= (() => {
                 elements.push(element);
             }
             const hadFocus = this.dynamicTableDiv.contains(document.activeElement);
-            this.tableBody.replaceChildren(...elements);
+            // Keep focused header controls attached when the virtual window is unchanged.
+            if ((elements.length !== this.tableBody.children.length)
+                || elements.some((element, index) => element !== this.tableBody.children[index]))
+                this.tableBody.replaceChildren(...elements);
 
             // update row classes
             this.setRowClass();
@@ -1108,7 +1116,7 @@ window.qBittorrent.DynamicTable ??= (() => {
         }
 
         selectNextRow() {
-            const visibleRows = Array.prototype.filter.call(this.getTrs(), (tr => !tr.classList.contains("invisible") && (tr.style.display !== "none")));
+            const visibleRows = Array.prototype.filter.call(this.getTrs(), (tr => !tr.classList.contains("invisible") && (tr.style.display !== "none") && (tr.dataset.displayOnly !== "true")));
             const selectedRowId = this.getSelectedRowId();
 
             const selectedIndex = visibleRows.findIndex(row => (row.getAttribute("data-row-id") === selectedRowId));
@@ -1123,7 +1131,7 @@ window.qBittorrent.DynamicTable ??= (() => {
         }
 
         selectPreviousRow() {
-            const visibleRows = Array.prototype.filter.call(this.getTrs(), (tr => !tr.classList.contains("invisible") && (tr.style.display !== "none")));
+            const visibleRows = Array.prototype.filter.call(this.getTrs(), (tr => !tr.classList.contains("invisible") && (tr.style.display !== "none") && (tr.dataset.displayOnly !== "true")));
             const selectedRowId = this.getSelectedRowId();
 
             const selectedIndex = visibleRows.findIndex(row => (row.getAttribute("data-row-id") === selectedRowId));
@@ -1139,6 +1147,76 @@ window.qBittorrent.DynamicTable ??= (() => {
     }
 
     class TorrentsTable extends DynamicTable {
+        selectRowFromEvent(rowId, event) {
+            const rows = this.getFilteredAndSortedRows();
+            const range = this.groupSelectionRanges.get(rowId);
+            if (!range)
+                return;
+            const anchor = this.selectionAnchor ?? this.getSelectedRowId();
+            if (event.shiftKey && this.groupSelectionRanges.has(anchor)) {
+                this.selectRows(anchor, rowId, event.ctrlKey || event.metaKey);
+                return;
+            }
+            const hashes = rows.slice(range.start, range.end).map(row => row.rowId);
+            if (event.ctrlKey || event.metaKey) {
+                const selected = new Set(this.selectedRows);
+                const remove = hashes.every(hash => selected.has(hash));
+                for (const hash of hashes) {
+                    if (remove)
+                        selected.delete(hash);
+                    else
+                        selected.add(hash);
+                }
+                this.selectedRows = [...selected];
+            }
+            else {
+                this.selectedRows = hashes;
+            }
+            this.selectionAnchor = rowId;
+            this.setRowClass();
+            this.onSelectedRowChanged();
+        }
+
+        selectRows(rowId1, rowId2, additive = false) {
+            const rows = this.getFilteredAndSortedRows();
+            const first = this.groupSelectionRanges.get(rowId1);
+            const last = this.groupSelectionRanges.get(rowId2);
+            if (!first || !last)
+                return;
+            // Include collapsed descendants and group endpoints in visual order.
+            const hashes = rows.slice(Math.min(first.start, last.start), Math.max(first.end, last.end)).map(row => row.rowId);
+            this.selectedRows = additive ? [...new Set([...this.selectedRows, ...hashes])] : hashes;
+            this.selectionAnchor = rowId1;
+            this.setRowClass();
+            this.onSelectedRowChanged();
+        }
+
+        selectRow(rowId) {
+            this.selectionAnchor = rowId;
+            super.selectRow(rowId);
+        }
+
+        deselectAll() {
+            this.selectionAnchor = null;
+            super.deselectAll();
+        }
+
+        selectAll() {
+            super.selectAll();
+            this.onSelectedRowChanged();
+        }
+
+        setRowClass() {
+            super.setRowClass();
+            const selected = new Set(this.selectedRows);
+            const groups = new Map(this.groupDisplayRows?.filter(row => row.groupPath).map(row => [row.rowId, row]));
+            for (const tr of this.getTrs()) {
+                const group = groups.get(tr.rowId);
+                if (group)
+                    window.qBittorrent.ManualGroups.updateSelection(tr, group, selected);
+            }
+        }
+
         setupVirtualList() {
             super.setupVirtualList();
             this.rowHeight = (clientData.get("display_density") === "compact") ? 18 : 22;
@@ -1798,6 +1876,8 @@ window.qBittorrent.DynamicTable ??= (() => {
 
         getFilteredAndSortedRows() {
             const filteredRows = [];
+            this.groupDisplayRows = [];
+            this.groupSelectionRanges = new Map();
 
             const useRegex = document.getElementById("torrentsFilterRegexBox").checked;
             const filterText = document.getElementById("torrentsFilterInput").value.trim().toLowerCase();
@@ -1824,14 +1904,47 @@ window.qBittorrent.DynamicTable ??= (() => {
                 const result = column.compareRows(row1, row2);
                 return isReverseSort ? result : -result;
             });
-            return filteredRows;
+            const layout = window.qBittorrent.ManualGroups.layout(filteredRows);
+            this.groupDisplayRows = layout.display;
+            this.groupRowDepths = layout.depths;
+            this.groupSelectionRanges = layout.ranges;
+            return layout.selectable;
+        }
+
+        getDisplayRows() {
+            this.getFilteredAndSortedRows();
+            return this.groupDisplayRows ?? [];
+        }
+
+        updateRow(tr, fullUpdate) {
+            const group = this.groupDisplayRows?.find(row => (row.rowId === tr.rowId) && row.groupName);
+            if (group) {
+                window.qBittorrent.ManualGroups.render(tr, group, this.columns, this.useVirtualList);
+                return;
+            }
+            // Virtual scrolling can reuse a former header for a torrent.
+            if (tr.dataset.displayOnly === "true") {
+                delete tr.dataset.displayOnly;
+                tr.classList.remove("manualGroupHeader", "manualGroupPartialSelection");
+                tr.removeAttribute("aria-selected");
+                for (const [index, td] of [...tr.children].entries()) {
+                    td.replaceChildren();
+                    td.className = ((this.columns[index].visible === "0") || this.columns[index].force_hide) ? "invisible" : "";
+                }
+                fullUpdate = true;
+            }
+            super.updateRow(tr, fullUpdate);
+            tr.classList.toggle("selected", this.isRowSelected(tr.rowId));
+            const nameIndex = this.columns.findIndex(column => column.name === "name");
+            if (nameIndex !== -1)
+                tr.children[nameIndex].style.paddingInlineStart = `${2 + ((this.groupRowDepths?.get(tr.rowId) ?? 0) * 16)}px`;
         }
 
         setupCommonEvents() {
             super.setupCommonEvents();
             this.dynamicTableDiv.addEventListener("dblclick", (e) => {
                 const tr = e.target.closest("tr");
-                if (!tr)
+                if (!tr || (tr.dataset.displayOnly === "true"))
                     return;
 
                 this.deselectAll();

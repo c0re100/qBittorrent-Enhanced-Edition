@@ -5227,4 +5227,107 @@ Supports the formats: S01E01, 1x1, 2017.12.31 and 31.12.2017 (Date formats also 
         <translation>API 키를 변경하시겠습니까? 현재 키는 즉시 작동을 멈추고 새 키가 생성됩니다.</translation>
     </message>
 </context>
+<context>
+    <name>ManualGroups</name>
+    <message>
+        <source>Unable to save/load groups</source>
+        <translation>그룹을 저장하거나 불러올 수 없습니다</translation>
+    </message>
+    <message>
+        <source>Groups are not ready. Please retry.</source>
+        <translation>그룹이 아직 준비되지 않았습니다. 다시 시도하세요.</translation>
+    </message>
+    <message>
+        <source>Use a group name of 1–100 characters.</source>
+        <translation>그룹 이름은 1–100자로 입력하세요.</translation>
+    </message>
+    <message>
+        <source>A group cannot be placed inside itself or its descendants.</source>
+        <translation>그룹을 자기 자신이나 하위 그룹 안으로 이동할 수 없습니다.</translation>
+    </message>
+    <message>
+        <source>Select torrents first.</source>
+        <translation>먼저 토렌트를 선택하세요.</translation>
+    </message>
+    <message>
+        <source>A group can have at most 32 levels.</source>
+        <translation>그룹은 최대 32단계까지 지원합니다.</translation>
+    </message>
+    <message>
+        <source>Select torrents with Ctrl/Shift first.</source>
+        <translation>먼저 Ctrl / Shift로 토렌트를 선택하세요.</translation>
+    </message>
+    <message>
+        <source>Selected torrents: %1</source>
+        <translation>선택한 토렌트: %1</translation>
+    </message>
+    <message>
+        <source>Destination group</source>
+        <translation>대상 그룹</translation>
+    </message>
+    <message>
+        <source>Merge into an existing group</source>
+        <translation>기존 그룹에 병합</translation>
+    </message>
+    <message>
+        <source>Create new group…</source>
+        <translation>새 그룹 만들기…</translation>
+    </message>
+    <message>
+        <source>Do not merge (rename or move)</source>
+        <translation>병합하지 않음 (이름 변경 또는 이동)</translation>
+    </message>
+    <message>
+        <source>Group name</source>
+        <translation>그룹 이름</translation>
+    </message>
+    <message>
+        <source>Parent group</source>
+        <translation>상위 그룹</translation>
+    </message>
+    <message>
+        <source>Top level</source>
+        <translation>최상위 (상위 그룹 없음)</translation>
+    </message>
+    <message>
+        <source>Dissolving a group moves its torrents and subgroups up one level.</source>
+        <translation>그룹을 해제하면 토렌트와 하위 그룹이 한 단계 위로 이동합니다.</translation>
+    </message>
+    <message>
+        <source>Save group</source>
+        <translation>그룹 저장</translation>
+    </message>
+    <message>
+        <source>Remove from group</source>
+        <translation>그룹에서 제거</translation>
+    </message>
+    <message>
+        <source>Dissolve group</source>
+        <translation>그룹 해제</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>취소</translation>
+    </message>
+    <message>
+        <source>Group selected torrents</source>
+        <translation>선택한 토렌트 그룹화</translation>
+    </message>
+    <message>
+        <source>Manage group</source>
+        <translation>그룹 관리</translation>
+    </message>
+    <message>
+        <source>Manage</source>
+        <translation>관리</translation>
+    </message>
+    <message>
+        <source>Matching torrents: %1</source>
+        <translation>일치하는 토렌트: %1</translation>
+    </message>
+    <message>
+        <source>Group…</source>
+        <translation>그룹화…</translation>
+    </message>
+</context>
 </TS>

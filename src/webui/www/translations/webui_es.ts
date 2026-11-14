@@ -5228,4 +5228,107 @@ Admite los formatos: S01E01, 1x1, 2017.12.31 y 31.12.2017 (los formatos de fecha
         <translation>¿Desea cambiar esta clave API? La clave actual dejará de funcionar inmediatamente y se generará una nueva.</translation>
     </message>
 </context>
+<context>
+    <name>ManualGroups</name>
+    <message>
+        <source>Unable to save/load groups</source>
+        <translation>No se pueden guardar o cargar los grupos</translation>
+    </message>
+    <message>
+        <source>Groups are not ready. Please retry.</source>
+        <translation>Los grupos aún no están listos. Inténtelo de nuevo.</translation>
+    </message>
+    <message>
+        <source>Use a group name of 1–100 characters.</source>
+        <translation>El nombre del grupo debe tener entre 1 y 100 caracteres.</translation>
+    </message>
+    <message>
+        <source>A group cannot be placed inside itself or its descendants.</source>
+        <translation>No se puede mover un grupo dentro de sí mismo ni de sus subgrupos.</translation>
+    </message>
+    <message>
+        <source>Select torrents first.</source>
+        <translation>Seleccione primero los torrents.</translation>
+    </message>
+    <message>
+        <source>A group can have at most 32 levels.</source>
+        <translation>Los grupos pueden tener un máximo de 32 niveles.</translation>
+    </message>
+    <message>
+        <source>Select torrents with Ctrl/Shift first.</source>
+        <translation>Seleccione primero los torrents con Ctrl / Mayús.</translation>
+    </message>
+    <message>
+        <source>Selected torrents: %1</source>
+        <translation>Torrents seleccionados: %1</translation>
+    </message>
+    <message>
+        <source>Destination group</source>
+        <translation>Grupo de destino</translation>
+    </message>
+    <message>
+        <source>Merge into an existing group</source>
+        <translation>Combinar con un grupo existente</translation>
+    </message>
+    <message>
+        <source>Create new group…</source>
+        <translation>Crear grupo…</translation>
+    </message>
+    <message>
+        <source>Do not merge (rename or move)</source>
+        <translation>No combinar (renombrar o mover)</translation>
+    </message>
+    <message>
+        <source>Group name</source>
+        <translation>Nombre del grupo</translation>
+    </message>
+    <message>
+        <source>Parent group</source>
+        <translation>Grupo superior</translation>
+    </message>
+    <message>
+        <source>Top level</source>
+        <translation>Nivel superior (sin grupo superior)</translation>
+    </message>
+    <message>
+        <source>Dissolving a group moves its torrents and subgroups up one level.</source>
+        <translation>Disolver un grupo mueve sus torrents y subgrupos un nivel hacia arriba.</translation>
+    </message>
+    <message>
+        <source>Save group</source>
+        <translation>Guardar grupo</translation>
+    </message>
+    <message>
+        <source>Remove from group</source>
+        <translation>Quitar del grupo</translation>
+    </message>
+    <message>
+        <source>Dissolve group</source>
+        <translation>Disolver grupo</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>Cancelar</translation>
+    </message>
+    <message>
+        <source>Group selected torrents</source>
+        <translation>Agrupar los torrents seleccionados</translation>
+    </message>
+    <message>
+        <source>Manage group</source>
+        <translation>Gestionar grupo</translation>
+    </message>
+    <message>
+        <source>Manage</source>
+        <translation>Gestionar</translation>
+    </message>
+    <message>
+        <source>Matching torrents: %1</source>
+        <translation>Torrents coincidentes: %1</translation>
+    </message>
+    <message>
+        <source>Group…</source>
+        <translation>Agrupar…</translation>
+    </message>
+</context>
 </TS>

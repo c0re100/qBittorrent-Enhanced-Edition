@@ -5219,4 +5219,107 @@ Supports the formats: S01E01, 1x1, 2017.12.31 and 31.12.2017 (Date formats also 
         <translation type="unfinished" />
     </message>
 </context>
+<context>
+    <name>ManualGroups</name>
+    <message>
+        <source>Unable to save/load groups</source>
+        <translation>グループを保存または読み込めません</translation>
+    </message>
+    <message>
+        <source>Groups are not ready. Please retry.</source>
+        <translation>グループの準備ができていません。再試行してください。</translation>
+    </message>
+    <message>
+        <source>Use a group name of 1–100 characters.</source>
+        <translation>グループ名は 1～100 文字で入力してください。</translation>
+    </message>
+    <message>
+        <source>A group cannot be placed inside itself or its descendants.</source>
+        <translation>グループを自身またはその子グループ内に移動することはできません。</translation>
+    </message>
+    <message>
+        <source>Select torrents first.</source>
+        <translation>先にトレントを選択してください。</translation>
+    </message>
+    <message>
+        <source>A group can have at most 32 levels.</source>
+        <translation>グループは最大 32 階層までです。</translation>
+    </message>
+    <message>
+        <source>Select torrents with Ctrl/Shift first.</source>
+        <translation>先に Ctrl / Shift でトレントを選択してください。</translation>
+    </message>
+    <message>
+        <source>Selected torrents: %1</source>
+        <translation>選択したトレント: %1</translation>
+    </message>
+    <message>
+        <source>Destination group</source>
+        <translation>移動先のグループ</translation>
+    </message>
+    <message>
+        <source>Merge into an existing group</source>
+        <translation>既存のグループに統合</translation>
+    </message>
+    <message>
+        <source>Create new group…</source>
+        <translation>新しいグループを作成…</translation>
+    </message>
+    <message>
+        <source>Do not merge (rename or move)</source>
+        <translation>統合しない（名前の変更または移動）</translation>
+    </message>
+    <message>
+        <source>Group name</source>
+        <translation>グループ名</translation>
+    </message>
+    <message>
+        <source>Parent group</source>
+        <translation>親グループ</translation>
+    </message>
+    <message>
+        <source>Top level</source>
+        <translation>最上位（親グループなし）</translation>
+    </message>
+    <message>
+        <source>Dissolving a group moves its torrents and subgroups up one level.</source>
+        <translation>グループを解除すると、トレントと子グループは 1 つ上の階層に移動します。</translation>
+    </message>
+    <message>
+        <source>Save group</source>
+        <translation>グループを保存</translation>
+    </message>
+    <message>
+        <source>Remove from group</source>
+        <translation>グループから除外</translation>
+    </message>
+    <message>
+        <source>Dissolve group</source>
+        <translation>グループを解除</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>キャンセル</translation>
+    </message>
+    <message>
+        <source>Group selected torrents</source>
+        <translation>選択したトレントをグループ化</translation>
+    </message>
+    <message>
+        <source>Manage group</source>
+        <translation>グループを管理</translation>
+    </message>
+    <message>
+        <source>Manage</source>
+        <translation>管理</translation>
+    </message>
+    <message>
+        <source>Matching torrents: %1</source>
+        <translation>一致するトレント: %1</translation>
+    </message>
+    <message>
+        <source>Group…</source>
+        <translation>グループ化…</translation>
+    </message>
+</context>
 </TS>
