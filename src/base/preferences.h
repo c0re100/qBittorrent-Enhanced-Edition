@@ -447,6 +447,10 @@ public:
     bool isAddNewTorrentDialogAttached() const;
     void setAddNewTorrentDialogAttached(bool attached);
 
+    // Remember the "Start torrent" checkbox value between add-torrent dialogs.
+    bool isAddNewTorrentDialogStartTorrentPersistent() const;
+    void setAddNewTorrentDialogStartTorrentPersistent(bool persistent);
+
 public slots:
     void setStatusFilterState(bool checked);
     void setCategoryFilterState(bool checked);

@@ -41,6 +41,7 @@
 #include "base/net/downloadmanager.h"
 #include "base/preferences.h"
 #include "base/utils/number.h"
+#include "dialoggeometry.h"
 #include "gui/uithememanager.h"
 #include "ui_trackersadditiondialog.h"
 
@@ -50,7 +51,6 @@ TrackersAdditionDialog::TrackersAdditionDialog(QWidget *parent, BitTorrent::Torr
     : QDialog(parent)
     , m_ui(new Ui::TrackersAdditionDialog)
     , m_torrent(torrent)
-    , m_storeDialogSize(SETTINGS_KEY(u"Size"_s))
     , m_storeTrackersListURL(SETTINGS_KEY(u"TrackersListURL"_s))
 {
     m_ui->setupUi(this);
@@ -128,13 +128,12 @@ void TrackersAdditionDialog::onTorrentListDownloadFinished(const Net::DownloadRe
 
 void TrackersAdditionDialog::saveSettings()
 {
-    m_storeDialogSize = size();
+    DialogGeometry::save(this, SETTINGS_KEY(u"Geometry"_s));
     m_storeTrackersListURL = m_ui->lineEditListURL->text();
 }
 
 void TrackersAdditionDialog::loadSettings()
 {
-    if (const QSize dialogSize = m_storeDialogSize; dialogSize.isValid())
-        resize(dialogSize);
+    DialogGeometry::restore(this, SETTINGS_KEY(u"Geometry"_s), SETTINGS_KEY(u"Size"_s));
     m_ui->lineEditListURL->setText(m_storeTrackersListURL);
 }

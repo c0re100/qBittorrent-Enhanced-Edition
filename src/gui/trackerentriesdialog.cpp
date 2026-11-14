@@ -33,7 +33,9 @@
 #include <QHash>
 #include <QList>
 
+#include "base/global.h"
 #include "base/bittorrent/trackerentry.h"
+#include "dialoggeometry.h"
 #include "ui_trackerentriesdialog.h"
 #include "utils.h"
 
@@ -42,7 +44,6 @@
 TrackerEntriesDialog::TrackerEntriesDialog(QWidget *parent)
     : QDialog(parent)
     , m_ui(new Ui::TrackerEntriesDialog)
-    , m_storeDialogSize(SETTINGS_KEY(u"Size"_s))
 {
     m_ui->setupUi(this);
 
@@ -85,11 +86,10 @@ QList<BitTorrent::TrackerEntry> TrackerEntriesDialog::trackers() const
 
 void TrackerEntriesDialog::saveSettings()
 {
-    m_storeDialogSize = size();
+    DialogGeometry::save(this, SETTINGS_KEY(u"Geometry"_s));
 }
 
 void TrackerEntriesDialog::loadSettings()
 {
-    if (const QSize dialogSize = m_storeDialogSize; dialogSize.isValid())
-        resize(dialogSize);
+    DialogGeometry::restore(this, SETTINGS_KEY(u"Geometry"_s), SETTINGS_KEY(u"Size"_s));
 }

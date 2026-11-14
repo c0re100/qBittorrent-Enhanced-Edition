@@ -36,6 +36,7 @@
 #include "base/bittorrent/session.h"
 #include "base/global.h"
 #include "autoexpandabledialog.h"
+#include "dialoggeometry.h"
 #include "flowlayout.h"
 #include "utils.h"
 
@@ -46,7 +47,6 @@
 TorrentTagsDialog::TorrentTagsDialog(const TagSet &initialTags, QWidget *parent)
     : QDialog(parent)
     , m_ui {new Ui::TorrentTagsDialog}
-    , m_storeDialogSize {SETTINGS_KEY(u"Size"_s)}
 {
     m_ui->setupUi(this);
 
@@ -66,13 +66,12 @@ TorrentTagsDialog::TorrentTagsDialog(const TagSet &initialTags, QWidget *parent)
     connect(addTagButton, &QPushButton::clicked, this, &TorrentTagsDialog::addNewTag);
     tagsLayout->addWidget(addTagButton);
 
-    if (const QSize dialogSize = m_storeDialogSize; dialogSize.isValid())
-        resize(dialogSize);
+    DialogGeometry::restore(this, SETTINGS_KEY(u"Geometry"_s), SETTINGS_KEY(u"Size"_s));
 }
 
 TorrentTagsDialog::~TorrentTagsDialog()
 {
-    m_storeDialogSize = size();
+    DialogGeometry::save(this, SETTINGS_KEY(u"Geometry"_s));
     delete m_ui;
 }
 

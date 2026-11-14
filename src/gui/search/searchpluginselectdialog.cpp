@@ -43,6 +43,7 @@
 #include "base/preferences.h"
 #include "base/utils/fs.h"
 #include "gui/autoexpandabledialog.h"
+#include "gui/dialoggeometry.h"
 #include "gui/uithememanager.h"
 #include "gui/utils.h"
 #include "searchpluginsourcedialog.h"
@@ -63,7 +64,6 @@ enum PluginColumns
 SearchPluginSelectDialog::SearchPluginSelectDialog(SearchPluginManager *pluginManager, QWidget *parent)
     : QDialog(parent)
     , m_ui {new Ui::SearchPluginSelectDialog}
-    , m_storeDialogSize {SETTINGS_KEY(u"Size"_s)}
     , m_pluginManager {pluginManager}
 {
     m_ui->setupUi(this);
@@ -88,13 +88,12 @@ SearchPluginSelectDialog::SearchPluginSelectDialog(SearchPluginManager *pluginMa
     connect(m_pluginManager, &SearchPluginManager::checkForUpdatesFinished, this, &SearchPluginSelectDialog::checkForUpdatesFinished);
     connect(m_pluginManager, &SearchPluginManager::checkForUpdatesFailed, this, &SearchPluginSelectDialog::checkForUpdatesFailed);
 
-    if (const QSize dialogSize = m_storeDialogSize; dialogSize.isValid())
-        resize(dialogSize);
+    DialogGeometry::restore(this, SETTINGS_KEY(u"Geometry"_s), SETTINGS_KEY(u"Size"_s));
 }
 
 SearchPluginSelectDialog::~SearchPluginSelectDialog()
 {
-    m_storeDialogSize = size();
+    DialogGeometry::save(this, SETTINGS_KEY(u"Geometry"_s));
     delete m_ui;
 }
 

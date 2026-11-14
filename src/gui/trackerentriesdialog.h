@@ -31,8 +31,6 @@
 #include <QDialog>
 #include <QtContainerFwd>
 
-#include "base/settingvalue.h"
-
 namespace BitTorrent
 {
     struct TrackerEntry;
@@ -60,5 +58,4 @@ private:
     void loadSettings();
 
     Ui::TrackerEntriesDialog *m_ui = nullptr;
-    SettingValue<QSize> m_storeDialogSize;
 };

@@ -28,6 +28,8 @@
 
 #include "searchpluginsourcedialog.h"
 
+#include "base/global.h"
+#include "gui/dialoggeometry.h"
 #include "gui/utils.h"
 #include "ui_searchpluginsourcedialog.h"
 
@@ -36,17 +38,15 @@
 SearchPluginSourceDialog::SearchPluginSourceDialog(QWidget *parent)
     : QDialog(parent)
     , m_ui {new Ui::SearchPluginSourceDialog}
-    , m_storeDialogSize {SETTINGS_KEY(u"Size"_s)}
 {
     m_ui->setupUi(this);
 
-    if (const QSize dialogSize = m_storeDialogSize; dialogSize.isValid())
-        resize(dialogSize);
+    DialogGeometry::restore(this, SETTINGS_KEY(u"Geometry"_s), SETTINGS_KEY(u"Size"_s));
 }
 
 SearchPluginSourceDialog::~SearchPluginSourceDialog()
 {
-    m_storeDialogSize = size();
+    DialogGeometry::save(this, SETTINGS_KEY(u"Geometry"_s));
     delete m_ui;
 }
 

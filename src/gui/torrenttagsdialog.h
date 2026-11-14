@@ -30,7 +30,6 @@
 
 #include <QDialog>
 
-#include "base/settingvalue.h"
 #include "base/tagset.h"
 
 namespace Ui
@@ -53,5 +52,4 @@ private:
     void addNewTag();
 
     Ui::TorrentTagsDialog *m_ui = nullptr;
-    SettingValue<QSize> m_storeDialogSize;
 };

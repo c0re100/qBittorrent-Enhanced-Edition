@@ -30,8 +30,6 @@
 
 #include <QDialog>
 
-#include "base/settingvalue.h"
-
 namespace Ui
 {
     class SearchPluginSourceDialog;
@@ -56,5 +54,4 @@ private slots:
 
 private:
     Ui::SearchPluginSourceDialog *m_ui = nullptr;
-    SettingValue<QSize> m_storeDialogSize;
 };

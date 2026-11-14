@@ -69,6 +69,5 @@ private:
     Ui::TrackersAdditionDialog *m_ui = nullptr;
     BitTorrent::Torrent *const m_torrent = nullptr;
 
-    SettingValue<QSize> m_storeDialogSize;
     SettingValue<QString> m_storeTrackersListURL;
 };

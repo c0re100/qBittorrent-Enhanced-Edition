@@ -64,6 +64,10 @@ public:
     bool isDoNotDeleteTorrentChecked() const;
     void updateMetadata(const BitTorrent::TorrentInfo &metadata);
 
+    // Returns true if a previously saved window geometry was restored, so that
+    // the caller knows not to re-center the dialog.
+    bool hasRestoredGeometry() const;
+
 signals:
     void torrentAccepted(const BitTorrent::TorrentDescriptor &torrentDescriptor, const BitTorrent::AddTorrentParams &addTorrentParams);
     void torrentRejected(const BitTorrent::TorrentDescriptor &torrentDescriptor);
@@ -108,9 +112,18 @@ private:
 
     std::shared_ptr<Context> m_currentContext;
 
-    SettingValue<QSize> m_storeDialogSize;
+    bool m_geometryRestored = false;
     SettingValue<QString> m_storeDefaultCategory;
     SettingValue<bool> m_storeRememberLastSavePath;
+    // Stored as `int` (the underlying value of `Torrent::StopCondition`) rather than the
+    // enum itself so the header can keep its lightweight forward-declaration of `Torrent`:
+    // a nested enum like `Torrent::StopCondition` requires the complete type, which this
+    // header deliberately avoids pulling in. Cast at the two boundary points in the .cpp.
+    SettingValue<int> m_storeLastStopCondition;
+    // Remembered "Start torrent" checkbox state, used only when the user enables
+    // "Remember the Start torrent checkbox state between add-torrent dialogs"
+    // (Preferences -> Downloads). Seeded from the global add-stopped preference.
+    SettingValue<bool> m_storeLastStartTorrent;
     SettingValue<QByteArray> m_storeTreeHeaderState;
     SettingValue<QByteArray> m_storeSplitterState;
     SettingValue<FilterPatternFormat> m_storeFilterPatternFormat;

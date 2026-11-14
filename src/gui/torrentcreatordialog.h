@@ -86,7 +86,6 @@ private:
     QThreadPool *m_threadPool = nullptr;
 
     // settings
-    SettingValue<QSize> m_storeDialogSize;
     SettingValue<int> m_storePieceSize;
     SettingValue<bool> m_storeIgnoreDotfiles;
     SettingValue<bool> m_storePrivateTorrent;
