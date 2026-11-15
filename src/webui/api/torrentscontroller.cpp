@@ -2217,7 +2217,12 @@ void TorrentsController::exportAction()
     if (!result)
         throw APIError(APIErrorType::Conflict, tr("Unable to export torrent file. Error: %1").arg(result.error()));
 
-    setResult(result.value(), u"application/x-bittorrent"_s, (id.toString() + u".torrent"));
+    QString filename = Utils::Fs::toValidFileName(torrent->name(), {});
+    if (filename.isEmpty())
+        filename = id.toString();
+    filename += u".torrent";
+
+    setResult(result.value(), u"application/x-bittorrent"_s, filename);
 }
 
 void TorrentsController::SSLParametersAction()
@@ -2275,7 +2280,7 @@ void TorrentsController::fetchMetadataAction()
     if (!downloaderParam.isEmpty() && !SearchPluginManager::instance()->allPlugins().contains(downloaderParam))
         throw APIError(APIErrorType::BadParams, tr("downloader must be a valid search plugin"));
 
-    const QString source = QUrl::fromPercentEncoding(sourceParam.toLatin1());
+    const QString source = sourceParam;
     const auto sourceTorrentDescr = BitTorrent::TorrentDescriptor::parse(source);
 
     const BitTorrent::InfoHash infoHash = sourceTorrentDescr ? sourceTorrentDescr.value().infoHash() : m_torrentSourceCache.value(source);
@@ -2384,7 +2389,7 @@ void TorrentsController::saveMetadataAction()
     if (sourceParam.isEmpty())
         throw APIError(APIErrorType::BadParams, tr("Must specify URI or hash"));
 
-    const QString source = QUrl::fromPercentEncoding(sourceParam.toLatin1());
+    const QString source = sourceParam;
 
     BitTorrent::InfoHash infoHash;
     if (const auto iter = m_torrentSourceCache.constFind(source); iter != m_torrentSourceCache.constEnd())

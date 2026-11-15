@@ -13,6 +13,7 @@ set(testFiles
     testconceptsexplicitlyconvertibleto.cpp
     testconceptsstringable.cpp
     testglobal.cpp
+    testhttprequestparser.cpp
     testorderedset.cpp
     testpath.cpp
     testpeerfilter.cpp
@@ -20,6 +21,7 @@ set(testFiles
     testutilscompare.cpp
     testutilsdatetime.cpp
     testutilsdict.cpp
+    testutilsfs.cpp
     testutilsgzip.cpp
     testutilshashvalue.cpp
     testutilsio.cpp
