@@ -32,8 +32,10 @@
 
 #include <QBitArray>
 
+#include "base/algorithm.h"
 #include "base/bittorrent/ltqbitarray.h"
 #include "base/net/geoipmanager.h"
+#include "base/settingvalue.h"
 #include "base/unicodestrings.h"
 #include "base/utils/bytearray.h"
 #include "peeraddress.h"
@@ -65,7 +67,13 @@ bool PeerInfo::fromLSD() const
 QString PeerInfo::country() const
 {
     if (m_country.isEmpty())
-        m_country = Net::GeoIPManager::instance()->lookup(address().ip);
+    {
+        // The GeoIPManager is instantiated late, on the main thread and only
+        // after the session has been restored. Leave the country unset in that
+        // window (it will be retried) instead of dereferencing a null pointer.
+        if (const Net::GeoIPManager *const geoIPManager = Net::GeoIPManager::instance())
+            m_country = geoIPManager->lookup(address().ip);
+    }
     return m_country;
 }
 
@@ -121,6 +129,19 @@ bool PeerInfo::isOnParole() const
 bool PeerInfo::isSeed() const
 {
     return static_cast<bool>(m_nativeInfo.flags & lt::peer_info::seed);
+}
+
+bool PeerInfo::isShadowBanned() const
+{
+    if (!CachedSettingValue<bool>(u"BitTorrent/Session/ShadowBan"_s, false))
+    {
+        return false;
+    }
+    QString peer_ip = address().ip.toString();
+    QStringList shadowbannedIPs =
+        CachedSettingValue<QStringList>(u"State/ShadowBannedIPs"_s, QStringList(), Algorithm::sorted<QStringList>).get();
+
+    return shadowbannedIPs.contains(peer_ip);
 }
 
 bool PeerInfo::optimisticUnchoke() const

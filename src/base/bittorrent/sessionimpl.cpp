@@ -111,6 +111,9 @@
 #include "loadtorrentparams.h"
 #include "lttypecast.h"
 #include "nativesessionextension.h"
+#include "peer_blacklist.hpp"
+#include "peer_filter_session_plugin.hpp"
+#include "peer_shadowban_plugin.hpp"
 #include "portforwarderimpl.h"
 #include "resumedatastorage.h"
 #include "torrentcontentremover.h"
@@ -131,7 +134,7 @@ const std::chrono::seconds FREEDISKSPACE_CHECK_TIMEOUT = 30s;
 namespace
 {
     const char PEER_ID[] = "qB";
-    const auto USER_AGENT = QStringLiteral("qBittorrent/" QBT_VERSION_2);
+    const auto USER_AGENT = QStringLiteral("qBittorrent Enhanced/" QBT_VERSION_2);
     const QString DEFAULT_DHT_BOOTSTRAP_NODES = u"dht.libtorrent.org:25401, dht.transmissionbt.com:6881, router.bt.ouinet.work:6881"_s;
 
     Path makeUniqueFilePath(const Path &dirPath, const QString &baseName, const QString &extension)
@@ -639,6 +642,10 @@ SessionImpl::SessionImpl(QObject *parent)
     , m_I2POutboundLengthVariance {BITTORRENT_SESSION_KEY(u"I2P/OutboundLengthVariance"_s), 0, clampValue(-7, 7)}
     , m_torrentContentRemoveOption {BITTORRENT_SESSION_KEY(u"TorrentContentRemoveOption"_s), TorrentContentRemoveOption::Delete}
     , m_startPaused {BITTORRENT_SESSION_KEY(u"StartPaused"_s)}
+    , m_autoBanUnknownPeer(BITTORRENT_SESSION_KEY(u"AutoBanUnknownPeer"_s), false)
+    , m_autoBanBTPlayerPeer(BITTORRENT_SESSION_KEY(u"AutoBanBTPlayerPeer"_s), false)
+    , m_shadowBan(BITTORRENT_SESSION_KEY(u"ShadowBan"_s), false)
+    , m_shadowBannedIPs(u"State/ShadowBannedIPs"_s, QStringList(), Algorithm::sorted<QStringList>)
     , m_seedingLimitTimer {new QTimer(this)}
     , m_resumeDataTimer {new QTimer(this)}
     , m_ioThread {new QThread}
@@ -745,6 +752,18 @@ SessionImpl::SessionImpl(QObject *parent)
     enableTracker(isTrackerEnabled());
 
     prepareStartup();
+
+    // Migrate customize trackers url list setting from Enhanced
+    const auto *pref = Preferences::instance();
+    const bool migrated = pref->getMigrateStatus();
+    if (!m_isAddTrackersFromURLEnabled && !migrated) {
+        Preferences::instance()->setMigrateStatus(!migrated);
+
+        const bool isEnabled = pref->isAutoUpdateTrackersEnabled();
+        const QString trackersListUrl = pref->getTrackersListUrl();
+        m_isAddTrackersFromURLEnabled = isEnabled;
+        m_additionalTrackersURL = trackersListUrl;
+    }
 
     m_updateTrackersFromURLTimer = new QTimer(this);
     m_updateTrackersFromURLTimer->setInterval(24h);
@@ -1863,6 +1882,18 @@ void SessionImpl::initializeNativeSession()
     LogMsg(tr("HTTP User-Agent: \"%1\"").arg(USER_AGENT), Log::INFO);
     LogMsg(tr("Distributed Hash Table (DHT) support: %1").arg(isDHTEnabled() ? tr("ON") : tr("OFF")), Log::INFO);
     LogMsg(tr("Local Peer Discovery support: %1").arg(isLSDEnabled() ? tr("ON") : tr("OFF")), Log::INFO);
+    // Enhanced features
+    m_nativeSession->add_extension(&create_drop_bad_peers_plugin);
+    if (isAutoBanUnknownPeerEnabled()) {
+        m_nativeSession->add_extension(&create_drop_unknown_peers_plugin);
+        m_nativeSession->add_extension(&create_drop_offline_downloader_plugin);
+    }
+    if (isAutoBanBTPlayerPeerEnabled())
+        m_nativeSession->add_extension(&create_drop_bittorrent_media_player_plugin);
+    m_nativeSession->add_extension(std::make_shared<peer_filter_session_plugin>());
+    if (isShadowBanEnabled())
+        m_nativeSession->add_extension(&create_peer_shadowban_plugin);
+
     LogMsg(tr("Peer Exchange (PeX) support: %1").arg(isPeXEnabled() ? tr("ON") : tr("OFF")), Log::INFO);
     LogMsg(tr("Anonymous mode: %1").arg(isAnonymousModeEnabled() ? tr("ON") : tr("OFF")), Log::INFO);
     LogMsg(tr("Encryption support: %1").arg((encryption() == 0) ? tr("ON") : ((encryption() == 1) ? tr("FORCED") : tr("OFF"))), Log::INFO);
@@ -2634,6 +2665,23 @@ void SessionImpl::banIP(const QString &ip)
     bannedIPs.append(ip);
     bannedIPs.sort();
     m_bannedIPs = bannedIPs;
+}
+
+void SessionImpl::shadowbanIP(const QString &ip)
+{
+    if (m_shadowBannedIPs.get().contains(ip))
+        return;
+
+    lt::error_code ec;
+    lt::make_address(ip.toLatin1().constData(), ec); // Only check IP valid.
+    Q_ASSERT(!ec);
+    if (ec)
+        return;
+
+    QStringList shadowBannedIPs = m_shadowBannedIPs;
+    shadowBannedIPs.append(ip);
+    shadowBannedIPs.sort();
+    m_shadowBannedIPs = shadowBannedIPs;
 }
 
 // Delete a torrent from the session, given its hash
@@ -5415,6 +5463,85 @@ void SessionImpl::setTrackerFilteringEnabled(const bool enabled)
         m_isTrackerFilteringEnabled = enabled;
         configureDeferred();
     }
+}
+
+bool SessionImpl::isAutoBanUnknownPeerEnabled() const
+{
+    return m_autoBanUnknownPeer;
+}
+
+void SessionImpl::setAutoBanUnknownPeer(bool value)
+{
+    if (value != isAutoBanUnknownPeerEnabled()) {
+        m_autoBanUnknownPeer = value;
+        LogMsg(tr("Restart is required to toggle Auto Ban Unknown Client support"), Log::WARNING);
+    }
+}
+
+bool SessionImpl::isAutoBanBTPlayerPeerEnabled() const
+{
+    return m_autoBanBTPlayerPeer;
+}
+
+void SessionImpl::setAutoBanBTPlayerPeer(bool value)
+{
+    if (value != isAutoBanBTPlayerPeerEnabled()) {
+        m_autoBanBTPlayerPeer = value;
+        LogMsg(tr("Restart is required to toggle Auto Ban Bittorrent Media Player support"), Log::WARNING);
+    }
+}
+
+bool SessionImpl::isShadowBanEnabled() const
+{
+    return m_shadowBan;
+}
+
+void SessionImpl::setShadowBan(bool value)
+{
+    if (value != isShadowBanEnabled()) {
+        m_shadowBan = value;
+        LogMsg(tr("Restart is required to toggle Auto Ban Shadow Ban"), Log::WARNING);
+    }
+}
+
+QStringList SessionImpl::shadowBannedIPs() const
+{
+    return m_shadowBannedIPs;
+}
+
+void SessionImpl::setShadowBannedIPs(const QStringList &newList)
+{
+    if (newList == m_shadowBannedIPs)
+        return; // do nothing
+    // here filter out incorrect IP
+    QStringList filteredList;
+    for (const QString &ip : newList)
+    {
+        if (Utils::Net::isValidIP(ip))
+        {
+            // the same IPv6 addresses could be written in different forms;
+            // QHostAddress::toString() result format follows RFC5952;
+            // thus we avoid duplicate entries pointing to the same address
+            filteredList << QHostAddress(ip).toString();
+        }
+        else
+        {
+            LogMsg(tr("Rejected invalid IP address while applying the list of shadow banned IP addresses. IP: \"%1\"")
+                   .arg(ip)
+                , Log::WARNING);
+        }
+    }
+    // now we have to sort IPs and make them unique
+    filteredList.sort();
+    filteredList.removeDuplicates();
+    // Again ensure that the new list is different from the stored one.
+    if (filteredList == m_shadowBannedIPs)
+        return; // do nothing
+    // store to session settings
+    // also here we have to recreate filter list including 3rd party ban file
+    // and install it again into m_session
+    m_shadowBannedIPs = filteredList;
+    configureDeferred();
 }
 
 QString SessionImpl::lastExternalIPv4Address() const

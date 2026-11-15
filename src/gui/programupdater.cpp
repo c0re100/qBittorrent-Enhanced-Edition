@@ -29,133 +29,155 @@
 
 #include "programupdater.h"
 
-#include <algorithm>
-
 #include <libtorrent/version.hpp>
 
 #include <QtCore/qconfig.h>
 #include <QtSystemDetection>
 #include <QDebug>
 #include <QDesktopServices>
-#include <QJsonDocument>
-#include <QJsonValue>
 #include <QRegularExpression>
 #include <QXmlStreamReader>
 
 #include "base/global.h"
-#include "base/logger.h"
 #include "base/net/downloadmanager.h"
 #include "base/preferences.h"
+#include "base/utils/version.h"
 #include "base/version.h"
 
 namespace
 {
-    bool isVersionMoreRecent(const ProgramUpdater::Version &remoteVersion)
+    bool isVersionMoreRecent(const QString &remoteVersion)
     {
-        if (!remoteVersion.isValid())
+        using Version = Utils::Version<4, 3>;
+
+        const auto newVersion = Version::fromString(remoteVersion);
+        if (!newVersion.isValid())
             return false;
 
-        const ProgramUpdater::Version currentVersion {QBT_VERSION_MAJOR, QBT_VERSION_MINOR, QBT_VERSION_BUGFIX, QBT_VERSION_BUILD};
-        if (remoteVersion == currentVersion)
+        const Version currentVersion {QBT_VERSION_MAJOR, QBT_VERSION_MINOR, QBT_VERSION_BUGFIX, QBT_VERSION_BUILD};
+        if (newVersion == currentVersion)
         {
             const bool isDevVersion = QStringLiteral(QBT_VERSION_STATUS).contains(
                 QRegularExpression(u"(alpha|beta|rc)"_s));
             if (isDevVersion)
                 return true;
         }
-        return (remoteVersion > currentVersion);
+        return (newVersion > currentVersion);
     }
 }
 
-void ProgramUpdater::checkForUpdates()
+void ProgramUpdater::checkForUpdates() const
 {
+    const auto RSS_URL = u"https://husky.moe/feedqBittorent.xml"_s;
     // Don't change this User-Agent. In case our updater goes haywire,
     // the filehost can identify it and contact us.
-    const auto USER_AGENT = QStringLiteral("qBittorrent/" QBT_VERSION_2 " ProgramUpdater (www.qbittorrent.org)");
-    const auto QBT_MAIN_URL = u"https://www.qbittorrent.org/versions.json"_s;
-    const auto QBT_BACKUP_URL = u"https://qbittorrent.github.io/qBittorrent-website/versions.json"_s;
-
-    Net::DownloadManager *netManager = Net::DownloadManager::instance();
-    const bool useProxy = Preferences::instance()->useProxyForGeneralPurposes();
-
-    m_pendingRequestCount = 2;
-    // don't use the custom user agent for the following requests, disguise as a normal browser instead
-    netManager->download(Net::DownloadRequest(QBT_MAIN_URL), useProxy, this, [this](const Net::DownloadResult &result)
-    {
-        fallbackDownloadFinished(result, m_qbtMainVersion);
-    });
-    netManager->download(Net::DownloadRequest(QBT_BACKUP_URL), useProxy, this, [this](const Net::DownloadResult &result)
-    {
-        fallbackDownloadFinished(result, m_qbtBackupVersion);
-    });
+    Net::DownloadManager::instance()->download(
+            Net::DownloadRequest(RSS_URL).userAgent(QStringLiteral("qBittorrent Enhanced/" QBT_VERSION_2 " ProgramUpdater (git.io/qbit)"))
+            , Preferences::instance()->useProxyForGeneralPurposes(), this, &ProgramUpdater::rssDownloadFinished);
 }
 
-ProgramUpdater::Version ProgramUpdater::getNewVersion() const
+QString ProgramUpdater::getNewVersion() const
 {
-    switch (getLatestRemoteSource())
-    {
-    case RemoteSource::QbtMain:
-        return m_qbtMainVersion;
-    case RemoteSource::QbtBackup:
-        return m_qbtBackupVersion;
-    }
-    Q_UNREACHABLE();
+    return m_newVersion;
 }
 
-void ProgramUpdater::fallbackDownloadFinished(const Net::DownloadResult &result, Version &version)
+QString ProgramUpdater::getNewContent() const
 {
-    version = {};
+  return m_content;
+}
 
+QString ProgramUpdater::getNextUpdate() const
+{
+  return m_nextUpdate;
+}
+
+void ProgramUpdater::rssDownloadFinished(const Net::DownloadResult &result)
+{
     if (result.status != Net::DownloadStatus::Success)
     {
-        LogMsg(tr("Failed to download the program update info. URL: \"%1\". Error: \"%2\"").arg(result.url, result.errorString) , Log::WARNING);
-        handleFinishedRequest();
+        qDebug() << "Downloading the new qBittorrent updates RSS failed:" << result.errorString;
+        emit updateCheckFinished();
         return;
     }
 
-    const auto json = QJsonDocument::fromJson(result.data);
+    qDebug("Finished downloading the new qBittorrent updates RSS");
 
-#if defined(Q_OS_MACOS)
-    const QString platformKey = u"macos"_s;
+    const auto getStringValue = [](QXmlStreamReader &xml) -> QString
+    {
+        xml.readNext();
+        return (xml.isCharacters() && !xml.isWhitespace())
+            ? xml.text().toString()
+            : QString {};
+    };
+
+#ifdef Q_OS_MACOS
+    const QString OS_TYPE = u"Mac OS X"_s;
 #elif defined(Q_OS_WIN)
-    const QString platformKey = u"win"_s;
+    const QString OS_TYPE = u"Windows x64"_s;
 #endif
 
-    if (const QJsonValue verJSON = json[platformKey][u"version"_s]; verJSON.isString())
+    bool inItem = false;
+    QString version;
+    QString content;
+    QString nextUpdate;
+    QString updateLink;
+    QString type;
+    QXmlStreamReader xml(result.data);
+
+    while (!xml.atEnd())
     {
-        const Version tmpVer {verJSON.toString()};
-        if (isVersionMoreRecent(tmpVer))
-            version = tmpVer;
+        xml.readNext();
+
+        if (xml.isStartElement())
+        {
+            if (xml.name() == u"item")
+                inItem = true;
+            else if (inItem && (xml.name() == u"link"))
+                updateLink = getStringValue(xml);
+            else if (inItem && (xml.name() == u"type"))
+                type = getStringValue(xml);
+            else if (inItem && (xml.name() == u"version"))
+                version = getStringValue(xml);
+            else if (inItem && (xml.name() == u"content"))
+                content = getStringValue(xml);
+            else if (inItem && (xml.name() == u"update"))
+                nextUpdate = getStringValue(xml);
+        }
+        else if (xml.isEndElement())
+        {
+            if (inItem && (xml.name() == u"item"))
+            {
+                if (type.compare(OS_TYPE, Qt::CaseInsensitive) == 0)
+                {
+                    qDebug("The last update available is %s", qUtf8Printable(version));
+                    if (!version.isEmpty())
+                    {
+                        qDebug("Detected version is %s", qUtf8Printable(version));
+                        if (isVersionMoreRecent(version))
+                        {
+                            m_newVersion = version;
+                            m_updateURL = updateLink;
+                            m_content = content;
+                        }
+                        m_nextUpdate = nextUpdate;
+                    }
+                    break;
+                }
+
+                inItem = false;
+                updateLink.clear();
+                type.clear();
+                version.clear();
+                content.clear();
+                nextUpdate.clear();
+            }
+        }
     }
 
-    handleFinishedRequest();
+    emit updateCheckFinished();
 }
 
 bool ProgramUpdater::updateProgram() const
 {
-    switch (getLatestRemoteSource())
-    {
-    case RemoteSource::QbtMain:
-        return QDesktopServices::openUrl(u"https://www.qbittorrent.org/download"_s);
-    case RemoteSource::QbtBackup:
-        return QDesktopServices::openUrl(u"https://qbittorrent.github.io/qBittorrent-website/download"_s);
-    }
-    Q_UNREACHABLE();
-}
-
-void ProgramUpdater::handleFinishedRequest()
-{
-    --m_pendingRequestCount;
-    if (m_pendingRequestCount == 0)
-        emit updateCheckFinished();
-}
-
-ProgramUpdater::RemoteSource ProgramUpdater::getLatestRemoteSource() const
-{
-    const Version max = std::max({m_qbtMainVersion, m_qbtBackupVersion});
-    if (max == m_qbtMainVersion)
-        return RemoteSource::QbtMain;
-    if (max == m_qbtBackupVersion)
-        return RemoteSource::QbtBackup;
-    Q_UNREACHABLE();
+    return QDesktopServices::openUrl(m_updateURL);
 }

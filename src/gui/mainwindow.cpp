@@ -588,7 +588,7 @@ void MainWindow::setTitleSuffix(const QString &suffix)
 {
     const auto emDash = QChar(0x2014);
     const QString separator = u' ' + emDash + u' ';
-    m_windowTitle = QStringLiteral("qBittorrent " QBT_VERSION)
+    m_windowTitle = QStringLiteral("qBittorrent Enhanced Edition " QBT_VERSION)
         + (!suffix.isEmpty() ? (separator + suffix) : QString());
 
     refreshWindowTitle();
@@ -1705,11 +1705,12 @@ void MainWindow::handleUpdateCheckFinished(ProgramUpdater *updater, const bool i
         updater->deleteLater();
     };
 
-    const ProgramUpdater::Version newVersion = updater->getNewVersion();
-    if (newVersion.isValid())
+    const QString newVersion = updater->getNewVersion();
+    if (!newVersion.isEmpty())
     {
+        const QString content = updater->getNewContent();
         const QString msg {tr("A new version is available.") + u"<br/>"
-            + tr("Do you want to download %1?").arg(newVersion.toString()) + u"<br/><br/>"
+            + tr("Do you want to download %1?%2").arg(newVersion, content) + u"<br/><br/>"
             + u"<a href=\"https://www.qbittorrent.org/news\">%1</a>"_s.arg(tr("Open changelog..."))};
         auto *msgBox = new QMessageBox {QMessageBox::Question, tr("qBittorrent Update Available"), msg
             , (QMessageBox::Yes | QMessageBox::No), this};
@@ -1731,8 +1732,9 @@ void MainWindow::handleUpdateCheckFinished(ProgramUpdater *updater, const bool i
     {
         if (invokedByUser)
         {
+            const QString nextUpdate = updater->getNextUpdate();
             auto *msgBox = new QMessageBox {QMessageBox::Information, u"qBittorrent"_s
-                , tr("No updates available.\nYou are already using the latest version.")
+                , tr("No updates available.\nYou are already using the latest version.\n\n%1").arg(nextUpdate)
                 , QMessageBox::Ok, this};
             msgBox->setAttribute(Qt::WA_DeleteOnClose);
             msgBox->setWindowModality(Qt::NonModal);

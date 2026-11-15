@@ -142,7 +142,7 @@ window.qBittorrent.Client ??= (() => {
         let suffix = window.qBittorrent.Cache.preferences.get()["app_instance_name"] || "";
         if (suffix.length > 0)
             suffix = ` ${emDash} ${suffix}`;
-        const title = `qBittorrent ${qbtVersion} QBT_TR(WebUI)QBT_TR[CONTEXT=OptionsDialog]${suffix}`;
+        const title = `qBittorrent Enhanced Edition ${qbtVersion} QBT_TR(WebUI)QBT_TR[CONTEXT=OptionsDialog]${suffix}`;
         return title;
     };
 

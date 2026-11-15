@@ -237,6 +237,7 @@ private:
         {{u"transfer"_s, u"setSpeedLimits"_s}, Http::HEADER_REQUEST_METHOD_POST},
         {{u"transfer"_s, u"setSpeedLimitsMode"_s}, Http::HEADER_REQUEST_METHOD_POST},
         {{u"transfer"_s, u"setUploadLimit"_s}, Http::HEADER_REQUEST_METHOD_POST},
+        {{u"transfer"_s, u"shadowbanPeers"_s}, Http::HEADER_REQUEST_METHOD_POST},
         {{u"transfer"_s, u"toggleSpeedLimitsMode"_s}, Http::HEADER_REQUEST_METHOD_POST},
     };
     bool m_isAltUIUsed = false;

@@ -40,6 +40,7 @@
 #include <QString>
 #include <QStringList>
 
+#include "base/bittorrent/session.h"
 #include "base/global.h"
 #include "base/path.h"
 #include "base/preferences.h"
@@ -461,7 +462,12 @@ AutoDownloadRule &AutoDownloadRule::operator=(const AutoDownloadRule &other)
 
 QJsonObject AutoDownloadRule::toJsonObject() const
 {
-    const BitTorrent::AddTorrentParams &addTorrentParams = m_dataPtr->addTorrentParams;
+    BitTorrent::AddTorrentParams addTorrentParams = m_dataPtr->addTorrentParams;
+
+    if (feedURLs().size() == 0 && addTorrentParams.savePath.isEmpty()) {
+        const auto *session = BitTorrent::Session::instance();
+        addTorrentParams.savePath = session->savePath();
+    }
 
     return {{S_ENABLED, isEnabled()}
         , {S_PRIORITY, priority()}
