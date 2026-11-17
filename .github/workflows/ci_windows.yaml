@@ -1,12 +1,27 @@
 name: CI - Windows
 
-on: [pull_request, push]
+# Fork trigger trim (2026-10-08, re-applied 2026-11-17 on the v5_3_x line):
+# build on PRs, on pushes to the working branches only, and on demand.
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+      - "v5_2_x"
+      - "v5_3_x"
+    paths:
+      - "src/**"
+      - "test/**"
+      - "cmake/**"
+      - "CMakeLists.txt"
+      - "dist/windows/**"
+      - ".github/workflows/ci_windows.yaml"
 
 permissions: {}
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
-  cancel-in-progress: ${{ github.head_ref != '' }}
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   ci:

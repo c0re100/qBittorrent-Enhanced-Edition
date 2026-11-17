@@ -1,6 +1,6 @@
 name: CI - macOS
 
-on: [pull_request, push]
+on: workflow_dispatch  # trimmed for this fork: upstream fires on every push and PR; manual here.
 
 permissions: {}
 

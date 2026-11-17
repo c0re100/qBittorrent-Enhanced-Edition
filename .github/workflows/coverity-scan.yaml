@@ -1,8 +1,8 @@
 name: Coverity Scan
 
 on:
-  schedule:
-    - cron: '0 0 1 * *' # Monthly (1st day of month at midnight)
+  # Monthly cron removed for this fork: no Coverity token here, so the schedule
+  # only produced a red run. Manual invocation kept for parity with upstream.
   workflow_dispatch: # Mainly for testing. Don't forget the Coverity usage limits.
 
 permissions: {}
