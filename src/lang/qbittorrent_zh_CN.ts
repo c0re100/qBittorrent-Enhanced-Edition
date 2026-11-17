@@ -8909,7 +8909,7 @@ Those plugins were disabled.</source>
     <message>
         <location filename="../base/rss/rss_autodownloader.cpp" line="496"/>
         <source>Failed to add torrent from RSS article. Reason: unsupported torrent URL. Only HTTP(S) URLs, magnet URIs and info hashes are supported. Article: &quot;%1&quot;. URL: &quot;%2&quot;</source>
-        <translation type="unfinished"></translation>
+        <translation>无法从 RSS 文章添加 Torrent。原因：不支持的 Torrent URL。仅支持 HTTP(S) URL、磁力链接和信息哈希值。文章：&quot;%1&quot;。URL：&quot;%2&quot;</translation>
     </message>
     <message>
         <location filename="../base/rss/rss_autodownloader.cpp" line="535"/>
@@ -9290,13 +9290,14 @@ Those plugins were disabled.</source>
     <message>
         <location filename="../gui/rss/rsswidget.cpp" line="448"/>
         <source>Blocked adding torrent from RSS article. Unsupported torrent URL. Only HTTP(S) URLs, magnet URIs and info hashes are supported. Article: &quot;%1&quot;. URL: &quot;%2&quot;.</source>
-        <translation type="unfinished"></translation>
+        <translation>已阻止从 RSS 文章添加 Torrent。不支持的 Torrent URL。仅支持 HTTP(S) URL、磁力链接和信息哈希值。文章：&quot;%1&quot;。URL：&quot;%2&quot;。</translation>
     </message>
     <message>
         <location filename="../gui/rss/rsswidget.cpp" line="460"/>
         <source>Blocked adding torrent from RSS article. The following article has an unsupported torrent URL and it may be malicious behaviour:
 %1</source>
-        <translation type="unfinished"></translation>
+        <translation>已阻止从 RSS 文章添加 Torrent。以下文章包含不支持的 Torrent URL，可能为恶意行为：
+%1</translation>
     </message>
     <message>
         <location filename="../gui/rss/rsswidget.cpp" line="512"/>
