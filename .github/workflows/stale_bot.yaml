@@ -1,8 +1,9 @@
 name: Stale bot
 
 on:
-  schedule:
-    - cron: '0 0 * * *'
+  # Daily cron removed for this fork: issues are disabled here, so the schedule
+  # only produced noise. Manual invocation kept for parity with upstream.
+  workflow_dispatch:
 
 permissions: {}
 

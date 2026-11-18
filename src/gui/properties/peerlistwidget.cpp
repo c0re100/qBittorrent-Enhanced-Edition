@@ -356,10 +356,13 @@ void PeerListWidget::banSelectedPeers()
         , tr("Are you sure you want to permanently ban the selected peers?"));
     if (btn != QMessageBox::Yes) return;
 
-    for (const QString &ip : selectedIPs)
+    if (BitTorrent::Session *const session = BitTorrent::Session::instance())
     {
-        BitTorrent::Session::instance()->banIP(ip);
-        LogMsg(tr("Peer \"%1\" is manually banned").arg(ip));
+        for (const QString &ip : selectedIPs)
+        {
+            session->banIP(ip);
+            LogMsg(tr("Peer \"%1\" is manually banned").arg(ip));
+        }
     }
     // Refresh list
     loadPeers(m_properties->getCurrentTorrent());
