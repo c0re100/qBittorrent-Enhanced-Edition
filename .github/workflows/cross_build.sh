@@ -62,33 +62,33 @@ USE_ZLIB_NG=${USE_ZLIB_NG:-1}
 
 # OPENSSL_COMPILER value is from openssl source: ./Configure LIST
 case "${CROSS_HOST}" in
-arm*linux*)
-  export OPENSSL_COMPILER=linux-armv4
-  ;;
-aarch64*linux*)
-  export OPENSSL_COMPILER=linux-aarch64
-  ;;
-mips64el*linux* | mips64*linux*)
-  export OPENSSL_COMPILER=linux64-mips64
-  ;;
-mipsel*linux* | mips*linux*)
-  export OPENSSL_COMPILER=linux-mips32
-  ;;
-loongarch64*linux*)
-  export OPENSSL_COMPILER=linux64-loongarch64
-  ;;
-x86_64*linux*)
-  export OPENSSL_COMPILER=linux-x86_64
-  ;;
-x86_64*mingw*)
-  export OPENSSL_COMPILER=mingw64
-  ;;
-i686*mingw*)
-  export OPENSSL_COMPILER=mingw
-  ;;
-*)
-  export OPENSSL_COMPILER=cc
-  ;;
+  arm*linux*)
+    export OPENSSL_COMPILER=linux-armv4
+    ;;
+  aarch64*linux*)
+    export OPENSSL_COMPILER=linux-aarch64
+    ;;
+  mips64el*linux* | mips64*linux*)
+    export OPENSSL_COMPILER=linux64-mips64
+    ;;
+  mipsel*linux* | mips*linux*)
+    export OPENSSL_COMPILER=linux-mips32
+    ;;
+  loongarch64*linux*)
+    export OPENSSL_COMPILER=linux64-loongarch64
+    ;;
+  x86_64*linux*)
+    export OPENSSL_COMPILER=linux-x86_64
+    ;;
+  x86_64*mingw*)
+    export OPENSSL_COMPILER=mingw64
+    ;;
+  i686*mingw*)
+    export OPENSSL_COMPILER=mingw
+    ;;
+  *)
+    export OPENSSL_COMPILER=cc
+    ;;
 esac
 
 # strip all compiled files by default
@@ -96,27 +96,27 @@ export LDFLAGS='-Wl,-s'
 
 TARGET_ARCH="${CROSS_HOST%%-*}"
 case "${CROSS_HOST}" in
-*"mingw"*)
-  TARGET_HOST=Windows
-  apt install -y wine
-  export WINEPREFIX=/tmp/
-  RUNNER_CHECKER="wine"
-  ;;
-*)
-  TARGET_HOST=Linux
-  apt install -y "qemu-user" --no-install-recommends --no-install-suggests
-  case "${TARGET_ARCH}" in
-  i686)
-    RUNNER_CHECKER="qemu-i386"
-    ;;
-  arm*)
-    RUNNER_CHECKER="qemu-arm"
+  *"mingw"*)
+    TARGET_HOST=Windows
+    apt install -y wine
+    export WINEPREFIX=/tmp/
+    RUNNER_CHECKER="wine"
     ;;
   *)
-    RUNNER_CHECKER="qemu-${TARGET_ARCH}"
+    TARGET_HOST=Linux
+    apt install -y "qemu-user" --no-install-recommends --no-install-suggests
+    case "${TARGET_ARCH}" in
+      i686)
+        RUNNER_CHECKER="qemu-i386"
+        ;;
+      arm*)
+        RUNNER_CHECKER="qemu-arm"
+        ;;
+      *)
+        RUNNER_CHECKER="qemu-${TARGET_ARCH}"
+        ;;
+    esac
     ;;
-  esac
-  ;;
 esac
 
 export PKG_CONFIG_LIBDIR="${CROSS_PREFIX}/opt/qt/lib/pkgconfig:${CROSS_PREFIX}/lib/pkgconfig:${CROSS_PREFIX}/share/pkgconfig"

@@ -31,9 +31,9 @@ jobs:
           path: |
             .github/workflows/downloads/
             /var/cache/apt/
-          key: appimage-downloads-cache-${{ github.sha }}
+          key: appimage-downloads-cache-${{ matrix.arch }}-${{ github.sha }}
           restore-keys: |
-            appimage-downloads-cache-
+            appimage-downloads-cache-${{ matrix.arch }}-
       - name: Build AppImage
         run: .github/workflows/build_appimage.sh
       - uses: actions/upload-artifact@v7
