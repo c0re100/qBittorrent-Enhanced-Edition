@@ -5223,4 +5223,107 @@ Supports the formats: S01E01, 1x1, 2017.12.31 and 31.12.2017 (Date formats also 
         <translation>重置该 API key 吗？当前 key 会立即停止工作，会生成新 key。</translation>
     </message>
 </context>
+<context>
+    <name>ManualGroups</name>
+    <message>
+        <source>Unable to save/load groups</source>
+        <translation>无法保存或读取分组</translation>
+    </message>
+    <message>
+        <source>Groups are not ready. Please retry.</source>
+        <translation>分组尚未就绪，请重试。</translation>
+    </message>
+    <message>
+        <source>Use a group name of 1–100 characters.</source>
+        <translation>分组名须为 1–100 个字符。</translation>
+    </message>
+    <message>
+        <source>A group cannot be placed inside itself or its descendants.</source>
+        <translation>不能将分组移入自身或其子组。</translation>
+    </message>
+    <message>
+        <source>Select torrents first.</source>
+        <translation>请先选择任务。</translation>
+    </message>
+    <message>
+        <source>A group can have at most 32 levels.</source>
+        <translation>分组最多支持 32 层。</translation>
+    </message>
+    <message>
+        <source>Select torrents with Ctrl/Shift first.</source>
+        <translation>请先用 Ctrl / Shift 选择需要分组的任务。</translation>
+    </message>
+    <message>
+        <source>Selected torrents: %1</source>
+        <translation>已选任务：%1</translation>
+    </message>
+    <message>
+        <source>Destination group</source>
+        <translation>目标分组</translation>
+    </message>
+    <message>
+        <source>Merge into an existing group</source>
+        <translation>合并到已有分组</translation>
+    </message>
+    <message>
+        <source>Create new group…</source>
+        <translation>新建分组…</translation>
+    </message>
+    <message>
+        <source>Do not merge (rename or move)</source>
+        <translation>不合并（重命名或移动）</translation>
+    </message>
+    <message>
+        <source>Group name</source>
+        <translation>分组名称</translation>
+    </message>
+    <message>
+        <source>Parent group</source>
+        <translation>上级分组</translation>
+    </message>
+    <message>
+        <source>Top level</source>
+        <translation>顶层（无上级分组）</translation>
+    </message>
+    <message>
+        <source>Dissolving a group moves its torrents and subgroups up one level.</source>
+        <translation>解散本组会将任务和子组移至上一级。</translation>
+    </message>
+    <message>
+        <source>Save group</source>
+        <translation>保存分组</translation>
+    </message>
+    <message>
+        <source>Remove from group</source>
+        <translation>移出分组</translation>
+    </message>
+    <message>
+        <source>Dissolve group</source>
+        <translation>解散分组</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+    <message>
+        <source>Group selected torrents</source>
+        <translation>将所选任务分组</translation>
+    </message>
+    <message>
+        <source>Manage group</source>
+        <translation>管理分组</translation>
+    </message>
+    <message>
+        <source>Manage</source>
+        <translation>管理</translation>
+    </message>
+    <message>
+        <source>Matching torrents: %1</source>
+        <translation>匹配任务：%1</translation>
+    </message>
+    <message>
+        <source>Group…</source>
+        <translation>分组…</translation>
+    </message>
+</context>
 </TS>

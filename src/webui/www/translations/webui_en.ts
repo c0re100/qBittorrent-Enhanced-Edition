@@ -5206,4 +5206,107 @@ Supports the formats: S01E01, 1x1, 2017.12.31 and 31.12.2017 (Date formats also 
         <translation type="unfinished" />
     </message>
 </context>
+<context>
+    <name>ManualGroups</name>
+    <message>
+        <source>Unable to save/load groups</source>
+        <translation>Unable to save/load groups</translation>
+    </message>
+    <message>
+        <source>Groups are not ready. Please retry.</source>
+        <translation>Groups are not ready. Please retry.</translation>
+    </message>
+    <message>
+        <source>Use a group name of 1–100 characters.</source>
+        <translation>Use a group name of 1–100 characters.</translation>
+    </message>
+    <message>
+        <source>A group cannot be placed inside itself or its descendants.</source>
+        <translation>A group cannot be placed inside itself or its descendants.</translation>
+    </message>
+    <message>
+        <source>Select torrents first.</source>
+        <translation>Select torrents first.</translation>
+    </message>
+    <message>
+        <source>A group can have at most 32 levels.</source>
+        <translation>A group can have at most 32 levels.</translation>
+    </message>
+    <message>
+        <source>Select torrents with Ctrl/Shift first.</source>
+        <translation>Select torrents with Ctrl/Shift first.</translation>
+    </message>
+    <message>
+        <source>Selected torrents: %1</source>
+        <translation>Selected torrents: %1</translation>
+    </message>
+    <message>
+        <source>Destination group</source>
+        <translation>Destination group</translation>
+    </message>
+    <message>
+        <source>Merge into an existing group</source>
+        <translation>Merge into an existing group</translation>
+    </message>
+    <message>
+        <source>Create new group…</source>
+        <translation>Create new group…</translation>
+    </message>
+    <message>
+        <source>Do not merge (rename or move)</source>
+        <translation>Do not merge (rename or move)</translation>
+    </message>
+    <message>
+        <source>Group name</source>
+        <translation>Group name</translation>
+    </message>
+    <message>
+        <source>Parent group</source>
+        <translation>Parent group</translation>
+    </message>
+    <message>
+        <source>Top level</source>
+        <translation>Top level</translation>
+    </message>
+    <message>
+        <source>Dissolving a group moves its torrents and subgroups up one level.</source>
+        <translation>Dissolving a group moves its torrents and subgroups up one level.</translation>
+    </message>
+    <message>
+        <source>Save group</source>
+        <translation>Save group</translation>
+    </message>
+    <message>
+        <source>Remove from group</source>
+        <translation>Remove from group</translation>
+    </message>
+    <message>
+        <source>Dissolve group</source>
+        <translation>Dissolve group</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>Cancel</translation>
+    </message>
+    <message>
+        <source>Group selected torrents</source>
+        <translation>Group selected torrents</translation>
+    </message>
+    <message>
+        <source>Manage group</source>
+        <translation>Manage group</translation>
+    </message>
+    <message>
+        <source>Manage</source>
+        <translation>Manage</translation>
+    </message>
+    <message>
+        <source>Matching torrents: %1</source>
+        <translation>Matching torrents: %1</translation>
+    </message>
+    <message>
+        <source>Group…</source>
+        <translation>Group…</translation>
+    </message>
+</context>
 </TS>
