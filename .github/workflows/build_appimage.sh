@@ -248,7 +248,7 @@ prepare_qt() {
   prepare_qt_submodule qtwayland
 }
 
-preapare_libboost() {
+prepare_libboost() {
   # Boost >= 1.69: boost::system is header-only.
   # libtorrent only links Boost::headers (see CMakeLists.txt).
   boost_ver="1.86.0"
@@ -424,7 +424,7 @@ prepare_buildenv
 # compile openssl 3.x. qBittorrent >= 5.0 required openssl 3.x
 prepare_ssl
 prepare_qt
-preapare_libboost
+prepare_libboost
 prepare_libtorrent
 build_qbee
 build_appimage
