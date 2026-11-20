@@ -183,11 +183,29 @@ prepare_ssl() {
   ldconfig
 }
 
+prepare_qt_submodule() {
+  # Usage: prepare_qt_submodule <submodule_name>
+  submodule="${1}"
+  if [ ! -f "${DOWNLOADS_DIR}/${submodule}-everywhere-src-${qt_ver}.tar.xz" ]; then
+    submodule_url="${QT_DOWNLOAD_URL_BASE}/official_releases/qt/${qt_major_ver}/${qt_ver}/submodules/${submodule}-everywhere-src-${qt_ver}.tar.xz"
+    retry curl -kSL --compressed "${submodule_url}" -o "${DOWNLOADS_DIR}/${submodule}-everywhere-src-${qt_ver}.tar.xz.part"
+    mv -fv "${DOWNLOADS_DIR}/${submodule}-everywhere-src-${qt_ver}.tar.xz.part" "${DOWNLOADS_DIR}/${submodule}-everywhere-src-${qt_ver}.tar.xz"
+  fi
+  mkdir -p "/usr/src/${submodule}-${qt_ver}"
+  tar Jxf "${DOWNLOADS_DIR}/${submodule}-everywhere-src-${qt_ver}.tar.xz" -C "/usr/src/${submodule}-${qt_ver}" --strip-components 1
+  cd "/usr/src/${submodule}-${qt_ver}"
+  rm -fr CMakeCache.txt
+  "${QT_BASE_DIR}/bin/qt-configure-module" .
+  cat config.summary
+  cmake --build . --parallel
+  cmake --install .
+}
+
 prepare_qt() {
   # install qt
   QT_DOWNLOAD_URL_BASE="https://download.qt.io"
   if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
-      QT_DOWNLOAD_URL_BASE="https://mirrors.nju.edu.cn/qt"
+    QT_DOWNLOAD_URL_BASE="https://mirrors.nju.edu.cn/qt"
   fi
   qt_major_ver="$(retry curl -ksSL --compressed "https://download.qt.io/official_releases/qt/" \| sed -nr "'s@.*href=\"([0-9]+(\.[0-9]+)*)/\".*@\1@p'" \| grep \"^${QT_VER_PREFIX}\" \| head -1)"
   qt_ver="$(retry curl -ksSL --compressed "https://download.qt.io/official_releases/qt/${qt_major_ver}/" \| sed -nr "'s@.*href=\"([0-9]+(\.[0-9]+)*)/\".*@\1@p'" \| grep \"^${QT_VER_PREFIX}\" \| head -1)"
@@ -223,46 +241,11 @@ prepare_qt() {
   export QT_BASE_DIR="$(ls -rd /usr/local/Qt-* | head -1)"
   export LD_LIBRARY_PATH="${QT_BASE_DIR}/lib:${LD_LIBRARY_PATH}"
   export PATH="${QT_BASE_DIR}/bin:${PATH}"
-  if [ ! -f "${DOWNLOADS_DIR}/qtsvg-everywhere-src-${qt_ver}.tar.xz" ]; then
-    qtsvg_url="${QT_DOWNLOAD_URL_BASE}/official_releases/qt/${qt_major_ver}/${qt_ver}/submodules/qtsvg-everywhere-src-${qt_ver}.tar.xz"
-    retry curl -kSL --compressed "${qtsvg_url}" -o "${DOWNLOADS_DIR}/qtsvg-everywhere-src-${qt_ver}.tar.xz.part"
-    mv -fv "${DOWNLOADS_DIR}/qtsvg-everywhere-src-${qt_ver}.tar.xz.part" "${DOWNLOADS_DIR}/qtsvg-everywhere-src-${qt_ver}.tar.xz"
-  fi
-  mkdir -p "/usr/src/qtsvg-${qt_ver}"
-  tar Jxf "${DOWNLOADS_DIR}/qtsvg-everywhere-src-${qt_ver}.tar.xz" -C "/usr/src/qtsvg-${qt_ver}" --strip-components 1
-  cd "/usr/src/qtsvg-${qt_ver}"
-  rm -fr CMakeCache.txt
-  "${QT_BASE_DIR}/bin/qt-configure-module" .
-  cmake --build . --parallel
-  cmake --install .
-  if [ ! -f "${DOWNLOADS_DIR}/qttools-everywhere-src-${qt_ver}.tar.xz" ]; then
-    qttools_url="${QT_DOWNLOAD_URL_BASE}/official_releases/qt/${qt_major_ver}/${qt_ver}/submodules/qttools-everywhere-src-${qt_ver}.tar.xz"
-    retry curl -kSL --compressed "${qttools_url}" -o "${DOWNLOADS_DIR}/qttools-everywhere-src-${qt_ver}.tar.xz.part"
-    mv -fv "${DOWNLOADS_DIR}/qttools-everywhere-src-${qt_ver}.tar.xz.part" "${DOWNLOADS_DIR}/qttools-everywhere-src-${qt_ver}.tar.xz"
-  fi
-  mkdir -p "/usr/src/qttools-${qt_ver}"
-  tar Jxf "${DOWNLOADS_DIR}/qttools-everywhere-src-${qt_ver}.tar.xz" -C "/usr/src/qttools-${qt_ver}" --strip-components 1
-  cd "/usr/src/qttools-${qt_ver}"
-  rm -fr CMakeCache.txt
-  "${QT_BASE_DIR}/bin/qt-configure-module" .
-  cat config.summary
-  cmake --build . --parallel
-  cmake --install .
 
-  # qt-wayland
-  if [ ! -f "${DOWNLOADS_DIR}/qtwayland-everywhere-src-${qt_ver}.tar.xz" ]; then
-    qtwayland_url="${QT_DOWNLOAD_URL_BASE}/official_releases/qt/${qt_major_ver}/${qt_ver}/submodules/qtwayland-everywhere-src-${qt_ver}.tar.xz"
-    retry curl -kSL --compressed "${qtwayland_url}" -o "${DOWNLOADS_DIR}/qtwayland-everywhere-src-${qt_ver}.tar.xz.part"
-    mv -fv "${DOWNLOADS_DIR}/qtwayland-everywhere-src-${qt_ver}.tar.xz.part" "${DOWNLOADS_DIR}/qtwayland-everywhere-src-${qt_ver}.tar.xz"
-  fi
-  mkdir -p "/usr/src/qtwayland-${qt_ver}"
-  tar Jxf "${DOWNLOADS_DIR}/qtwayland-everywhere-src-${qt_ver}.tar.xz" -C "/usr/src/qtwayland-${qt_ver}" --strip-components 1
-  cd "/usr/src/qtwayland-${qt_ver}"
-  rm -fr CMakeCache.txt
-  "${QT_BASE_DIR}/bin/qt-configure-module" .
-  cat config.summary
-  cmake --build . --parallel
-  cmake --install .
+  prepare_qt_submodule qtsvg
+  prepare_qt_submodule qttools
+  prepare_qt_submodule qttranslations
+  prepare_qt_submodule qtwayland
 }
 
 preapare_libboost() {
@@ -417,15 +400,15 @@ EOF
 
   # package as AppImage, embed update information and generate the .zsync file
   LDAI_UPDATE_INFORMATION="zsync|https://github.com/${GITHUB_REPOSITORY}/releases/latest/download/qBittorrent-Enhanced-Edition-${ARCH}.AppImage.zsync" \
-  LDAI_RUNTIME_FILE="${DOWNLOADS_DIR}/runtime-${ARCH}" \
-  LDAI_OUTPUT="/tmp/qbee/qBittorrent-Enhanced-Edition-${ARCH}.AppImage" \
-  LDAI_NO_APPSTREAM=1 \
-  LINUXDEPLOY_EXCLUDED_LIBRARIES="$(join_by ';' "${exclude_libs[@]}")" \
-  EXTRA_QT_MODULES="svg;waylandcompositor" \
-  DEPLOY_PLATFORM_THEMES=1 \
-  EXTRA_PLATFORM_PLUGINS="libqwayland.so" \
-  DISABLE_COPYRIGHT_FILES_DEPLOYMENT=1 \
-  "${DOWNLOADS_DIR}/linuxdeploy-${ARCH}.AppImage" \
+    LDAI_RUNTIME_FILE="${DOWNLOADS_DIR}/runtime-${ARCH}" \
+    LDAI_OUTPUT="/tmp/qbee/qBittorrent-Enhanced-Edition-${ARCH}.AppImage" \
+    LDAI_NO_APPSTREAM=1 \
+    LINUXDEPLOY_EXCLUDED_LIBRARIES="$(join_by ';' "${exclude_libs[@]}")" \
+    EXTRA_QT_MODULES="svg;waylandcompositor" \
+    DEPLOY_PLATFORM_THEMES=1 \
+    EXTRA_PLATFORM_PLUGINS="libqwayland.so" \
+    DISABLE_COPYRIGHT_FILES_DEPLOYMENT=1 \
+    "${DOWNLOADS_DIR}/linuxdeploy-${ARCH}.AppImage" \
     --appdir=/tmp/qbee/AppDir \
     --plugin qt \
     --output appimage
