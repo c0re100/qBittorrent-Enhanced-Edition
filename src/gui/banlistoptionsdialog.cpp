@@ -45,7 +45,7 @@
 BanListOptionsDialog::BanListOptionsDialog(QWidget *parent)
     : QDialog(parent)
     , m_ui(new Ui::BanListOptionsDialog)
-    , m_model(new QStringListModel(BitTorrent::Session::instance()->bannedIPs(), this))
+    , m_model(new QStringListModel(this))
 {
     m_ui->setupUi(this);
 
@@ -58,6 +58,9 @@ BanListOptionsDialog::BanListOptionsDialog(QWidget *parent)
     m_ui->bannedIPList->setModel(m_sortFilter);
     m_ui->bannedIPList->sortByColumn(0, Qt::AscendingOrder);
     m_ui->buttonBanIP->setEnabled(false);
+
+    if (BitTorrent::Session *session = BitTorrent::Session::instance())
+        m_model->setStringList(session->bannedIPs());
 
     DialogGeometry::restore(this, SETTINGS_KEY(u"Geometry"_s), SETTINGS_KEY(u"Size"_s));
 }
@@ -80,7 +83,8 @@ void BanListOptionsDialog::on_buttonBox_accepted()
             QModelIndex index = m_sortFilter->index(i, 0);
             IPList << index.data().toString();
         }
-        BitTorrent::Session::instance()->setBannedIPs(IPList);
+        if (BitTorrent::Session *session = BitTorrent::Session::instance())
+            session->setBannedIPs(IPList);
         QDialog::accept();
     }
     else
