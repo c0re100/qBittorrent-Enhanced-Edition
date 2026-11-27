@@ -376,10 +376,13 @@ void PeerListWidget::banSelectedPeers()
         , tr("Are you sure you want to permanently ban the selected peers?"));
     if (btn != QMessageBox::Yes) return;
 
-    for (const peerData &data : selectedPeers)
+    if (BitTorrent::Session *const session = BitTorrent::Session::instance())
     {
-        BitTorrent::Session::instance()->banIP(data.ip);
-        LogMsg(tr("Peer \"%1\" is manually banned. PeerID: '%2' Client: '%3' Country: '%4'").arg(data.ip, data.peerId, data.client, data.country));
+        for (const peerData &data : selectedPeers)
+        {
+            session->banIP(data.ip);
+            LogMsg(tr("Peer \"%1\" is manually banned. PeerID: '%2' Client: '%3' Country: '%4'").arg(data.ip, data.peerId, data.client, data.country));
+        }
     }
     // Refresh list
     loadPeers(m_properties->getCurrentTorrent());
@@ -420,10 +423,13 @@ void PeerListWidget::shadowbanSelectedPeers()
             , tr("Are you sure you want to shadowban the selected peers?"));
     if (btn != QMessageBox::Yes) return;
 
-    for (const peerData &data : selectedPeers)
+    if (BitTorrent::Session *const session = BitTorrent::Session::instance())
     {
-        BitTorrent::Session::instance()->shadowbanIP(data.ip);
-        LogMsg(tr("Peer \"%1\" is manually shadowbanned. PeerID: '%2' Client: '%3' Country: '%4'").arg(data.ip, data.peerId, data.client, data.country));
+        for (const peerData &data : selectedPeers)
+        {
+            session->shadowbanIP(data.ip);
+            LogMsg(tr("Peer \"%1\" is manually shadowbanned. PeerID: '%2' Client: '%3' Country: '%4'").arg(data.ip, data.peerId, data.client, data.country));
+        }
     }
     // Refresh list
     loadPeers(m_properties->getCurrentTorrent());
